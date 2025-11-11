@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>تطبيق المحاسبة</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="login" id="loginDiv">
+  <h2>تسجيل الدخول</h2>
+  <input type="text" id="accessCode" placeholder="أدخل الرمز">
+  <button onclick="checkCode()">دخول</button>
+  <div class="info">الرمز التجريبي صالح لأسبوع: <b>3RHQQ6L19G</b></div>
+</div>
+
+<div class="app" id="app" style="display:none;">
+  <header>
+    <div>
+      <div class="brand" id="brandText">تطبيق المحاسبة</div>
+      <div class="small" id="subText">نسخة محلية بسيطة</div>
+    </div>
+    <div class="user">
+      <div class="circle"><div id="empCount">0</div><div class="small" id="empLabel">الموظفين</div></div>
+      <div>
+        <select id="lang" onchange="switchLang(this.value)">
+          <option value="ar">العربية</option>
+          <option value="fr">Français</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid" id="mainGrid">
+      <div class="card" onclick="openModal('clients')"><div class="emoji">👥</div><div class="small" data-key="clients">الزبائن</div></div>
+      <div class="card" onclick="openModal('suppliers')"><div class="emoji">🔁</div><div class="small" data-key="suppliers">الموردين</div></div>
+      <div class="card" onclick="openModal('expense_income')"><div class="emoji">🧾</div><div class="small" data-key="expense_income">مصروف - إيراد</div></div>
+      <div class="card" onclick="openModal('banks')"><div class="emoji">🏦</div><div class="small" data-key="banks">البنوك</div></div>
+      <div class="card" onclick="openModal('products')"><div class="emoji">📦</div><div class="small" data-key="products">المنتجات - المخازن</div></div>
+      <div class="card" onclick="openModal('employees')"><div class="emoji">🙂</div><div class="small" data-key="employees">الموظفين</div></div>
+      <div class="card" onclick="openModal('reports')"><div class="emoji">📊</div><div class="small" data-key="reports">التقارير</div></div>
+      <div class="card" onclick="openModal('invoices')"><div class="emoji">🧾</div><div class="small" data-key="invoices">الفواتير</div></div>
+    </div>
+    <div class="footer">Développé par Mohamed Dah Agove</div>
+  </main>
+</div>
+
+<div id="modalBack" class="modal-back" onclick="closeModal(event)">
+  <div class="modal" id="modalContent" onclick="event.stopPropagation()"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

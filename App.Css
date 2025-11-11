@@ -1,0 +1,28 @@
+:root{--bg:#e6f7fb;--card:#ffffff;--accent:#0b86c9;--accent-2:#07a;--muted:#6b7785}
+html,body{height:100%;margin:0;font-family: 'Segoe UI', Tahoma, sans-serif;background:linear-gradient(180deg,#0ea5c9,#0aa);color:#023047}
+.app{max-width:900px;margin:16px auto;background:var(--bg);min-height:100vh;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);overflow:hidden}
+header{background:linear-gradient(90deg,#0ea5c9,#0aa);padding:28px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:40px;font-weight:700}
+.user{display:flex;align-items:center;gap:12px}
+.circle{background:rgba(255,255,255,.12);padding:10px;border-radius:50%;min-width:64px;text-align:center}
+main{padding:18px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.card{background:var(--card);padding:22px;border-radius:14px;box-shadow:0 6px 18px rgba(2,16,36,.06);text-align:center;cursor:pointer}
+.card .emoji{font-size:36px;margin-bottom:8px}
+.footer{padding:14px;text-align:center;color:#023047;font-weight:bold;margin-top:20px}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:50}
+.modal{background:#fff;padding:18px;border-radius:10px;width:92%;max-width:820px;direction:inherit}
+label{display:block;margin-bottom:6px;font-size:14px}
+input,select,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #e6eef2;margin-bottom:10px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid #eee;text-align:center}
+.small{font-size:13px;color:#6b7785}
+.row{display:flex;gap:8px}
+.row > *{flex:1}
+button{background:var(--accent);color:#fff;border:0;padding:10px 12px;border-radius:8px;cursor:pointer}
+.btn-secondary{background:#f3f6f7;color:#023047}
+.flex-center{display:flex;align-items:center;gap:12px}
+.login{max-width:400px;margin:80px auto;padding:30px;background:#fff;border-radius:12px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.login input{margin-bottom:12px}
+.login button{width:100%;margin-top:10px}
+@media (max-width:600px){.grid{grid-template-columns:1fr}}
