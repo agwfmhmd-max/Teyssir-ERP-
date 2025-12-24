@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP System - MDA Admin Pro</title>
+    <title>ERP System - MDA Smart Accounting</title>
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
@@ -17,6 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -29,7 +30,6 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: #333; overflow-x: hidden; }
 
-        /* Language Button */
         .lang-float {
             position: fixed; top: 10px; z-index: 2000;
             background: white; border: 1px solid #ccc; padding: 5px 12px;
@@ -38,118 +38,56 @@
         }
         html[dir="rtl"] .lang-float { left: 15px; } html[dir="ltr"] .lang-float { right: 15px; }
 
-        /* Auth Screen */
-        .auth-wrap {
-            display: flex; min-height: 100vh; justify-content: center; align-items: center;
-            background: linear-gradient(135deg, #1e3a8a, #111827); padding: 20px;
-        }
-        .auth-card {
-            background: white; width: 100%; max-width: 400px; padding: 30px 20px;
-            border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .inp {
-            width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px;
-            font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s;
-        }
-        .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,58,138,0.1); }
-        .btn {
-            width: 100%; padding: 12px; border: none; border-radius: 10px;
-            font-weight: bold; font-size: 14px; cursor: pointer; color: white; transition: 0.2s;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn-prim { background: var(--primary); }
-        .btn-sec { background: var(--secondary); }
-        .btn-dan { background: var(--danger); }
-        
-        /* Specific Styles for Admin Table */
-        .status-active { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
-        .status-suspended { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
-        .code-display { font-family: monospace; font-weight: bold; background: #f3f4f6; padding: 2px 5px; border-radius: 4px; letter-spacing: 1px; }
+        .auth-wrap { display: flex; min-height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, #1e3a8a, #111827); padding: 20px; }
+        .auth-card { background: white; width: 100%; max-width: 400px; padding: 30px 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .inp { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 15px; outline: none; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; color: white; }
+        .btn-prim { background: var(--primary); } .btn-sec { background: var(--secondary); } .btn-dan { background: var(--danger); }
+        .wa-link { display: flex; align-items: center; justify-content: center; gap: 10px; background: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 50px; font-weight: bold; margin-top: 15px; }
 
-        .wa-link {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: #25D366; color: white; text-decoration: none; padding: 12px;
-            border-radius: 50px; font-weight: bold; margin-top: 15px;
-        }
-
-        /* Dashboard Layout */
         .app-container { display: none; flex-direction: column; min-height: 100vh; }
-        
-        .top-header {
-            height: var(--header-h); background: white; border-bottom: 1px solid #eee;
-            display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
-            position: sticky; top: 0; z-index: 1000;
-        }
+        .top-header { height: var(--header-h); background: white; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: sticky; top: 0; z-index: 1000; }
         .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
 
-        .sidebar {
-            position: fixed; top: 0; bottom: 0; width: 280px; background: white;
-            z-index: 1500; padding-top: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
-        }
-        
-        html[dir="rtl"] .sidebar { right: 0; transform: translateX(100%); }
-        html[dir="rtl"] .sidebar.open { transform: translateX(0); }
-        html[dir="ltr"] .sidebar { left: 0; transform: translateX(-100%); }
-        html[dir="ltr"] .sidebar.open { transform: translateX(0); }
-
-        .sidebar-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1400; display: none;
-        }
+        .sidebar { position: fixed; top: 0; bottom: 0; width: 280px; background: white; z-index: 1500; padding-top: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.2); transition: transform 0.3s ease; }
+        html[dir="rtl"] .sidebar { right: 0; transform: translateX(100%); } html[dir="rtl"] .sidebar.open { transform: translateX(0); }
+        html[dir="ltr"] .sidebar { left: 0; transform: translateX(-100%); } html[dir="ltr"] .sidebar.open { transform: translateX(0); }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1400; display: none; }
         .sidebar-overlay.show { display: block; }
 
-        .nav-item {
-            padding: 15px 20px; display: flex; align-items: center; gap: 15px;
-            color: #555; font-weight: 500; cursor: pointer; border-bottom: 1px solid #f9f9f9;
-        }
+        .nav-item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; color: #555; font-weight: 500; cursor: pointer; border-bottom: 1px solid #f9f9f9; }
         .nav-item.active { background: #eff6ff; color: var(--primary); }
         
         .main-content { flex: 1; padding: 15px; overflow-y: auto; }
-        
         .grid-responsive { display: grid; gap: 15px; }
         @media (min-width: 768px) {
             .grid-responsive { grid-template-columns: 2fr 1fr; }
             .sidebar { position: fixed; top: var(--header-h); bottom: 0; width: 250px; transform: none !important; box-shadow: none; border-inline-end: 1px solid #eee; z-index: 900; }
-            html[dir="rtl"] .main-content { margin-right: 250px; }
-            html[dir="ltr"] .main-content { margin-left: 250px; }
-            .menu-btn { display: none; }
-            .sidebar-overlay { display: none !important; }
+            html[dir="rtl"] .main-content { margin-right: 250px; } html[dir="ltr"] .main-content { margin-left: 250px; }
+            .menu-btn, .sidebar-overlay { display: none !important; }
         }
 
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        
-        .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; /* Wider for admin table */ }
+        .table-scroll { overflow-x: auto; border: 1px solid #eee; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th, td { padding: 12px; text-align: start; border-bottom: 1px solid #eee; font-size: 13px; }
         th { background: #f8f9fa; white-space: nowrap; font-weight: bold; color: var(--primary); }
 
         .print-box { display: none; }
-        @media print {
-            .app-container, .auth-wrap, .lang-float { display: none !important; }
-            .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; }
-        }
-        .hidden { display: none !important; }
-        
-        #installBtn { 
-            display: none; width: 100%; background: #333; color: white; margin-bottom: 15px; 
-            padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;
-        }
+        @media print { .app-container, .auth-wrap, .lang-float { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; } }
+        #installBtn { display: none; width: 100%; background: #333; color: white; margin-bottom: 15px; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Language Toggle -->
     <button onclick="app.toggleLang()" class="lang-float" id="langBtn">Français</button>
 
-    <!-- Auth Screen -->
+    <!-- Auth -->
     <div id="authScreen" class="auth-wrap">
         <div class="auth-card">
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" alt="Icon" style="width:60px; margin-bottom:10px;">
             <h2 style="color:var(--primary); margin-top:0;" id="t_title">ERP System</h2>
-            
-            <div id="installBtn" onclick="app.installPWA()">📲 تثبيت التطبيق / Install App</div>
-
+            <div id="installBtn" onclick="app.installPWA()">📲 تثبيت التطبيق</div>
             <form onsubmit="app.login(event)">
                 <input id="logName" class="inp" placeholder="اسم الشركة" required>
                 <input id="logPhone" type="tel" class="inp" placeholder="رقم الهاتف" required>
@@ -158,31 +96,21 @@
             </form>
             <div style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
                 <p style="margin:0 0 10px; color:#666; font-size:0.9em;" id="t_getcode">للحصول على الرمز:</p>
-                <a href="https://wa.me/22220479962" class="wa-link">
-                    <i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> 
-                    <span id="t_contact">تواصل مع المطور</span>
-                </a>
+                <a href="https://wa.me/22220479962" class="wa-link"><i class="fa-brands fa-whatsapp"></i> <span id="t_contact">تواصل مع المطور</span></a>
             </div>
         </div>
     </div>
 
-    <!-- App Screen -->
+    <!-- App -->
     <div id="appScreen" class="app-container">
         <div class="sidebar-overlay" onclick="app.toggleMenu()"></div>
-
-        <!-- Header -->
         <header class="top-header">
             <div style="display:flex; align-items:center; gap:15px;">
                 <div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div>
-                <div>
-                    <div id="h_name" style="font-weight:bold; font-size:16px;"></div>
-                    <div id="h_phone" style="font-size:12px; color:#666;"></div>
-                </div>
+                <div><div id="h_name" style="font-weight:bold;"></div><div id="h_phone" style="font-size:12px; color:#666;"></div></div>
             </div>
-            <button onclick="location.reload()" class="btn btn-dan" style="width:auto; padding:8px 15px; font-size:14px;" id="t_logout">خروج</button>
+            <button onclick="location.reload()" class="btn btn-dan" style="width:auto; padding:8px 15px;" id="t_logout">خروج</button>
         </header>
-
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div style="padding: 0 20px 20px; text-align:center;">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" style="width:40px;">
@@ -197,8 +125,6 @@
             <div class="nav-item" onclick="app.nav('reports')"><i class="fa-solid fa-chart-pie"></i> <span data-key="rep">التقارير</span></div>
             <div id="adminLink" class="nav-item hidden" onclick="app.nav('admin')" style="color:red;"><i class="fa-solid fa-lock"></i> Admin</div>
         </aside>
-
-        <!-- Content -->
         <main id="workspace" class="main-content"></main>
     </div>
 
@@ -206,16 +132,9 @@
     <div id="printArea" class="print-box"></div>
 
     <script>
-        // PWA Registration
         let deferredPrompt;
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('installBtn').style.display = 'block';
-        });
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').style.display = 'block'; });
 
         const firebaseConfig = {
             apiKey: "AIzaSyA6glwj94Onm0r6gRtxtoyqEISpPChDcHo",
@@ -241,20 +160,17 @@
                 th_date:"التاريخ", th_client:"العميل", th_amount:"المبلغ", th_print:"طباعة",
                 th_name:"الاسم", th_buy:"شراء", th_sell:"بيع", th_stock:"المخزون", th_del:"حذف", th_edit:"تعديل",
                 th_item:"البند", th_note:"ملاحظات", th_cost:"التكلفة", th_emp:"الموظف", th_job:"الوظيفة", th_sal:"الراتب",
-                income:"إجمالي المبيعات", expense:"إجمالي المصروفات", profit:"صافي الربح",
+                income:"إجمالي المبيعات", expense:"المصروفات العامة", profit:"صافي الربح", cogs:"تكلفة البضاعة المباعة",
                 err_login:"بيانات الدخول غير صحيحة", err_sus:"هذا الحساب معطل حالياً",
                 empty:"السلة فارغة", max_qty:"الكمية المتاحة فقط: ",
                 prompt_name:"الاسم / البيان", prompt_buy:"سعر الشراء", prompt_sell:"سعر البيع", prompt_qty:"الكمية",
                 prompt_note:"ملاحظة", prompt_amount:"المبلغ", 
-                confirm_del_prod:"سيتم حذف المنتج من المخزون فقط. سيبقى سجل شرائه في المصروفات لضمان دقة التقارير. موافق؟",
-                confirm_del_gen:"هل أنت متأكد من الحذف؟",
+                confirm_del:"هل أنت متأكد من الحذف؟ هذا لن يؤثر على التقارير المالية للعمليات السابقة.",
                 sys_active:"النظام يعمل بنجاح",
                 err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
                 prompt_new_price: "أدخل سعر البيع الجديد",
-                
-                // Admin Table Headers
-                adm_time: "وقت التفعيل/الإنشاء", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
-                adm_stop: "إيقاف مؤقت", adm_start: "تفعيل", adm_del: "حذف نهائي"
+                adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
+                adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف"
             },
             fr: {
                 title: "Système ERP - Édition Gold", comp:"Nom de Société", phone:"Téléphone", code:"Code d'activation",
@@ -267,19 +183,16 @@
                 th_date:"Date", th_client:"Client", th_amount:"Montant", th_print:"Imprimer",
                 th_name:"Nom", th_buy:"Achat", th_sell:"Vente", th_stock:"Stock", th_del:"Suppr", th_edit:"Modif",
                 th_item:"Article", th_note:"Note", th_cost:"Coût", th_emp:"Employé", th_job:"Fonction", th_sal:"Salaire",
-                income:"Revenus (Ventes)", expense:"Dépenses Totales", profit:"Bénéfice Net",
+                income:"Revenus (Ventes)", expense:"Dépenses Générales", profit:"Bénéfice Net", cogs:"Coût des Marchandises Vendues",
                 err_login:"Identifiants invalides", err_sus:"Compte suspendu",
                 empty:"Panier vide", max_qty:"Max disponible: ",
                 prompt_name:"Nom / Article", prompt_buy:"Prix d'achat", prompt_sell:"Prix de vente", prompt_qty:"Quantité",
                 prompt_note:"Note", prompt_amount:"Montant", 
-                confirm_del_prod:"Seul le stock sera supprimé. La dépense d'achat restera pour les rapports. Confirmer ?",
-                confirm_del_gen:"Confirmer la suppression ?",
+                confirm_del:"Confirmer la suppression ? Cela n'affecte pas les rapports historiques.",
                 sys_active:"Système Actif",
                 err_price_logic: "Erreur: Le prix de vente doit être supérieur au prix d'achat",
                 prompt_new_price: "Entrez le nouveau prix de vente",
-
-                // Admin Table Headers
-                adm_time: "Date & Heure", adm_comp: "Société", adm_phone: "Tél", adm_code: "Code", adm_stat: "Statut", adm_act: "Action",
+                adm_time: "Date", adm_comp: "Société", adm_phone: "Tél", adm_code: "Code", adm_stat: "Statut", adm_act: "Action",
                 adm_stop: "Suspendre", adm_start: "Activer", adm_del: "Supprimer"
             }
         };
@@ -289,138 +202,58 @@
             cart: [],
 
             installPWA: function() {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            document.getElementById('installBtn').style.display = 'none';
-                        }
-                        deferredPrompt = null;
-                    });
-                }
+                if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((c) => { if (c.outcome==='accepted') document.getElementById('installBtn').style.display='none'; deferredPrompt=null; }); }
             },
-
-            randomStr: function(length) {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
-                let result = '';
-                for (let i = 0; i < length; i++) {
-                    result += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return result;
+            randomStr: function(l) {
+                const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'; let r=''; for(let i=0;i<l;i++) r+=c.charAt(Math.floor(Math.random()*c.length)); return r;
             },
-
             toggleLang: function() {
-                this.state.lang = this.state.lang==='ar'?'fr':'ar';
-                const l = this.state.lang;
-                document.documentElement.dir = l==='ar'?'rtl':'ltr';
-                document.getElementById('langBtn').innerText = l==='ar'?'Français':'العربية';
-                const d = dict[l];
-                document.getElementById('t_title').innerText = d.title;
-                document.getElementById('logName').placeholder = d.comp;
-                document.getElementById('logPhone').placeholder = d.phone;
-                document.getElementById('logCode').placeholder = d.code;
-                document.getElementById('logBtn').innerText = d.btn;
-                document.getElementById('t_getcode').innerText = d.get;
-                document.getElementById('t_contact').innerText = d.cont;
-                document.getElementById('t_logout').innerText = d.logout;
+                this.state.lang = this.state.lang==='ar'?'fr':'ar'; const l = this.state.lang; const d = dict[l];
+                document.documentElement.dir = l==='ar'?'rtl':'ltr'; document.getElementById('langBtn').innerText = l==='ar'?'Français':'العربية';
+                document.getElementById('t_title').innerText = d.title; document.getElementById('logName').placeholder = d.comp; document.getElementById('logPhone').placeholder = d.phone; document.getElementById('logCode').placeholder = d.code; document.getElementById('logBtn').innerText = d.btn; document.getElementById('t_getcode').innerText = d.get; document.getElementById('t_contact').innerText = d.cont; document.getElementById('t_logout').innerText = d.logout;
                 document.querySelectorAll('[data-key]').forEach(el => el.innerText = d[el.getAttribute('data-key')]);
                 if(this.state.cid) this.nav(document.querySelector('.nav-item.active') ? document.querySelector('.nav-item.active').getAttribute('onclick').split("'")[1] : 'home');
             },
-
             t: function(k) { return dict[this.state.lang][k] || k; },
-
-            toggleMenu: function() {
-                document.getElementById('sidebar').classList.toggle('open');
-                document.querySelector('.sidebar-overlay').classList.toggle('show');
-            },
+            toggleMenu: function() { document.getElementById('sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('show'); },
 
             login: async function(e) {
-                e.preventDefault();
-                const btn=document.getElementById('logBtn'); btn.innerText=this.t('wait'); btn.disabled=true;
+                e.preventDefault(); const btn=document.getElementById('logBtn'); btn.innerText=this.t('wait'); btn.disabled=true;
                 const n=document.getElementById('logName').value, p=document.getElementById('logPhone').value, c=document.getElementById('logCode').value;
-
                 try {
                     if(p==='46154399' && c==='371915') { this.state.admin=true; this.state.cid='ADMIN'; this.start('Admin','46154399'); return; }
-                    
                     const s = await db.collection('activation_codes').where('code','==',c).get();
                     if(s.empty) throw new Error(this.t('err_login'));
                     const d = s.docs[0].data();
                     if(d.status==='suspended') throw new Error(this.t('err_sus'));
                     if((d.targetPhone && d.targetPhone!==p) || (d.used && d.actualPhone!==p)) throw new Error(this.t('err_login'));
-
                     let cid=d.companyId;
                     if(!d.used) {
                         const r = await db.collection('companies').add({name:n, phone:p, code:c, createdAt:new Date().toISOString()});
-                        cid=r.id;
-                        await db.collection('activation_codes').doc(s.docs[0].id).update({used:true, companyId:cid, actualName:n, actualPhone:p, status:'active'});
+                        cid=r.id; await db.collection('activation_codes').doc(s.docs[0].id).update({used:true, companyId:cid, actualName:n, actualPhone:p, status:'active'});
                     }
-                    this.state.cid=cid; this.state.name=n; this.state.phone=p;
-                    this.start(n,p);
+                    this.state.cid=cid; this.state.name=n; this.state.phone=p; this.start(n,p);
                 } catch(er) { alert(er.message); btn.disabled=false; btn.innerText=this.t('btn'); }
             },
-
-            start: function(n,p) {
-                document.getElementById('authScreen').style.display='none';
-                document.getElementById('appScreen').style.display='flex';
-                document.getElementById('h_name').innerText=n;
-                document.getElementById('h_phone').innerText=p;
-                if(this.state.admin) document.getElementById('adminLink').classList.remove('hidden');
-                this.nav('home');
-            },
+            start: function(n,p) { document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='flex'; document.getElementById('h_name').innerText=n; document.getElementById('h_phone').innerText=p; if(this.state.admin) document.getElementById('adminLink').classList.remove('hidden'); this.nav('home'); },
 
             nav: function(page) {
-                document.getElementById('sidebar').classList.remove('open');
-                document.querySelector('.sidebar-overlay').classList.remove('show');
+                document.getElementById('sidebar').classList.remove('open'); document.querySelector('.sidebar-overlay').classList.remove('show');
                 document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-                const activeEl = document.querySelector(`.nav-item[onclick="app.nav('${page}')"]`);
-                if(activeEl) activeEl.classList.add('active');
-
-                const ws = document.getElementById('workspace');
-                ws.innerHTML = '<div style="padding:50px; text-align:center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
-                
+                const activeEl = document.querySelector(`.nav-item[onclick="app.nav('${page}')"]`); if(activeEl) activeEl.classList.add('active');
+                const ws = document.getElementById('workspace'); ws.innerHTML = '<div style="padding:50px; text-align:center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
                 setTimeout(() => {
-                    if(page==='home') this.home(ws);
-                    else if(page==='pos') this.pos(ws);
-                    else if(page==='invoices') this.list(ws, 'invoices');
-                    else if(page==='inventory') this.list(ws, 'products');
-                    else if(page==='expenses') this.list(ws, 'expenses');
-                    else if(page==='salaries') this.list(ws, 'salaries');
-                    else if(page==='reports') this.reports(ws);
-                    else if(page==='admin') this.admin(ws);
+                    if(page==='home') this.home(ws); else if(page==='pos') this.pos(ws); else if(page==='invoices') this.list(ws, 'invoices'); else if(page==='inventory') this.list(ws, 'products'); else if(page==='expenses') this.list(ws, 'expenses'); else if(page==='salaries') this.list(ws, 'salaries'); else if(page==='reports') this.reports(ws); else if(page==='admin') this.admin(ws);
                 }, 50);
             },
 
-            home: function(div) {
-                div.innerHTML = `<div class="card" style="text-align:center; padding:40px;">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" style="width:80px; margin-bottom:15px;">
-                    <h3>${this.state.name}</h3><p>${this.t('sys_active')}</p>
-                </div>`;
-            },
+            home: function(div) { div.innerHTML = `<div class="card" style="text-align:center; padding:40px;"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" style="width:80px; margin-bottom:15px;"><h3>${this.state.name}</h3><p>${this.t('sys_active')}</p></div>`; },
 
             pos: async function(div) {
-                this.cart=[];
-                const s = await db.collection('products').where('companyId','==',this.state.cid).get();
+                this.cart=[]; const s = await db.collection('products').where('companyId','==',this.state.cid).get();
                 let ops = `<option value="">${this.t('p_sel')}</option>`;
                 s.forEach(d=>{ const p=d.data(); if(p.stock>0) ops+=`<option value="${d.id}" data-p="${p.sellPrice}" data-buy="${p.buyPrice}" data-n="${p.name}" data-s="${p.stock}">${p.name} (${p.stock})</option>`; });
-
-                div.innerHTML = `<div class="grid-responsive">
-                    <div class="card">
-                        <select id="pp" class="inp" onchange="app.pu()">${ops}</select>
-                        <div style="display:flex; gap:10px; margin-bottom:10px;">
-                            <input id="pr" class="inp" readonly placeholder="${this.t('p_pr')}">
-                            <input id="pq" type="number" class="inp" value="1" placeholder="${this.t('p_qt')}">
-                        </div>
-                        <button onclick="app.pa()" class="btn btn-sec">${this.t('p_add')}</button>
-                        <div class="table-scroll" style="margin-top:15px;">
-                            <table id="ct"><thead><tr><th>${this.t('tbl_prod')}</th><th>${this.t('tbl_qty')}</th><th>${this.t('tbl_tot')}</th><th>X</th></tr></thead><tbody></tbody></table>
-                        </div>
-                    </div>
-                    <div class="card" style="background:#fffbeb">
-                        <input id="pc" class="inp" placeholder="${this.t('p_cl')}">
-                        <h2 id="pt" style="text-align:center; margin:10px 0;">0 MRU</h2>
-                        <button onclick="app.ps()" class="btn btn-prim">${this.t('p_save')}</button>
-                    </div>
-                </div>`;
+                div.innerHTML = `<div class="grid-responsive"><div class="card"><select id="pp" class="inp" onchange="app.pu()">${ops}</select><div style="display:flex; gap:10px;"><input id="pr" class="inp" readonly placeholder="${this.t('p_pr')}"><input id="pq" type="number" class="inp" value="1" placeholder="${this.t('p_qt')}"></div><button onclick="app.pa()" class="btn btn-sec">${this.t('p_add')}</button><div class="table-scroll" style="margin-top:15px;"><table id="ct"><thead><tr><th>${this.t('tbl_prod')}</th><th>${this.t('tbl_qty')}</th><th>${this.t('tbl_tot')}</th><th>X</th></tr></thead><tbody></tbody></table></div></div><div class="card" style="background:#fffbeb"><input id="pc" class="inp" placeholder="${this.t('p_cl')}"><h2 id="pt" style="text-align:center;">0 MRU</h2><button onclick="app.ps()" class="btn btn-prim">${this.t('p_save')}</button></div></div>`;
             },
             pu: function() { const e=document.getElementById('pp'); document.getElementById('pr').value=e.options[e.selectedIndex].getAttribute('data-p'); },
             pa: function() {
@@ -431,14 +264,12 @@
                 if(q>s) return alert(this.t('max_qty')+s);
                 this.cart.push({id,n,p,q,bp,t:p*q}); this.pr();
             },
-            pr: function() {
-                let h='',t=0; this.cart.forEach((i,x)=>{ t+=i.t; h+=`<tr><td>${i.n}</td><td>${i.q}</td><td>${i.t}</td><td onclick="app.cart.splice(${x},1);app.pr()" style="color:red">X</td></tr>`; });
-                document.querySelector('#ct tbody').innerHTML=h; document.getElementById('pt').innerText=t.toLocaleString()+' MRU';
-            },
+            pr: function() { let h='',t=0; this.cart.forEach((i,x)=>{ t+=i.t; h+=`<tr><td>${i.n}</td><td>${i.q}</td><td>${i.t}</td><td onclick="app.cart.splice(${x},1);app.pr()" style="color:red">X</td></tr>`; }); document.querySelector('#ct tbody').innerHTML=h; document.getElementById('pt').innerText=t.toLocaleString()+' MRU'; },
             ps: async function() {
                 if(!this.cart.length) return alert(this.t('empty'));
                 const c=document.getElementById('pc').value||'Client', t=Number(document.getElementById('pt').innerText.replace(/[^0-9.]/g,''));
                 try {
+                    // Save invoices with Buy Price (bp) inside items to freeze history
                     const r = await db.collection('invoices').add({companyId:this.state.cid, customer:c, items:this.cart, total:t, createdAt:new Date().toISOString()});
                     for(let i of this.cart) {
                         const ref = db.collection('products').doc(i.id);
@@ -449,34 +280,19 @@
             },
 
             list: async function(div, type) {
-                div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${type==='products'?this.t('stock'):type==='invoices'?this.t('inv'):type==='expenses'?this.t('exp'):this.t('sal')}</h3>${type!=='invoices'?`<button onclick="app.add('${type}')" class="btn btn-prim" style="width:auto; padding:8px 15px;">+</button>`:''}</div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody><tr><td>Loading...</td></tr></tbody></table></div></div>`;
-                
+                div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${type==='products'?this.t('stock'):type==='invoices'?this.t('inv'):type==='expenses'?this.t('exp'):this.t('sal')}</h3>${type!=='invoices'?`<button onclick="app.add('${type}')" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>`:''}</div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody><tr><td>Loading...</td></tr></tbody></table></div></div>`;
                 const s = await db.collection(type).where('companyId','==',this.state.cid).get();
-                let docs = s.docs.map(d=>({id:d.id,...d.data()}));
-                if(type==='invoices') docs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-
+                let docs = s.docs.map(d=>({id:d.id,...d.data()})); if(type==='invoices') docs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
                 let h='', th='';
                 if(type==='invoices') {
                     th=`<tr><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_print')}</th></tr>`;
-                    docs.forEach(d=>{
-                        const str = encodeURIComponent(JSON.stringify(d.items));
-                        h+=`<tr><td>${new Date(d.createdAt).toLocaleDateString()}</td><td>${d.customer}</td><td>${d.total}</td>
-                        <td><button class="btn btn-sec" style="padding:5px 10px; font-size:12px;" onclick="app.reprint('${d.id}','${d.customer}',${d.total},'${str}')">${this.t('th_print')}</button></td></tr>`;
-                    });
+                    docs.forEach(d=>{ const str=encodeURIComponent(JSON.stringify(d.items)); h+=`<tr><td>${new Date(d.createdAt).toLocaleDateString()}</td><td>${d.customer}</td><td>${d.total}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${d.id}','${d.customer}',${d.total},'${str}')">${this.t('th_print')}</button></td></tr>`; });
                 } else if(type==='products') {
                     th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`;
-                    docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td>
-                    <td><button onclick="app.editProd('${d.id}', ${d.buyPrice}, ${d.sellPrice})" style="border:none;background:none;font-size:1.2em;cursor:pointer">✎</button></td>
-                    <td onclick="app.del('${d.id}','${type}')" style="color:red;cursor:pointer">X</td></tr>`);
+                    docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td><button onclick="app.editProd('${d.id}',${d.buyPrice},${d.sellPrice})" style="border:none;cursor:pointer">✎</button></td><td onclick="app.del('${d.id}','${type}')" style="color:red;cursor:pointer">X</td></tr>`);
                 } else {
-                    const h1 = type==='salaries' ? this.t('th_emp') : this.t('th_item');
-                    const h2 = type==='salaries' ? this.t('th_job') : this.t('th_note');
-                    const h3 = type==='salaries' ? this.t('th_sal') : this.t('th_cost');
-                    th=`<tr><th>${h1}</th><th>${h2}</th><th>${h3}</th><th>${this.t('th_del')}</th></tr>`;
-                    docs.forEach(d=>{
-                        if(type==='expenses' && d.type==='purchase') return;
-                        h+=`<tr><td>${d.val1}</td><td>${d.val2}</td><td>${d.val3}</td><td onclick="app.del('${d.id}','${type}')" style="color:red;cursor:pointer">X</td></tr>`;
-                    });
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_del')}</th></tr>`;
+                    docs.forEach(d=>{ h+=`<tr><td>${d.val1}</td><td>${d.val2}</td><td>${d.val3}</td><td onclick="app.del('${d.id}','${type}')" style="color:red;cursor:pointer">X</td></tr>`; });
                 }
                 document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="4">-</td></tr>';
             },
@@ -485,39 +301,23 @@
                 if(t==='products') {
                     const n=prompt(this.t('prompt_name')), b=Number(prompt(this.t('prompt_buy'))), s=Number(prompt(this.t('prompt_sell'))), q=Number(prompt(this.t('prompt_qty')));
                     if(n&&b) {
-                        if (s <= b) { return alert(this.t('err_price_logic')); }
-                        
-                        const pRef = await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()});
-                        await db.collection('expenses').add({companyId:this.state.cid, type:'purchase', val1:'Buy '+n, val2:'Stock', val3:b*q, createdAt:new Date().toISOString(), relatedId: pRef.id});
+                        if(s<=b) return alert(this.t('err_price_logic'));
+                        // Add Product ONLY. Cost is calculated when SOLD.
+                        await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()});
                         this.nav('inventory');
                     }
                 } else {
                     const v1=prompt(this.t('prompt_name')), v2=prompt(this.t('prompt_note')), v3=Number(prompt(this.t('prompt_amount')));
-                    if(v1&&v3) {
-                        await db.collection(t).add({companyId:this.state.cid, val1:v1, val2:v2, val3:v3, createdAt:new Date().toISOString()});
-                        this.nav(t);
-                    }
+                    if(v1&&v3) { await db.collection(t).add({companyId:this.state.cid, val1:v1, val2:v2, val3:v3, createdAt:new Date().toISOString()}); this.nav(t); }
                 }
             },
-            
-            editProd: async function(id, buy, oldSell) {
-                let newSell = prompt(this.t('prompt_new_price'), oldSell);
-                if (!newSell) return;
-                newSell = Number(newSell);
-                if (newSell <= buy) {
-                    alert(this.t('err_price_logic'));
-                    return;
-                }
-                await db.collection('products').doc(id).update({sellPrice: newSell});
-                this.nav('inventory');
+            editProd: async function(id, b, os) {
+                let ns = prompt(this.t('prompt_new_price'), os); if(!ns) return; ns=Number(ns);
+                if(ns<=b) return alert(this.t('err_price_logic'));
+                await db.collection('products').doc(id).update({sellPrice:ns}); this.nav('inventory');
             },
-
             del: async function(id, col) { 
                 if(confirm(this.t('confirm_del'))) { 
-                    if (col === 'products') {
-                        const expSnap = await db.collection('expenses').where('relatedId', '==', id).get();
-                        expSnap.forEach(doc => { db.collection('expenses').doc(doc.id).delete(); });
-                    }
                     await db.collection(col).doc(id).delete(); 
                     this.nav(col==='products'?'inventory':col); 
                 } 
@@ -525,21 +325,60 @@
 
             reports: async function(div) {
                 div.innerHTML='Loading...';
+                // Fetch Invoices to Calculate REAL Sales and REAL Cost of Goods Sold (COGS)
+                // Fetch Expenses for General Expenses (Rent, Bills)
+                // Fetch Salaries
                 const [i,e,s] = await Promise.all([
                     db.collection('invoices').where('companyId','==',this.state.cid).get(),
                     db.collection('expenses').where('companyId','==',this.state.cid).get(),
                     db.collection('salaries').where('companyId','==',this.state.cid).get()
                 ]);
-                let inc=0, out=0;
-                i.forEach(d=>inc+=d.data().total);
-                e.forEach(d=>out+=Number(d.data().val3));
-                s.forEach(d=>out+=Number(d.data().val3));
+
+                let totalSales = 0;
+                let totalCOGS = 0; // Cost of items that were ACTUALLY sold
                 
-                div.innerHTML = `<div class="grid-responsive">
-                    <div class="card"><h3>${this.t('income')}</h3><h2 style="color:green">${inc.toLocaleString()}</h2></div>
-                    <div class="card"><h3>${this.t('expense')}</h3><h2 style="color:red">${out.toLocaleString()}</h2></div>
-                </div>
-                <div class="card" style="text-align:center"><h3>${this.t('profit')}</h3><h1>${(inc-out).toLocaleString()} MRU</h1></div>`;
+                i.forEach(doc => {
+                    const d = doc.data();
+                    totalSales += d.total;
+                    if(d.items && Array.isArray(d.items)){
+                        d.items.forEach(item => {
+                            // item.bp = Buy Price stored at moment of sale
+                            // item.q = Quantity sold
+                            if(item.bp && item.q) totalCOGS += (item.bp * item.q);
+                        });
+                    }
+                });
+
+                let totalGeneralExpenses = 0;
+                e.forEach(d => totalGeneralExpenses += Number(d.data().val3));
+                
+                let totalSalaries = 0;
+                s.forEach(d => totalSalaries += Number(d.data().val3));
+
+                // Profit = Sales - COGS - General Expenses - Salaries
+                const netProfit = totalSales - totalCOGS - totalGeneralExpenses - totalSalaries;
+                
+                div.innerHTML = `
+                    <h2>${this.t('rep')}</h2>
+                    <div class="grid-responsive">
+                        <div class="card">
+                            <h3>${this.t('income')}</h3>
+                            <h2 style="color:green">+${totalSales.toLocaleString()}</h2>
+                        </div>
+                        <div class="card">
+                            <h3>${this.t('cogs')}</h3>
+                            <h2 style="color:orange">-${totalCOGS.toLocaleString()}</h2>
+                            <small>(${this.t('th_buy')} × ${this.t('tbl_qty')})</small>
+                        </div>
+                        <div class="card">
+                            <h3>${this.t('expense')} & ${this.t('sal')}</h3>
+                            <h2 style="color:red">-${(totalGeneralExpenses + totalSalaries).toLocaleString()}</h2>
+                        </div>
+                    </div>
+                    <div class="card" style="text-align:center; background:${netProfit>=0?'#d1fae5':'#fee2e2'}">
+                        <h3>${this.t('profit')}</h3>
+                        <h1>${netProfit.toLocaleString()} MRU</h1>
+                    </div>`;
             },
 
             reprint: function(id, c, t, itemsStr) {
@@ -566,70 +405,34 @@
                 window.print();
             },
 
-            // --- SUPER ADMIN PANEL UPDATED ---
             admin: async function(div) {
-                div.innerHTML = `
-                    <div class="card">
-                        <input id="an" class="inp" placeholder="Name">
-                        <input id="ap" class="inp" placeholder="Phone">
-                        <button onclick="app.gen()" class="btn btn-prim">Generate New Code</button>
-                    </div>
-                    <div class="card">
-                        <div class="table-scroll">
-                            <table id="at">
-                                <thead>
-                                    <tr>
-                                        <th>${this.t('adm_time')}</th>
-                                        <th>${this.t('adm_comp')}</th>
-                                        <th>${this.t('adm_phone')}</th>
-                                        <th>${this.t('adm_code')}</th>
-                                        <th>${this.t('adm_stat')}</th>
-                                        <th>${this.t('adm_act')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>`;
-                
+                div.innerHTML = `<div class="card"><input id="an" class="inp inp-group" placeholder="Name"><input id="ap" class="inp inp-group" placeholder="Phone"><button onclick="app.gen()" class="btn btn-prim">Generate</button></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`;
                 const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(20).get();
-                let b='';
+                let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_stat')}</th><th>${this.t('adm_act')}</th></tr>`, b='';
                 s.forEach(d=>{
                     const v=d.data();
-                    const dateObj = v.createdAt ? new Date(v.createdAt) : null;
-                    const dateStr = dateObj ? dateObj.toLocaleString('ar-MA') : '-';
-                    
-                    const name = v.actualName || v.targetCompanyName || '-';
-                    const phone = v.actualPhone || v.targetPhone || '-';
-                    const isSuspended = v.status === 'suspended';
-                    
-                    const statusHtml = isSuspended ? 
-                        `<span class="status-suspended">${this.t('err_sus')}</span>` : 
-                        `<span class="status-active">${this.t('sys_active')}</span>`;
-
-                    const btnText = isSuspended ? this.t('adm_start') : this.t('adm_stop');
-                    const btnClass = isSuspended ? 'btn-sec' : 'btn-dan'; // Green to activate, Red to suspend
-
+                    const date = v.createdAt ? new Date(v.createdAt).toLocaleDateString() : '-';
+                    const comp = v.actualName || v.targetCompanyName || '-';
+                    const stStyle = v.status==='active' ? 'background:#d1fae5;color:#065f46' : 'background:#fee2e2;color:#991b1b';
                     b+=`<tr>
-                        <td style="font-size:12px">${dateStr}</td>
-                        <td>${name}</td>
-                        <td>${phone}</td>
-                        <td class="code-display">${v.code}</td>
-                        <td>${statusHtml}</td>
+                        <td>${date}</td>
+                        <td style="font-family:monospace;font-weight:bold">${v.code}</td>
+                        <td>${comp}</td>
+                        <td><span style="padding:3px 8px;border-radius:10px;font-size:12px;${stStyle}">${v.status}</span></td>
                         <td>
-                            <button onclick="app.tst('${d.id}','${v.status}')" class="btn ${btnClass}" style="padding:5px 10px; font-size:12px;">${btnText}</button>
-                            <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px 10px; font-size:12px;">${this.t('adm_del')}</button>
+                            <button onclick="app.tst('${d.id}','${v.status}')" class="btn btn-sec" style="padding:5px 10px;font-size:12px">${v.status==='active'?this.t('adm_stop'):this.t('adm_start')}</button>
+                            <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px 10px;font-size:12px">${this.t('adm_del')}</button>
                         </td>
                     </tr>`;
                 });
-                document.querySelector('#at tbody').innerHTML=b;
+                document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b;
             },
             gen: async function() {
                 const n=document.getElementById('an').value, p=document.getElementById('ap').value;
                 if(n&&p) { await db.collection('activation_codes').add({code:this.randomStr(10), targetCompanyName:n, targetPhone:p, status:'active', used:false, createdAt:new Date().toISOString()}); this.nav('admin'); }
             },
             tst: async function(id,st) { await db.collection('activation_codes').doc(id).update({status:st==='active'?'suspended':'active'}); this.nav('admin'); },
-            delCode: async function(id) { if(confirm('Delete permanently?')) { await db.collection('activation_codes').doc(id).delete(); this.nav('admin'); } }
+            delCode: async function(id) { if(confirm('Delete?')) { await db.collection('activation_codes').doc(id).delete(); this.nav('admin'); } }
         };
     </script>
 </body>
