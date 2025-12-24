@@ -17,7 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
-    <!-- Fonts & Icons -->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -30,27 +30,46 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: #333; overflow-x: hidden; }
 
-        /* Language Button */
+        /* --- Language Button --- */
         .lang-float {
             position: fixed; top: 10px; z-index: 2000;
             background: white; border: 1px solid #ccc; padding: 5px 12px;
             border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        html[dir="rtl"] .lang-float { left: 15px; } html[dir="ltr"] .lang-float { right: 15px; }
+        html[dir="rtl"] .lang-float { left: 15px; } 
+        html[dir="ltr"] .lang-float { right: 15px; }
 
-        /* Auth Screen */
-        .auth-wrap { display: flex; min-height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, #1e3a8a, #111827); padding: 20px; }
-        .auth-card { background: white; width: 100%; max-width: 400px; padding: 30px 20px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .inp { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s; }
+        /* --- Auth Screen --- */
+        .auth-wrap {
+            display: flex; min-height: 100vh; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #1e3a8a, #111827); padding: 20px;
+        }
+        .auth-card {
+            background: white; width: 100%; max-width: 400px; padding: 30px 20px;
+            border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .inp {
+            width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px;
+            font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s;
+        }
         .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,58,138,0.1); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; color: white; transition: 0.2s; }
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 10px;
+            font-weight: bold; font-size: 14px; cursor: pointer; color: white; transition: 0.2s;
+        }
         .btn:active { transform: scale(0.98); }
-        .btn-prim { background: var(--primary); } .btn-sec { background: var(--secondary); } .btn-dan { background: var(--danger); }
-        
-        .wa-link { display: flex; align-items: center; justify-content: center; gap: 10px; background: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 50px; font-weight: bold; margin-top: 15px; }
+        .btn-prim { background: var(--primary); }
+        .btn-sec { background: var(--secondary); }
+        .btn-dan { background: var(--danger); }
 
-        /* Dashboard Layout */
+        .wa-link {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: #25D366; color: white; text-decoration: none; padding: 12px;
+            border-radius: 50px; font-weight: bold; margin-top: 15px;
+        }
+
+        /* --- Dashboard Layout --- */
         .app-container { display: none; flex-direction: column; min-height: 100vh; }
         .top-header { height: var(--header-h); background: white; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: sticky; top: 0; z-index: 1000; }
         .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
@@ -66,48 +85,58 @@
         
         .main-content { flex: 1; padding: 15px; overflow-y: auto; }
         
-        /* POS GRID & LAYOUT */
-        .pos-container { display: grid; gap: 20px; height: calc(100vh - 80px); }
-        
+        /* Grid Layout */
+        .grid-responsive { display: grid; gap: 15px; }
         @media (min-width: 768px) {
+            .grid-responsive { grid-template-columns: 2fr 1fr; }
             .sidebar { position: fixed; top: var(--header-h); bottom: 0; width: 250px; transform: none !important; box-shadow: none; border-inline-end: 1px solid #eee; z-index: 900; }
             html[dir="rtl"] .main-content { margin-right: 250px; } html[dir="ltr"] .main-content { margin-left: 250px; }
             .menu-btn, .sidebar-overlay { display: none !important; }
-            .pos-container { grid-template-columns: 1.5fr 1fr; }
         }
 
-        @media (max-width: 767px) {
-            .pos-container { grid-template-columns: 1fr; height: auto; }
-        }
-
-        /* CARDS & TABLES */
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .table-scroll { overflow-x: auto; border: 1px solid #eee; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th, td { padding: 12px; text-align: start; border-bottom: 1px solid #eee; font-size: 13px; }
         th { background: #f8f9fa; white-space: nowrap; font-weight: bold; color: var(--primary); }
 
-        /* POS CARD DESIGN */
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; overflow-y: auto; max-height: 60vh; padding: 5px; }
-        .prod-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: space-between; height: 100px; }
-        .prod-card:hover { border-color: var(--primary); background: #e3f2fd; }
-        .prod-card h4 { margin: 0 0 5px 0; font-size: 13px; color: #333; overflow: hidden; text-overflow: ellipsis; }
-        .prod-card .price { color: var(--primary); font-weight: bold; font-size: 15px; }
-        .prod-card .stock { font-size: 11px; color: #666; }
-
-        .pos-controls { display: flex; gap: 5px; background: #eee; padding: 10px; border-radius: 10px; margin-top: 10px; align-items: flex-end; }
-        .cart-items { max-height: 50vh; overflow-y: auto; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f1f1; font-size: 14px; }
-
-        /* Admin & Install */
-        #adminLink { display: none !important; }
-        .print-box { display: none; }
-        @media print { .app-container, .auth-wrap, .lang-float { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; } }
-        #installBtn { display: none; width: 100%; background: #333; color: white; margin-bottom: 15px; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
+        /* --- POS NEW DESIGN --- */
+        .pos-container { display: grid; gap: 20px; }
+        @media(min-width: 768px) { .pos-container { grid-template-columns: 1.5fr 1fr; height: calc(100vh - 90px); } }
         
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; overflow-y: auto; max-height: 50vh; padding: 5px; }
+        .prod-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: space-between; height: 90px; }
+        .prod-card h4 { margin:0; font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .prod-card .price { font-weight:bold; color:var(--primary); font-size:14px; }
+        
+        /* New Selection Panel */
+        .selected-product-panel {
+            background: #e3f2fd; border: 2px solid var(--primary); border-radius: 12px; padding: 15px; margin-top: 10px; display: none; animation: slideUp 0.2s ease;
+        }
+        @keyframes slideUp { from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
+        
+        .selected-info { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-weight: bold; }
+        .action-row { display: flex; gap: 10px; }
+        
+        .big-qty-input { flex: 1; height: 50px; font-size: 22px; text-align: center; border: 2px solid #ccc; border-radius: 8px; font-weight: bold; }
+        .big-qty-input:focus { border-color: var(--primary); outline: none; background: white; }
+        
+        .add-btn-large { flex: 2; height: 50px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .add-btn-large:active { transform: scale(0.98); }
+
+        .cart-items { max-height: 40vh; overflow-y: auto; }
+        .cart-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+
+        /* Security & Admin */
+        #adminLink { display: none !important; }
         .status-active { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
         .status-suspended { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
         .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+
+        /* Print */
+        .print-box { display: none; }
+        @media print { .app-container, .auth-wrap, .lang-float { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; } }
+        #installBtn { display: none; width: 100%; background: #333; color: white; margin-bottom: 15px; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -180,7 +209,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let selectedProduct = null; // GLOBAL VAR FOR POS
+        let selectedProduct = null;
 
         const dict = {
             ar: {
@@ -188,7 +217,7 @@
                 btn:"تسجيل الدخول", wait:"جاري التحقق...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور (واتساب)",
                 home:"الرئيسية", pos:"نقطة البيع", inv:"أرشيف الفواتير", stock:"المخزون",
                 exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"تسجيل الخروج",
-                p_sel:"اختر منتجاً", p_pr:"السعر", p_qt:"العدد", p_add:"إضافة",
+                p_sel:"اختر منتجاً للبيع", p_pr:"السعر", p_qt:"العدد", p_add:"إضافة للفاتورة",
                 p_cl:"اسم العميل", p_save:"حفظ وطباعة", p_tot:"الإجمالي",
                 tbl_prod:"المنتج", tbl_qty:"الكمية", tbl_tot:"المجموع", tbl_act:"حذف",
                 th_date:"التاريخ", th_client:"العميل", th_amount:"المبلغ", th_print:"طباعة",
@@ -199,7 +228,7 @@
                 empty:"السلة فارغة", max_qty:"الكمية المتاحة فقط: ",
                 prompt_name:"الاسم / البيان", prompt_buy:"سعر الشراء", prompt_sell:"سعر البيع", prompt_qty:"الكمية",
                 prompt_note:"ملاحظة", prompt_amount:"المبلغ", 
-                confirm_del:"هل أنت متأكد من الحذف؟ هذا لن يؤثر على التقارير المالية للعمليات السابقة.",
+                confirm_del:"هل أنت متأكد من الحذف؟",
                 sys_active:"النظام يعمل بنجاح",
                 err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
                 prompt_new_price: "أدخل سعر البيع الجديد",
@@ -222,7 +251,7 @@
                 empty:"Panier vide", max_qty:"Max disponible: ",
                 prompt_name:"Nom / Article", prompt_buy:"Prix d'achat", prompt_sell:"Prix de vente", prompt_qty:"Quantité",
                 prompt_note:"Note", prompt_amount:"Montant", 
-                confirm_del:"Confirmer la suppression ? Cela n'affecte pas les rapports historiques.",
+                confirm_del:"Confirmer la suppression ?",
                 sys_active:"Système Actif",
                 err_price_logic: "Erreur: Le prix de vente doit être supérieur au prix d'achat",
                 prompt_new_price: "Entrez le nouveau prix de vente",
@@ -270,8 +299,10 @@
                 } catch(er) { alert(er.message); btn.disabled=false; btn.innerText=this.t('btn'); }
             },
             start: function(n,p) { 
-                document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='flex'; 
-                document.getElementById('h_name').innerText=n; document.getElementById('h_phone').innerText=p; 
+                document.getElementById('authScreen').style.display='none'; 
+                document.getElementById('appScreen').style.display='flex'; 
+                document.getElementById('h_name').innerText=n; 
+                document.getElementById('h_phone').innerText=p; 
                 if(this.state.admin) document.getElementById('adminLink').style.setProperty('display', 'flex', 'important');
                 this.nav('home'); 
             },
@@ -289,37 +320,56 @@
 
             home: function(div) { div.innerHTML = `<div class="card" style="text-align:center; padding:40px;"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" style="width:80px; margin-bottom:15px;"><h3>${this.state.name}</h3><p>${this.t('sys_active')}</p></div>`; },
 
+            // --- POS FIXED & IMPROVED ---
             pos: async function(div) {
-                this.cart=[]; selectedProduct=null; const s = await db.collection('products').where('companyId','==',this.state.cid).get();
+                this.cart=[]; selectedProduct=null; 
+                const s = await db.collection('products').where('companyId','==',this.state.cid).get();
+                
                 let productsHTML = '';
-                s.forEach(d => { const p = d.data(); if(p.stock > 0) { productsHTML += `<div class="prod-card" onclick="app.selectProduct('${d.id}', '${p.name}', ${p.sellPrice}, ${p.buyPrice}, ${p.stock}, this)"><h4>${p.name}</h4><div class="price">${p.sellPrice}</div><div class="stock">Stock: ${p.stock}</div></div>`; } });
+                s.forEach(d => { 
+                    const p = d.data(); 
+                    if(p.stock > 0) { 
+                        productsHTML += `<div class="prod-card" onclick="app.selectProduct('${d.id}', '${p.name}', ${p.sellPrice}, ${p.buyPrice}, ${p.stock}, this)"><h4>${p.name}</h4><div class="price">${p.sellPrice.toLocaleString()}</div><div class="stock">Stock: ${p.stock}</div></div>`; 
+                    } 
+                });
+
                 div.innerHTML = `
                     <div class="pos-container">
-                        <div class="card" style="display:flex;flex-direction:column;max-height:80vh;">
+                        <div class="card" style="display:flex; flex-direction:column; max-height:85vh;">
                             <h3 style="margin:0 0 10px;">${this.t('p_sel')}</h3>
-                            <div class="product-grid">${productsHTML || '<p>No Products</p>'}</div>
-                            <div class="pos-controls">
-                                <div style="flex:2"><input id="sName" class="inp" readonly placeholder="..." style="margin:0"></div>
-                                <div style="flex:1"><input id="sPrice" class="inp" readonly style="margin:0"></div>
-                                <div style="flex:1"><input id="sQty" type="number" class="inp" value="1" min="1" style="margin:0"></div>
-                                <button onclick="app.addToCart()" class="btn btn-sec" style="padding:10px;"><i class="fa-solid fa-plus"></i></button>
+                            <div class="product-grid">${productsHTML || '<p style="text-align:center;width:100%">Empty</p>'}</div>
+                            
+                            <div id="selectionPanel" class="selected-product-panel">
+                                <div class="selected-info"><span id="dispName"></span><span id="dispPrice"></span></div>
+                                <div class="action-row">
+                                    <input id="sQty" type="number" class="big-qty-input" value="1" min="1" placeholder="1">
+                                    <button onclick="app.addToCart()" class="add-btn-large"><i class="fa-solid fa-cart-plus"></i> ${this.t('p_add')}</button>
+                                </div>
                             </div>
                         </div>
+
                         <div class="card" style="background:#fffbeb; height:100%; display:flex; flex-direction:column;">
                             <h3 style="margin:0;">${this.t('inv')}</h3>
-                            <div class="cart-items" id="cartContainer"></div>
-                            <div style="margin-top:auto; pt-2">
+                            <div class="cart-items" id="cartContainer"><div style="text-align:center;padding:20px;color:#999">${this.t('empty')}</div></div>
+                            <div style="margin-top:auto; padding-top:10px;">
                                 <input id="posCust" class="inp" placeholder="${this.t('p_cl')}" style="margin-bottom:5px;">
                                 <div id="cartTotal" style="font-size:20px; font-weight:bold; text-align:center; color:var(--primary); margin:10px 0;">0 MRU</div>
-                                <button onclick="app.ps()" class="btn btn-prim" style="width:100%">${this.t('p_save')}</button>
+                                <button onclick="app.ps()" class="btn btn-prim" style="width:100%; padding:15px; font-size:18px;"><i class="fa-solid fa-print"></i> ${this.t('p_save')}</button>
                             </div>
                         </div>
                     </div>`;
             },
             selectProduct: function(id, name, sell, buy, stock, el) {
-                document.querySelectorAll('.prod-card').forEach(e => e.style.border='1px solid #e9ecef'); el.style.border='2px solid var(--primary)';
+                document.querySelectorAll('.prod-card').forEach(e => { e.style.border='1px solid #e9ecef'; e.style.backgroundColor='#f8f9fa'; });
+                el.style.border='2px solid var(--primary)'; el.style.backgroundColor='#e3f2fd';
                 selectedProduct = { id, name, sell, buy, stock };
-                document.getElementById('sName').value=name; document.getElementById('sPrice').value=sell; document.getElementById('sQty').value=1;
+                
+                document.getElementById('dispName').innerText = name;
+                document.getElementById('dispPrice').innerText = sell.toLocaleString() + " MRU";
+                const panel = document.getElementById('selectionPanel');
+                panel.style.display = 'block';
+                const inp = document.getElementById('sQty');
+                inp.value = 1; inp.focus();
             },
             addToCart: function() {
                 if(!selectedProduct) return alert(this.t('p_sel'));
@@ -332,7 +382,8 @@
                 } else {
                     this.cart.push({id:selectedProduct.id, n:selectedProduct.name, p:selectedProduct.sell, bp:selectedProduct.buy, q:q, t:selectedProduct.sell*q});
                 }
-                selectedProduct=null; document.getElementById('sName').value=''; document.getElementById('sPrice').value=''; document.querySelectorAll('.prod-card').forEach(e => e.style.border='1px solid #e9ecef');
+                selectedProduct=null; document.getElementById('selectionPanel').style.display='none';
+                document.querySelectorAll('.prod-card').forEach(e => { e.style.border='1px solid #e9ecef'; e.style.backgroundColor='#f8f9fa'; });
                 this.renderCart();
             },
             renderCart: function() {
@@ -378,7 +429,6 @@
                     const n=prompt(this.t('prompt_name')), b=Number(prompt(this.t('prompt_buy'))), s=Number(prompt(this.t('prompt_sell'))), q=Number(prompt(this.t('prompt_qty')));
                     if(n&&b) {
                         if(s<=b) return alert(this.t('err_price_logic'));
-                        // DYNAMIC LOGIC: Just add product. Expenses calculated in reports.
                         await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()});
                         this.nav('inventory');
                     }
@@ -409,12 +459,12 @@
                 ]);
 
                 let totalSales = 0;
-                let cogs = 0; // Cost of Sold Goods
-                let unsoldStockValue = 0; // Value of remaining stock
+                let cogs = 0; 
+                let unsoldStockValue = 0;
                 let generalExpenses = 0; 
                 let salaries = 0;
 
-                // A. Sales & COGS (From Invoices)
+                // 1. Calculate COGS (Historical)
                 i.forEach(doc => {
                     const d = doc.data();
                     totalSales += d.total;
@@ -425,21 +475,16 @@
                     }
                 });
 
-                // B. Unsold Stock (From current Products)
+                // 2. Calculate Unsold Stock Value (Current)
                 p.forEach(doc => {
                     const d = doc.data();
                     if(d.buyPrice && d.stock) unsoldStockValue += (d.buyPrice * d.stock);
                 });
 
-                // C. General Expenses & Salaries
+                // 3. General
                 e.forEach(d => generalExpenses += Number(d.data().val3));
                 s.forEach(d => salaries += Number(d.data().val3));
 
-                // Total Calculated Expenses = COGS + Unsold Stock + General + Salaries
-                // Logic: 
-                // 1. You bought 20 items @ 100 = 2000 spent.
-                // 2. You sold 15 items. COGS = 1500. Remaining Stock = 500. Total = 2000.
-                // 3. You delete stock (Remaining = 0). Expense becomes 1500 + 0 = 1500. (Correct as per user request).
                 const totalExpenses = cogs + unsoldStockValue + generalExpenses + salaries;
                 const netProfit = totalSales - totalExpenses;
                 
