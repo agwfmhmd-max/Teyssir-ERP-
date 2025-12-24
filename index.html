@@ -17,12 +17,170 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
-    <!-- Fonts & Style -->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Link to external CSS -->
-    <link rel="stylesheet" href="style.css">
+
+    <style>
+        :root { 
+            --primary: #1e3a8a; --secondary: #10b981; --danger: #ef4444; 
+            --bg: #f4f7fa; --sidebar-w: 260px; --header-h: 60px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: #333; overflow-x: hidden; }
+
+        /* --- Language Button --- */
+        .lang-float {
+            position: fixed; top: 10px; z-index: 2000;
+            background: white; border: 1px solid #ccc; padding: 5px 12px;
+            border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        html[dir="rtl"] .lang-float { left: 15px; } 
+        html[dir="ltr"] .lang-float { right: 15px; }
+
+        /* --- Auth Screen --- */
+        .auth-wrap {
+            display: flex; min-height: 100vh; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #1e3a8a, #111827); padding: 20px;
+        }
+        .auth-card {
+            background: white; width: 100%; max-width: 400px; padding: 30px 20px;
+            border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .inp {
+            width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px;
+            font-size: 16px; margin-bottom: 15px; outline: none; transition: 0.3s;
+        }
+        .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,58,138,0.1); }
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 10px;
+            font-weight: bold; font-size: 14px; cursor: pointer; color: white; transition: 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-prim { background: var(--primary); }
+        .btn-sec { background: var(--secondary); }
+        .btn-dan { background: var(--danger); }
+
+        .wa-link {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: #25D366; color: white; text-decoration: none; padding: 12px;
+            border-radius: 50px; font-weight: bold; margin-top: 15px;
+        }
+
+        /* --- Install PWA Button --- */
+        #installBtn { 
+            display: none; width: 100%; background: #333; color: white; margin-bottom: 15px; 
+            padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;
+        }
+
+        /* --- Dashboard Layout --- */
+        .app-container { display: none; flex-direction: column; min-height: 100vh; }
+
+        .top-header {
+            height: var(--header-h); background: white; border-bottom: 1px solid #eee;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
+
+        /* Sidebar Logic */
+        .sidebar {
+            position: fixed; top: 0; bottom: 0; width: 280px; background: white;
+            z-index: 1500; padding-top: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        html[dir="rtl"] .sidebar { right: 0; transform: translateX(100%); }
+        html[dir="rtl"] .sidebar.open { transform: translateX(0); }
+        html[dir="ltr"] .sidebar { left: 0; transform: translateX(-100%); }
+        html[dir="ltr"] .sidebar.open { transform: translateX(0); }
+
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1400; display: none;
+        }
+        .sidebar-overlay.show { display: block; }
+
+        .nav-item {
+            padding: 15px 20px; display: flex; align-items: center; gap: 15px;
+            color: #555; font-weight: 500; cursor: pointer; border-bottom: 1px solid #f9f9f9;
+        }
+        .nav-item.active { background: #eff6ff; color: var(--primary); }
+
+        .main-content { flex: 1; padding: 15px; overflow-y: auto; }
+
+        /* --- Responsive Grid --- */
+        .grid-responsive { display: grid; gap: 15px; }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+
+        /* Desktop View */
+        @media (min-width: 768px) {
+            .grid-responsive { grid-template-columns: 1.5fr 1fr; } /* Products wider than Cart */
+            .sidebar { 
+                position: fixed; top: var(--header-h); bottom: 0; width: 250px; 
+                transform: none !important; box-shadow: none; border-inline-end: 1px solid #eee; z-index: 900; 
+            }
+            html[dir="rtl"] .main-content { margin-right: 250px; }
+            html[dir="ltr"] .main-content { margin-left: 250px; }
+            .menu-btn, .sidebar-overlay { display: none !important; }
+        }
+
+        /* Mobile View for POS */
+        @media (max-width: 767px) {
+            .pos-container { grid-template-columns: 1fr; height: auto; }
+        }
+
+        /* --- Components --- */
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
+
+        .table-scroll { overflow-x: auto; border: 1px solid #eee; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; text-align: start; border-bottom: 1px solid #eee; font-size: 13px; }
+        th { background: #f8f9fa; white-space: nowrap; font-weight: bold; color: var(--primary); }
+
+        /* --- POS Elements --- */
+        .pos-container { display: grid; gap: 20px; }
+        @media(min-width: 768px) { .pos-container { height: calc(100vh - 90px); } }
+
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; overflow-y: auto; max-height: 60vh; padding: 5px; }
+        .prod-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: space-between; height: 100px; }
+        .prod-card:hover { border-color: var(--primary); background: #e3f2fd; }
+        .prod-card h4 { margin: 0 0 5px 0; font-size: 13px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .prod-card .price { color: var(--primary); font-weight: bold; font-size: 15px; }
+        .prod-card .stock { font-size: 11px; color: #666; }
+
+        .pos-controls { display: flex; gap: 5px; background: #eee; padding: 10px; border-radius: 10px; margin-top: 10px; align-items: flex-end; }
+        
+        .selected-product-panel {
+            background: #e3f2fd; border: 2px solid var(--primary); border-radius: 12px; padding: 15px; margin-top: 10px; display: none; animation: slideUp 0.2s ease;
+        }
+        @keyframes slideUp { from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
+        
+        .selected-info { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 5px; font-weight: bold; }
+        .action-row { display: flex; gap: 10px; }
+        
+        .big-qty-input { flex: 1; height: 50px; font-size: 22px; text-align: center; border: 2px solid #ccc; border-radius: 8px; font-weight: bold; }
+        .big-qty-input:focus { border-color: var(--primary); outline: none; background: white; }
+        
+        .add-btn-large { flex: 2; height: 50px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .add-btn-large:active { transform: scale(0.98); }
+
+        .cart-items { max-height: 50vh; overflow-y: auto; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f1f1; font-size: 14px; }
+
+        /* --- Admin Status --- */
+        #adminLink { display: none !important; }
+        .status-active { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+        .status-suspended { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+
+        /* --- Print --- */
+        .print-box { display: none; }
+        @media print { 
+            .app-container, .auth-wrap, .lang-float { display: none !important; } 
+            .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; } 
+        }
+    </style>
 </head>
 <body>
 
@@ -152,8 +310,6 @@
             installPWA: function() {
                 if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((c) => { if (c.outcome==='accepted') document.getElementById('installBtn').style.display='none'; deferredPrompt=null; }); }
             },
-            
-            // --- DATE HELPER FUNCTION (FIX FOR MOBILE) ---
             formatDate: function(isoString) {
                 if (!isoString) return '-';
                 const d = new Date(isoString);
@@ -164,7 +320,6 @@
                 const minutes = String(d.getMinutes()).padStart(2, '0');
                 return `${day}/${month}/${year} ${hours}:${minutes}`;
             },
-
             randomStr: function(l) {
                 const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'; let r=''; for(let i=0;i<l;i++) r+=c.charAt(Math.floor(Math.random()*c.length)); return r;
             },
@@ -312,7 +467,7 @@
                     th=`<tr><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_print')}</th></tr>`;
                     docs.forEach(d=>{ 
                         const str=encodeURIComponent(JSON.stringify(d.items)); 
-                        // USE HELPER FOR DATE
+                        // DATE FIX FOR MOBILE
                         const dateFormatted = this.formatDate(d.createdAt);
                         h+=`<tr><td>${dateFormatted}</td><td>${d.customer}</td><td>${d.total}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${d.id}','${d.customer}',${d.total},'${str}')">${this.t('th_print')}</button></td></tr>`; 
                     });
@@ -418,11 +573,9 @@
                 const items = JSON.parse(decodeURIComponent(itemsStr));
                 this.print(id,c,t,items);
             },
-            
-            // --- PRINT FUNCTION WITH MANUAL DATE FORMAT ---
             print: function(id, c, t, items) {
                 const dir = this.state.lang==='ar'?'rtl':'ltr';
-                // USE MANUAL DATE FORMAT FOR PRINTING
+                // DATE FIX PRINT
                 const d = new Date();
                 const day = String(d.getDate()).padStart(2, '0');
                 const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -455,9 +608,7 @@
                 s.forEach(d=>{
                     const v=d.data();
                     const rawDate = v.used ? v.usedAt : v.createdAt;
-                    // USE MANUAL DATE HELPER HERE TOO
                     const dateStr = this.formatDate(rawDate);
-                    
                     const comp = v.actualName || v.targetCompanyName || '-';
                     const ph = v.actualPhone || v.targetPhone || '-';
                     const stStyle = v.status==='active' ? 'background:#d1fae5;color:#065f46' : 'background:#fee2e2;color:#991b1b';
