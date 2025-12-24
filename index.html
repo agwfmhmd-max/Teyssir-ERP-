@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP System - MDA Secure</title>
+    <title>ERP System - MDA Dynamic</title>
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
@@ -34,8 +34,7 @@
         .inp { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 15px; outline: none; }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; color: white; }
         .btn-prim { background: var(--primary); } .btn-sec { background: var(--secondary); } .btn-dan { background: var(--danger); }
-        .wa-link { display: flex; align-items: center; justify-content: center; gap: 10px; background: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 50px; font-weight: bold; margin-top: 15px; }
-
+        
         .app-container { display: none; flex-direction: column; min-height: 100vh; }
         .top-header { height: var(--header-h); background: white; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: sticky; top: 0; z-index: 1000; }
         .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
@@ -63,17 +62,12 @@
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th, td { padding: 12px; text-align: start; border-bottom: 1px solid #eee; font-size: 13px; }
         th { background: #f8f9fa; white-space: nowrap; font-weight: bold; color: var(--primary); }
-
-        /* Admin Styles */
-        .status-active { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
-        .status-suspended { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
         
-        /* Ensure Admin Link is hidden by default with high priority */
-        #adminLink { display: none !important; }
-
+        #adminLink { display: none !important; } /* Secure Hide */
         .print-box { display: none; }
         @media print { .app-container, .auth-wrap, .lang-float { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; } }
         #installBtn { display: none; width: 100%; background: #333; color: white; margin-bottom: 15px; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; }
+        .wa-link { display: flex; align-items: center; justify-content: center; gap: 10px; background: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 50px; font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -121,8 +115,6 @@
             <div class="nav-item" onclick="app.nav('expenses')"><i class="fa-solid fa-wallet"></i> <span data-key="exp">المصروفات</span></div>
             <div class="nav-item" onclick="app.nav('salaries')"><i class="fa-solid fa-users"></i> <span data-key="sal">الرواتب</span></div>
             <div class="nav-item" onclick="app.nav('reports')"><i class="fa-solid fa-chart-pie"></i> <span data-key="rep">التقارير</span></div>
-            
-            <!-- ADMIN LINK: Hidden by CSS !important, Shown by JS only for Admin -->
             <div id="adminLink" class="nav-item" onclick="app.nav('admin')" style="color:red;"><i class="fa-solid fa-lock"></i> Admin</div>
         </aside>
         <main id="workspace" class="main-content"></main>
@@ -160,12 +152,13 @@
                 th_date:"التاريخ", th_client:"العميل", th_amount:"المبلغ", th_print:"طباعة",
                 th_name:"الاسم", th_buy:"شراء", th_sell:"بيع", th_stock:"المخزون", th_del:"حذف", th_edit:"تعديل",
                 th_item:"البند", th_note:"ملاحظات", th_cost:"التكلفة", th_emp:"الموظف", th_job:"الوظيفة", th_sal:"الراتب",
-                income:"إجمالي المبيعات", expense:"المصروفات العامة", profit:"صافي الربح", cogs:"تكلفة البضاعة المباعة",
+                income:"إجمالي المبيعات", expense:"إجمالي المصروفات", profit:"صافي الربح", cogs:"تكلفة البضاعة",
                 err_login:"بيانات الدخول غير صحيحة", err_sus:"هذا الحساب معطل حالياً",
                 empty:"السلة فارغة", max_qty:"الكمية المتاحة فقط: ",
                 prompt_name:"الاسم / البيان", prompt_buy:"سعر الشراء", prompt_sell:"سعر البيع", prompt_qty:"الكمية",
                 prompt_note:"ملاحظة", prompt_amount:"المبلغ", 
-                confirm_del:"هل أنت متأكد من الحذف؟ هذا لن يؤثر على التقارير المالية للعمليات السابقة.",
+                confirm_del_prod:"حذف المنتج؟ (سيتم خصم قيمته من تقرير المصروفات فوراً)",
+                confirm_del_gen:"هل أنت متأكد من الحذف؟",
                 sys_active:"النظام يعمل بنجاح",
                 err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
                 prompt_new_price: "أدخل سعر البيع الجديد",
@@ -183,12 +176,13 @@
                 th_date:"Date", th_client:"Client", th_amount:"Montant", th_print:"Imprimer",
                 th_name:"Nom", th_buy:"Achat", th_sell:"Vente", th_stock:"Stock", th_del:"Suppr", th_edit:"Modif",
                 th_item:"Article", th_note:"Note", th_cost:"Coût", th_emp:"Employé", th_job:"Fonction", th_sal:"Salaire",
-                income:"Revenus (Ventes)", expense:"Dépenses Générales", profit:"Bénéfice Net", cogs:"Coût des Marchandises Vendues",
+                income:"Revenus (Ventes)", expense:"Dépenses Totales", profit:"Bénéfice Net", cogs:"Coût des Marchandises",
                 err_login:"Identifiants invalides", err_sus:"Compte suspendu",
                 empty:"Panier vide", max_qty:"Max disponible: ",
                 prompt_name:"Nom / Article", prompt_buy:"Prix d'achat", prompt_sell:"Prix de vente", prompt_qty:"Quantité",
                 prompt_note:"Note", prompt_amount:"Montant", 
-                confirm_del:"Confirmer la suppression ? Cela n'affecte pas les rapports historiques.",
+                confirm_del_prod:"Supprimer le produit ? (Sa valeur sera déduite des dépenses)",
+                confirm_del_gen:"Confirmer la suppression ?",
                 sys_active:"Système Actif",
                 err_price_logic: "Erreur: Le prix de vente doit être supérieur au prix d'achat",
                 prompt_new_price: "Entrez le nouveau prix de vente",
@@ -235,28 +229,17 @@
                     this.state.cid=cid; this.state.name=n; this.state.phone=p; this.start(n,p);
                 } catch(er) { alert(er.message); btn.disabled=false; btn.innerText=this.t('btn'); }
             },
-            
             start: function(n,p) { 
                 document.getElementById('authScreen').style.display='none'; 
                 document.getElementById('appScreen').style.display='flex'; 
                 document.getElementById('h_name').innerText=n; 
                 document.getElementById('h_phone').innerText=p; 
-                
-                // SECURITY FIX: Explicitly Show/Hide Admin Link
-                const admLink = document.getElementById('adminLink');
-                if(this.state.admin) {
-                    admLink.style.setProperty('display', 'flex', 'important');
-                } else {
-                    admLink.style.setProperty('display', 'none', 'important');
-                }
-                
+                if(this.state.admin) document.getElementById('adminLink').style.setProperty('display', 'flex', 'important');
                 this.nav('home'); 
             },
 
             nav: function(page) {
-                // SECURITY CHECK FOR ADMIN PAGE
                 if(page === 'admin' && !this.state.admin) return;
-
                 document.getElementById('sidebar').classList.remove('open'); document.querySelector('.sidebar-overlay').classList.remove('show');
                 document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
                 const activeEl = document.querySelector(`.nav-item[onclick="app.nav('${page}')"]`); if(activeEl) activeEl.classList.add('active');
@@ -320,6 +303,7 @@
                     const n=prompt(this.t('prompt_name')), b=Number(prompt(this.t('prompt_buy'))), s=Number(prompt(this.t('prompt_sell'))), q=Number(prompt(this.t('prompt_qty')));
                     if(n&&b) {
                         if(s<=b) return alert(this.t('err_price_logic'));
+                        // NOTE: We only add product to 'products'. The expense is calculated dynamically in reports.
                         await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()});
                         this.nav('inventory');
                     }
@@ -335,10 +319,6 @@
             },
             del: async function(id, col) { 
                 if(confirm(this.t('confirm_del'))) { 
-                    if (col === 'products') {
-                        const expSnap = await db.collection('expenses').where('relatedId', '==', id).get();
-                        expSnap.forEach(doc => { db.collection('expenses').doc(doc.id).delete(); });
-                    }
                     await db.collection(col).doc(id).delete(); 
                     this.nav(col==='products'?'inventory':col); 
                 } 
@@ -346,32 +326,49 @@
 
             reports: async function(div) {
                 div.innerHTML='Loading...';
-                const [i,e,s] = await Promise.all([
+                // 1. Fetch Invoices (Sales & COGS)
+                // 2. Fetch Products (Current Unsold Stock Value)
+                // 3. Fetch Expenses & Salaries
+                const [i,p,e,s] = await Promise.all([
                     db.collection('invoices').where('companyId','==',this.state.cid).get(),
+                    db.collection('products').where('companyId','==',this.state.cid).get(),
                     db.collection('expenses').where('companyId','==',this.state.cid).get(),
                     db.collection('salaries').where('companyId','==',this.state.cid).get()
                 ]);
 
                 let totalSales = 0;
-                let totalCOGS = 0;
-                
+                let cogs = 0; // Cost of Sold Goods
+                let unsoldStockValue = 0; // Cost of Goods currently in Stock
+                let generalExpenses = 0; // Rent, Bills, etc.
+                let salaries = 0;
+
+                // A. Calculate Sales & COGS from Invoices (Permanent Record)
                 i.forEach(doc => {
                     const d = doc.data();
                     totalSales += d.total;
-                    if(d.items && Array.isArray(d.items)){
+                    if(d.items){
                         d.items.forEach(item => {
-                            if(item.bp && item.q) totalCOGS += (item.bp * item.q);
+                            if(item.bp && item.q) cogs += (item.bp * item.q);
                         });
                     }
                 });
 
-                let totalGeneralExpenses = 0;
-                e.forEach(d => totalGeneralExpenses += Number(d.data().val3));
-                
-                let totalSalaries = 0;
-                s.forEach(d => totalSalaries += Number(d.data().val3));
+                // B. Calculate Unsold Stock Cost (Dynamic - Disappears if deleted)
+                p.forEach(doc => {
+                    const d = doc.data();
+                    if(d.buyPrice && d.stock) unsoldStockValue += (d.buyPrice * d.stock);
+                });
 
-                const netProfit = totalSales - totalCOGS - totalGeneralExpenses - totalSalaries;
+                // C. General Expenses & Salaries
+                e.forEach(d => generalExpenses += Number(d.data().val3));
+                s.forEach(d => salaries += Number(d.data().val3));
+
+                // D. Total Expenses Calculation = (COGS + Unsold Stock + General Expenses + Salaries)
+                // This ensures that:
+                // 1. If product exists: Expense = Sold Cost + Unsold Cost = Total Purchase Cost
+                // 2. If product deleted: Expense = Sold Cost + 0 + General = Only Sold Cost remains
+                const totalExpenses = cogs + unsoldStockValue + generalExpenses + salaries;
+                const netProfit = totalSales - totalExpenses;
                 
                 div.innerHTML = `
                     <h2>${this.t('rep')}</h2>
@@ -381,13 +378,13 @@
                             <h2 style="color:green">+${totalSales.toLocaleString()}</h2>
                         </div>
                         <div class="card">
-                            <h3>${this.t('cogs')}</h3>
-                            <h2 style="color:orange">-${totalCOGS.toLocaleString()}</h2>
-                            <small>(${this.t('th_buy')} × ${this.t('tbl_qty')})</small>
-                        </div>
-                        <div class="card">
-                            <h3>${this.t('expense')} & ${this.t('sal')}</h3>
-                            <h2 style="color:red">-${(totalGeneralExpenses + totalSalaries).toLocaleString()}</h2>
+                            <h3>${this.t('expense')}</h3>
+                            <h2 style="color:red">-${totalExpenses.toLocaleString()}</h2>
+                            <div style="font-size:0.85em; color:#555; text-align:right; margin-top:5px;">
+                                <div>• ${this.t('cogs')}: ${cogs.toLocaleString()}</div>
+                                <div>• ${this.t('stock')}: ${unsoldStockValue.toLocaleString()}</div>
+                                <div>• ${this.t('exp')}: ${(generalExpenses+salaries).toLocaleString()}</div>
+                            </div>
                         </div>
                     </div>
                     <div class="card" style="text-align:center; background:${netProfit>=0?'#d1fae5':'#fee2e2'}">
