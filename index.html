@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP System - MDA Smart Accounting</title>
+    <title>ERP System - MDA Secure</title>
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
@@ -22,20 +22,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root { 
-            --primary: #1e3a8a; --secondary: #10b981; --danger: #ef4444; 
-            --bg: #f4f7fa; --sidebar-w: 260px; --header-h: 60px;
-        }
-
+        :root { --primary: #1e3a8a; --secondary: #10b981; --danger: #ef4444; --bg: #f4f7fa; --sidebar-w: 260px; --header-h: 60px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: #333; overflow-x: hidden; }
 
-        .lang-float {
-            position: fixed; top: 10px; z-index: 2000;
-            background: white; border: 1px solid #ccc; padding: 5px 12px;
-            border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        .lang-float { position: fixed; top: 10px; z-index: 2000; background: white; border: 1px solid #ccc; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         html[dir="rtl"] .lang-float { left: 15px; } html[dir="ltr"] .lang-float { right: 15px; }
 
         .auth-wrap { display: flex; min-height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, #1e3a8a, #111827); padding: 20px; }
@@ -72,6 +63,13 @@
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th, td { padding: 12px; text-align: start; border-bottom: 1px solid #eee; font-size: 13px; }
         th { background: #f8f9fa; white-space: nowrap; font-weight: bold; color: var(--primary); }
+
+        /* Admin Styles */
+        .status-active { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+        .status-suspended { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+        
+        /* Ensure Admin Link is hidden by default with high priority */
+        #adminLink { display: none !important; }
 
         .print-box { display: none; }
         @media print { .app-container, .auth-wrap, .lang-float { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; } }
@@ -123,7 +121,9 @@
             <div class="nav-item" onclick="app.nav('expenses')"><i class="fa-solid fa-wallet"></i> <span data-key="exp">المصروفات</span></div>
             <div class="nav-item" onclick="app.nav('salaries')"><i class="fa-solid fa-users"></i> <span data-key="sal">الرواتب</span></div>
             <div class="nav-item" onclick="app.nav('reports')"><i class="fa-solid fa-chart-pie"></i> <span data-key="rep">التقارير</span></div>
-            <div id="adminLink" class="nav-item hidden" onclick="app.nav('admin')" style="color:red;"><i class="fa-solid fa-lock"></i> Admin</div>
+            
+            <!-- ADMIN LINK: Hidden by CSS !important, Shown by JS only for Admin -->
+            <div id="adminLink" class="nav-item" onclick="app.nav('admin')" style="color:red;"><i class="fa-solid fa-lock"></i> Admin</div>
         </aside>
         <main id="workspace" class="main-content"></main>
     </div>
@@ -235,9 +235,28 @@
                     this.state.cid=cid; this.state.name=n; this.state.phone=p; this.start(n,p);
                 } catch(er) { alert(er.message); btn.disabled=false; btn.innerText=this.t('btn'); }
             },
-            start: function(n,p) { document.getElementById('authScreen').style.display='none'; document.getElementById('appScreen').style.display='flex'; document.getElementById('h_name').innerText=n; document.getElementById('h_phone').innerText=p; if(this.state.admin) document.getElementById('adminLink').classList.remove('hidden'); this.nav('home'); },
+            
+            start: function(n,p) { 
+                document.getElementById('authScreen').style.display='none'; 
+                document.getElementById('appScreen').style.display='flex'; 
+                document.getElementById('h_name').innerText=n; 
+                document.getElementById('h_phone').innerText=p; 
+                
+                // SECURITY FIX: Explicitly Show/Hide Admin Link
+                const admLink = document.getElementById('adminLink');
+                if(this.state.admin) {
+                    admLink.style.setProperty('display', 'flex', 'important');
+                } else {
+                    admLink.style.setProperty('display', 'none', 'important');
+                }
+                
+                this.nav('home'); 
+            },
 
             nav: function(page) {
+                // SECURITY CHECK FOR ADMIN PAGE
+                if(page === 'admin' && !this.state.admin) return;
+
                 document.getElementById('sidebar').classList.remove('open'); document.querySelector('.sidebar-overlay').classList.remove('show');
                 document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
                 const activeEl = document.querySelector(`.nav-item[onclick="app.nav('${page}')"]`); if(activeEl) activeEl.classList.add('active');
@@ -269,7 +288,6 @@
                 if(!this.cart.length) return alert(this.t('empty'));
                 const c=document.getElementById('pc').value||'Client', t=Number(document.getElementById('pt').innerText.replace(/[^0-9.]/g,''));
                 try {
-                    // Save invoices with Buy Price (bp) inside items to freeze history
                     const r = await db.collection('invoices').add({companyId:this.state.cid, customer:c, items:this.cart, total:t, createdAt:new Date().toISOString()});
                     for(let i of this.cart) {
                         const ref = db.collection('products').doc(i.id);
@@ -302,7 +320,6 @@
                     const n=prompt(this.t('prompt_name')), b=Number(prompt(this.t('prompt_buy'))), s=Number(prompt(this.t('prompt_sell'))), q=Number(prompt(this.t('prompt_qty')));
                     if(n&&b) {
                         if(s<=b) return alert(this.t('err_price_logic'));
-                        // Add Product ONLY. Cost is calculated when SOLD.
                         await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()});
                         this.nav('inventory');
                     }
@@ -318,6 +335,10 @@
             },
             del: async function(id, col) { 
                 if(confirm(this.t('confirm_del'))) { 
+                    if (col === 'products') {
+                        const expSnap = await db.collection('expenses').where('relatedId', '==', id).get();
+                        expSnap.forEach(doc => { db.collection('expenses').doc(doc.id).delete(); });
+                    }
                     await db.collection(col).doc(id).delete(); 
                     this.nav(col==='products'?'inventory':col); 
                 } 
@@ -325,9 +346,6 @@
 
             reports: async function(div) {
                 div.innerHTML='Loading...';
-                // Fetch Invoices to Calculate REAL Sales and REAL Cost of Goods Sold (COGS)
-                // Fetch Expenses for General Expenses (Rent, Bills)
-                // Fetch Salaries
                 const [i,e,s] = await Promise.all([
                     db.collection('invoices').where('companyId','==',this.state.cid).get(),
                     db.collection('expenses').where('companyId','==',this.state.cid).get(),
@@ -335,15 +353,13 @@
                 ]);
 
                 let totalSales = 0;
-                let totalCOGS = 0; // Cost of items that were ACTUALLY sold
+                let totalCOGS = 0;
                 
                 i.forEach(doc => {
                     const d = doc.data();
                     totalSales += d.total;
                     if(d.items && Array.isArray(d.items)){
                         d.items.forEach(item => {
-                            // item.bp = Buy Price stored at moment of sale
-                            // item.q = Quantity sold
                             if(item.bp && item.q) totalCOGS += (item.bp * item.q);
                         });
                     }
@@ -355,7 +371,6 @@
                 let totalSalaries = 0;
                 s.forEach(d => totalSalaries += Number(d.data().val3));
 
-                // Profit = Sales - COGS - General Expenses - Salaries
                 const netProfit = totalSales - totalCOGS - totalGeneralExpenses - totalSalaries;
                 
                 div.innerHTML = `
