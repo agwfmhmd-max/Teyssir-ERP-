@@ -11,7 +11,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MDA ERP">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2910/2910768.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135679.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3135/3135679.png">
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -131,7 +132,6 @@
         }
         .hidden { display: none !important; }
         
-        /* Install Button (Hidden by default) */
         #installBtn { 
             display: none; width: 100%; background: #333; color: white; margin-bottom: 15px; 
             padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;
@@ -146,9 +146,9 @@
     <!-- Auth Screen -->
     <div id="authScreen" class="auth-wrap">
         <div class="auth-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" alt="Icon" style="width:60px; margin-bottom:10px;">
             <h2 style="color:var(--primary); margin-top:0;" id="t_title">ERP System</h2>
             
-            <!-- زر التثبيت يظهر هنا -->
             <div id="installBtn" onclick="app.installPWA()">📲 تثبيت التطبيق / Install App</div>
 
             <form onsubmit="app.login(event)">
@@ -185,8 +185,9 @@
 
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <div style="padding: 0 20px 20px;">
-                <h3 style="color:var(--primary); margin:0;">ERP MENU</h3>
+            <div style="padding: 0 20px 20px; text-align:center;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" style="width:40px;">
+                <h3 style="color:var(--primary); margin:10px 0 0;">ERP MENU</h3>
             </div>
             <div class="nav-item active" onclick="app.nav('home')"><i class="fa-solid fa-home"></i> <span data-key="home">الرئيسية</span></div>
             <div class="nav-item" onclick="app.nav('pos')"><i class="fa-solid fa-cart-plus"></i> <span data-key="pos">نقطة البيع</span></div>
@@ -239,13 +240,15 @@
                 p_cl:"اسم العميل", p_save:"حفظ وطباعة الفاتورة", p_tot:"الإجمالي",
                 tbl_prod:"المنتج", tbl_qty:"الكمية", tbl_tot:"المجموع", tbl_act:"حذف",
                 th_date:"التاريخ", th_client:"العميل", th_amount:"المبلغ", th_print:"طباعة",
-                th_name:"الاسم", th_buy:"شراء", th_sell:"بيع", th_stock:"المخزون", th_del:"حذف",
+                th_name:"الاسم", th_buy:"شراء", th_sell:"بيع", th_stock:"المخزون", th_del:"حذف", th_edit:"تعديل",
                 th_item:"البند", th_note:"ملاحظات", th_cost:"التكلفة", th_emp:"الموظف", th_job:"الوظيفة", th_sal:"الراتب",
                 income:"إجمالي المبيعات", expense:"إجمالي المصروفات", profit:"صافي الربح",
                 err_login:"بيانات الدخول غير صحيحة", err_sus:"هذا الحساب معطل حالياً",
                 empty:"السلة فارغة", max_qty:"الكمية المتاحة فقط: ",
                 prompt_name:"الاسم / البيان", prompt_buy:"سعر الشراء", prompt_sell:"سعر البيع", prompt_qty:"الكمية",
-                prompt_note:"ملاحظة", prompt_amount:"المبلغ", confirm_del:"هل أنت متأكد من الحذف؟", sys_active:"النظام يعمل بنجاح"
+                prompt_note:"ملاحظة", prompt_amount:"المبلغ", confirm_del:"هل أنت متأكد من الحذف؟", sys_active:"النظام يعمل بنجاح",
+                err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
+                prompt_new_price: "أدخل سعر البيع الجديد"
             },
             fr: {
                 title: "Système ERP - Édition Gold", comp:"Nom de Société", phone:"Téléphone", code:"Code d'activation",
@@ -256,13 +259,15 @@
                 p_cl:"Nom du Client", p_save:"Enregistrer & Imprimer", p_tot:"Total",
                 tbl_prod:"Produit", tbl_qty:"Qté", tbl_tot:"Total", tbl_act:"Suppr",
                 th_date:"Date", th_client:"Client", th_amount:"Montant", th_print:"Imprimer",
-                th_name:"Nom", th_buy:"Achat", th_sell:"Vente", th_stock:"Stock", th_del:"Suppr",
+                th_name:"Nom", th_buy:"Achat", th_sell:"Vente", th_stock:"Stock", th_del:"Suppr", th_edit:"Modif",
                 th_item:"Article", th_note:"Note", th_cost:"Coût", th_emp:"Employé", th_job:"Fonction", th_sal:"Salaire",
                 income:"Revenus (Ventes)", expense:"Dépenses Totales", profit:"Bénéfice Net",
                 err_login:"Identifiants invalides", err_sus:"Compte suspendu",
                 empty:"Panier vide", max_qty:"Max disponible: ",
                 prompt_name:"Nom / Article", prompt_buy:"Prix d'achat", prompt_sell:"Prix de vente", prompt_qty:"Quantité",
-                prompt_note:"Note", prompt_amount:"Montant", confirm_del:"Confirmer la suppression ?", sys_active:"Système Actif"
+                prompt_note:"Note", prompt_amount:"Montant", confirm_del:"Confirmer la suppression ?", sys_active:"Système Actif",
+                err_price_logic: "Erreur: Le prix de vente doit être supérieur au prix d'achat",
+                prompt_new_price: "Entrez le nouveau prix de vente"
             }
         };
 
@@ -365,7 +370,7 @@
 
             home: function(div) {
                 div.innerHTML = `<div class="card" style="text-align:center; padding:40px;">
-                    <i class="fa-solid fa-circle-check" style="font-size:50px; color:var(--secondary);"></i>
+                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" style="width:80px; margin-bottom:15px;">
                     <h3>${this.state.name}</h3><p>${this.t('sys_active')}</p>
                 </div>`;
             },
@@ -441,8 +446,10 @@
                         <td><button class="btn btn-sec" style="padding:5px 10px; font-size:12px;" onclick="app.reprint('${d.id}','${d.customer}',${d.total},'${str}')">${this.t('th_print')}</button></td></tr>`;
                     });
                 } else if(type==='products') {
-                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_del')}</th></tr>`;
-                    docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td onclick="app.del('${d.id}','${type}')" style="color:red">X</td></tr>`);
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`;
+                    docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td>
+                    <td><button onclick="app.editProd('${d.id}', ${d.buyPrice}, ${d.sellPrice})" style="border:none;background:none;font-size:1.2em;cursor:pointer">✎</button></td>
+                    <td onclick="app.del('${d.id}','${type}')" style="color:red;cursor:pointer">X</td></tr>`);
                 } else {
                     const h1 = type==='salaries' ? this.t('th_emp') : this.t('th_item');
                     const h2 = type==='salaries' ? this.t('th_job') : this.t('th_note');
@@ -460,6 +467,7 @@
                 if(t==='products') {
                     const n=prompt(this.t('prompt_name')), b=Number(prompt(this.t('prompt_buy'))), s=Number(prompt(this.t('prompt_sell'))), q=Number(prompt(this.t('prompt_qty')));
                     if(n&&b) {
+                        if (s <= b) { return alert(this.t('err_price_logic')); }
                         await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()});
                         await db.collection('expenses').add({companyId:this.state.cid, type:'purchase', val1:'Buy '+n, val2:'Stock', val3:b*q, createdAt:new Date().toISOString()});
                         this.nav('inventory');
@@ -472,6 +480,22 @@
                     }
                 }
             },
+            
+            editProd: async function(id, buy, oldSell) {
+                let newSell = prompt(this.t('prompt_new_price'), oldSell);
+                if (!newSell) return;
+                newSell = Number(newSell);
+                
+                // Strict Logic: New Sell Price MUST be > Buy Price
+                if (newSell <= buy) {
+                    alert(this.t('err_price_logic'));
+                    return;
+                }
+                
+                await db.collection('products').doc(id).update({sellPrice: newSell});
+                this.nav('inventory');
+            },
+
             del: async function(id,c) { if(confirm(this.t('confirm_del'))) { await db.collection(c).doc(id).delete(); this.nav(c==='products'?'inventory':c); } },
 
             reports: async function(div) {
