@@ -1,0 +1,114 @@
+/* --- POS Specific Styles --- */
+.pos-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr; /* Desktop: Products wider than Cart */
+    gap: 20px;
+    height: calc(100vh - 80px); /* Full height minus header */
+}
+
+/* Products Section */
+.pos-products-area {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.prod-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.prod-card:hover { border-color: var(--primary); background: #e3f2fd; }
+.prod-card h4 { margin: 0 0 5px 0; font-size: 14px; color: #333; }
+.prod-card .price { color: var(--primary); font-weight: bold; font-size: 16px; }
+.prod-card .stock { font-size: 12px; color: #666; }
+
+/* Input Area in POS */
+.pos-controls {
+    display: flex;
+    gap: 10px;
+    background: #eee;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+/* Cart Section */
+.pos-cart-area {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    height: 100%;
+}
+
+.cart-items {
+    flex: 1;
+    overflow-y: auto;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.cart-summary {
+    background: #fffbeb;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.total-price { font-size: 24px; font-weight: bold; color: var(--primary); margin: 10px 0; }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .pos-container {
+        grid-template-columns: 1fr; /* Stack vertically */
+        height: auto;
+        padding-bottom: 80px; /* Space for fixed bottom bar if needed */
+    }
+    
+    .pos-products-area {
+        height: auto;
+        max-height: 400px; /* Limit height on mobile */
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 items per row on mobile */
+    }
+    
+    .prod-card { padding: 10px; }
+    .prod-card h4 { font-size: 12px; }
+    
+    .pos-cart-area {
+        height: auto;
+    }
+}
