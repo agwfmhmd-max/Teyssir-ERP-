@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERP System - MDA Mobile</title>
     
+    <!-- PWA Settings -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MDA ERP">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2910/2910768.png">
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -122,6 +130,12 @@
             .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; }
         }
         .hidden { display: none !important; }
+        
+        /* Install Button (Hidden by default) */
+        #installBtn { 
+            display: none; width: 100%; background: #333; color: white; margin-bottom: 15px; 
+            padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -133,6 +147,10 @@
     <div id="authScreen" class="auth-wrap">
         <div class="auth-card">
             <h2 style="color:var(--primary); margin-top:0;" id="t_title">ERP System</h2>
+            
+            <!-- زر التثبيت يظهر هنا -->
+            <div id="installBtn" onclick="app.installPWA()">📲 تثبيت التطبيق / Install App</div>
+
             <form onsubmit="app.login(event)">
                 <input id="logName" class="inp inp-group" placeholder="اسم الشركة" required>
                 <input id="logPhone" type="tel" class="inp inp-group" placeholder="رقم الهاتف" required>
@@ -188,7 +206,17 @@
     <div id="printArea" class="print-box"></div>
 
     <script>
-        // Config
+        // PWA Registration
+        let deferredPrompt;
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
         const firebaseConfig = {
             apiKey: "AIzaSyA6glwj94Onm0r6gRtxtoyqEISpPChDcHo",
             authDomain: "comptabilite-e35ed.firebaseapp.com",
@@ -201,61 +229,40 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Dictionary - القاموس الشامل والمصحح
         const dict = {
             ar: {
                 title: "نظام ERP - النسخة الذهبية", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
                 btn:"تسجيل الدخول", wait:"جاري التحقق...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور (واتساب)",
                 home:"الرئيسية", pos:"نقطة البيع", inv:"أرشيف الفواتير", stock:"المخزون",
                 exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"تسجيل الخروج",
-                
-                // POS & Products
                 p_sel:"-- اختر المنتج --", p_pr:"السعر", p_qt:"العدد", p_add:"إضافة للسلة",
                 p_cl:"اسم العميل", p_save:"حفظ وطباعة الفاتورة", p_tot:"الإجمالي",
                 tbl_prod:"المنتج", tbl_qty:"الكمية", tbl_tot:"المجموع", tbl_act:"حذف",
-                
-                // Tables Headers
                 th_date:"التاريخ", th_client:"العميل", th_amount:"المبلغ", th_print:"طباعة",
                 th_name:"الاسم", th_buy:"شراء", th_sell:"بيع", th_stock:"المخزون", th_del:"حذف",
-                th_item:"البند", th_note:"ملاحظات", th_cost:"التكلفة",
-                th_emp:"الموظف", th_job:"الوظيفة", th_sal:"الراتب",
-                
-                // Reports
+                th_item:"البند", th_note:"ملاحظات", th_cost:"التكلفة", th_emp:"الموظف", th_job:"الوظيفة", th_sal:"الراتب",
                 income:"إجمالي المبيعات", expense:"إجمالي المصروفات", profit:"صافي الربح",
-                
-                // Alerts & Prompts
                 err_login:"بيانات الدخول غير صحيحة", err_sus:"هذا الحساب معطل حالياً",
                 empty:"السلة فارغة", max_qty:"الكمية المتاحة فقط: ",
                 prompt_name:"الاسم / البيان", prompt_buy:"سعر الشراء", prompt_sell:"سعر البيع", prompt_qty:"الكمية",
-                prompt_note:"ملاحظة", prompt_amount:"المبلغ", confirm_del:"هل أنت متأكد من الحذف؟",
-                sys_active:"النظام يعمل بنجاح"
+                prompt_note:"ملاحظة", prompt_amount:"المبلغ", confirm_del:"هل أنت متأكد من الحذف؟", sys_active:"النظام يعمل بنجاح"
             },
             fr: {
                 title: "Système ERP - Édition Gold", comp:"Nom de Société", phone:"Téléphone", code:"Code d'activation",
                 btn:"Connexion", wait:"Vérification...", get:"Pour obtenir le code:", cont:"Contacter le développeur",
                 home:"Accueil", pos:"Point de Vente", inv:"Factures", stock:"Stock",
                 exp:"Dépenses", sal:"Salaires", rep:"Rapports", logout:"Déconnexion",
-                
-                // POS & Products
                 p_sel:"-- Choisir Produit --", p_pr:"Prix", p_qt:"Qté", p_add:"Ajouter",
                 p_cl:"Nom du Client", p_save:"Enregistrer & Imprimer", p_tot:"Total",
                 tbl_prod:"Produit", tbl_qty:"Qté", tbl_tot:"Total", tbl_act:"Suppr",
-                
-                // Tables Headers
                 th_date:"Date", th_client:"Client", th_amount:"Montant", th_print:"Imprimer",
                 th_name:"Nom", th_buy:"Achat", th_sell:"Vente", th_stock:"Stock", th_del:"Suppr",
-                th_item:"Article", th_note:"Note", th_cost:"Coût",
-                th_emp:"Employé", th_job:"Fonction", th_sal:"Salaire",
-                
-                // Reports
+                th_item:"Article", th_note:"Note", th_cost:"Coût", th_emp:"Employé", th_job:"Fonction", th_sal:"Salaire",
                 income:"Revenus (Ventes)", expense:"Dépenses Totales", profit:"Bénéfice Net",
-                
-                // Alerts & Prompts
                 err_login:"Identifiants invalides", err_sus:"Compte suspendu",
                 empty:"Panier vide", max_qty:"Max disponible: ",
                 prompt_name:"Nom / Article", prompt_buy:"Prix d'achat", prompt_sell:"Prix de vente", prompt_qty:"Quantité",
-                prompt_note:"Note", prompt_amount:"Montant", confirm_del:"Confirmer la suppression ?",
-                sys_active:"Système Actif"
+                prompt_note:"Note", prompt_amount:"Montant", confirm_del:"Confirmer la suppression ?", sys_active:"Système Actif"
             }
         };
 
@@ -263,13 +270,23 @@
             state: { cid:null, name:'', phone:'', admin:false, lang:'ar' },
             cart: [],
 
+            installPWA: function() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            document.getElementById('installBtn').style.display = 'none';
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            },
+
             toggleLang: function() {
                 this.state.lang = this.state.lang==='ar'?'fr':'ar';
                 const l = this.state.lang;
                 document.documentElement.dir = l==='ar'?'rtl':'ltr';
                 document.getElementById('langBtn').innerText = l==='ar'?'Français':'العربية';
-                
-                // Update Login & Sidebar UI Text
                 const d = dict[l];
                 document.getElementById('t_title').innerText = d.title;
                 document.getElementById('logName').placeholder = d.comp;
@@ -279,10 +296,7 @@
                 document.getElementById('t_getcode').innerText = d.get;
                 document.getElementById('t_contact').innerText = d.cont;
                 document.getElementById('t_logout').innerText = d.logout;
-                
                 document.querySelectorAll('[data-key]').forEach(el => el.innerText = d[el.getAttribute('data-key')]);
-                
-                // Refresh View if logged in
                 if(this.state.cid) this.nav(document.querySelector('.nav-item.active') ? document.querySelector('.nav-item.active').getAttribute('onclick').split("'")[1] : 'home');
             },
 
@@ -330,8 +344,6 @@
             nav: function(page) {
                 document.getElementById('sidebar').classList.remove('open');
                 document.querySelector('.sidebar-overlay').classList.remove('show');
-                
-                // Highlight active
                 document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
                 const activeEl = document.querySelector(`.nav-item[onclick="app.nav('${page}')"]`);
                 if(activeEl) activeEl.classList.add('active');
@@ -408,7 +420,6 @@
                 } catch(e){alert(e.message)}
             },
 
-            // Updated List Function with Translated Headers
             list: async function(div, type) {
                 const titles = {invoices:this.t('inv'), products:this.t('stock'), expenses:this.t('exp'), salaries:this.t('sal')};
                 div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
@@ -490,9 +501,7 @@
                 const dir = this.state.lang==='ar'?'rtl':'ltr';
                 const d = new Date().toLocaleDateString();
                 const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`;
-                
                 let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join('');
-                
                 document.getElementById('printArea').innerHTML = `
                     <div style="padding:20px; direction:${dir}; font-family:'Tajawal'">
                         <center><h2>${this.state.name}</h2><p>${this.state.phone}</p></center>
