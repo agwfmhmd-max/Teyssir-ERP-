@@ -22,13 +22,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- الألوان (فاتحة ونظيفة) --- */
+        /* --- الألوان --- */
         :root { 
-            --primary: #1a4585; /* أزرق ملكي */
-            --accent: #dcb14a;  /* ذهبي */
+            --primary: #1a4585; 
+            --accent: #dcb14a; 
             --bg: #f8f9fa;      
             --white: #ffffff;
-            --text-dark: #374151; /* رمادي غامق */
+            --text-dark: #374151; 
             --text-light: #6b7280;
             --border: #e5e7eb;
             --danger: #ef4444; 
@@ -39,14 +39,24 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text-dark); overflow-x: hidden; }
 
-        /* زر اللغة */
-        .lang-float {
-            position: fixed; top: 15px; z-index: 2000;
+        /* --- زر اللغة (في شاشة الدخول فقط) --- */
+        .lang-float-login {
+            position: fixed; top: 20px; z-index: 2000;
             background: var(--white); border: 1px solid var(--primary); color: var(--primary);
-            padding: 6px 15px; border-radius: 25px; font-weight: bold; font-size: 13px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(26, 69, 133, 0.15);
+            padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 14px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(26, 69, 133, 0.15); transition: 0.3s;
         }
-        html[dir="rtl"] .lang-float { left: 20px; } html[dir="ltr"] .lang-float { right: 20px; }
+        /* عكس الاتجاه ليكون متعاكساً مع المحتوى */
+        html[dir="rtl"] .lang-float-login { left: 20px; } 
+        html[dir="ltr"] .lang-float-login { right: 20px; }
+
+        /* زر اللغة داخل الهيدر (صغير) */
+        .header-lang-btn {
+            background: transparent; border: 1px solid var(--primary); color: var(--primary);
+            padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 12px; cursor: pointer;
+            margin-inline-end: 10px; /* مسافة بينه وبين الخروج */
+        }
+        .header-lang-btn:hover { background: #f0f4ff; }
 
         /* شاشة الدخول */
         .auth-wrap { display: flex; min-height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%); padding: 20px; }
@@ -65,7 +75,16 @@
 
         /* التخطيط العام */
         .app-container { display: none; flex-direction: column; min-height: 100vh; }
-        .top-header { height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        
+        /* الهيدر المحسن */
+        .top-header { 
+            height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--border); 
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; 
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
+        }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .header-left { display: flex; align-items: center; } /* حاوية للأزرار اليسرى */
+        
         .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
 
         .sidebar { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--white); z-index: 1500; padding-top: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.05); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-inline-end: 1px solid var(--border); }
@@ -100,7 +119,6 @@
         .prod-card .price { color: var(--primary); font-weight: bold; font-size: 16px; margin: 5px 0; }
         .prod-card .stock { font-size: 12px; color: var(--text-light); background: #f3f4f6; padding: 3px 8px; border-radius: 10px; display: inline-block; }
 
-        /* لوحة اختيار المنتج */
         .selected-product-panel { background: #eef2ff; border: 1px solid var(--primary); border-radius: 12px; padding: 20px; margin-top: 15px; display: none; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 10px 30px rgba(26, 69, 133, 0.1); }
         @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
         .selected-info { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(26, 69, 133, 0.1); padding-bottom: 10px; font-weight: bold; color: var(--primary); font-size: 16px; }
@@ -113,7 +131,7 @@
         .cart-items { max-height: 45vh; overflow-y: auto; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: var(--text-dark); }
 
-        /* حالة الاشتراك والإدارة */
+        /* Admin & Status */
         #adminLink { display: none; }
         .status-active { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .status-suspended { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
@@ -125,12 +143,13 @@
 
         /* الطباعة */
         .print-box { display: none; }
-        @media print { .app-container, .auth-wrap, .lang-float, #expiryWarning { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
+        @media print { .app-container, .auth-wrap, .lang-float, .lang-float-login, #expiryWarning { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
     </style>
 </head>
 <body>
 
-    <button onclick="app.toggleLang()" class="lang-float" id="langBtn">Français</button>
+    <!-- زر اللغة العائم (فقط لشاشة الدخول) -->
+    <div id="loginLangBtn" class="lang-float-login" onclick="app.toggleLang()">Français</div>
 
     <div id="expiryWarning" class="expiry-warning"></div>
 
@@ -189,11 +208,16 @@
     <div id="appScreen" class="app-container">
         <div class="sidebar-overlay" onclick="app.toggleMenu()"></div>
         <header class="top-header">
-            <div style="display:flex; align-items:center; gap:15px;">
+            <div class="header-right">
                 <div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div>
                 <div><div id="h_name" style="font-weight:bold; color:var(--primary); font-size:1.1em;"></div><div id="h_phone" style="font-size:12px; color:#888;"></div></div>
             </div>
-            <button onclick="app.logout()" class="btn btn-dan" style="width:auto; padding:8px 20px; font-size:13px;" id="t_logout"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
+            
+            <div class="header-left">
+                <!-- زر الترجمة الداخلي (بجوار الخروج) -->
+                <button onclick="app.toggleLang()" class="header-lang-btn" id="innerLangBtn">Français</button>
+                <button onclick="app.logout()" class="btn btn-dan" style="width:auto; padding:8px 20px; font-size:13px;" id="t_logout"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
+            </div>
         </header>
         <aside class="sidebar" id="sidebar">
             <div style="padding: 25px; text-align:center; background: #fcfcfc; border-bottom: 1px solid var(--border);">
@@ -213,7 +237,6 @@
         <main id="workspace" class="main-content"></main>
     </div>
 
-    <!-- Print -->
     <div id="printArea" class="print-box"></div>
 
     <script>
@@ -222,7 +245,6 @@
 
         const isIos = () => { const userAgent = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test(userAgent); }
         const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
-
         if (isIos() && !isInStandaloneMode()) { const btn = document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; }
 
         const firebaseConfig = {
@@ -238,6 +260,7 @@
         const db = firebase.firestore();
 
         let selectedProduct = null;
+        let sessionListener = null;
 
         const dict = {
             ar: {
@@ -310,7 +333,12 @@
                 const session = localStorage.getItem('mda_session');
                 if (session) {
                     const s = JSON.parse(session);
-                    this.verifySession(s);
+                    if (s.admin) {
+                        this.state.cid = 'ADMIN'; this.state.name = 'Admin'; this.state.phone = '46154399'; this.state.admin = true;
+                        this.start('Admin', '46154399');
+                    } else {
+                        this.monitorSession(s.codeDocId, s);
+                    }
                 }
             },
 
@@ -325,33 +353,32 @@
                 }
             },
 
-            verifySession: async function(s) {
-                if (s.admin === true || (s.phone === '46154399' && s.code === '371915')) {
-                    this.state.cid = 'ADMIN'; this.state.name = 'Admin'; this.state.phone = '46154399'; this.state.admin = true;
-                    this.start('Admin', '46154399'); return;
-                }
-
-                try {
-                    const doc = await db.collection('activation_codes').where('code', '==', s.code).get();
-                    if (!doc.empty) {
-                        const data = doc.docs[0].data();
-                        this.state.codeDocId = doc.docs[0].id;
-                        
+            monitorSession: function(docId, s) {
+                if(!docId) { this.logout(); return; }
+                sessionListener = db.collection('activation_codes').doc(docId)
+                    .onSnapshot((doc) => {
+                        if (!doc.exists) { this.logout(); return; }
+                        const data = doc.data();
                         const statusCheck = this.checkAccountStatus(data);
                         if (statusCheck.valid) {
-                            this.state.cid = s.cid; this.state.name = s.name; this.state.phone = s.phone; this.state.admin = false;
-                            this.start(s.name, s.phone);
+                            if(document.getElementById('authScreen').style.display !== 'none') {
+                                this.state.cid = s.cid; this.state.name = s.name; this.state.phone = s.phone; this.state.admin = false;
+                                this.state.codeDocId = docId;
+                                this.start(s.name, s.phone);
+                            }
                             if (statusCheck.warning) {
                                 document.getElementById('expiryWarning').innerText = this.t('msg_warn');
                                 document.getElementById('expiryWarning').style.display = 'block';
+                            } else {
+                                document.getElementById('expiryWarning').style.display = 'none';
                             }
+                            document.getElementById('blockScreen').style.display = 'none';
+                            document.getElementById('appScreen').style.display = 'flex';
                         } else {
+                            document.getElementById('appScreen').style.display = 'none';
                             this.showBlockScreen(statusCheck.reason);
                         }
-                    } else {
-                        this.logout();
-                    }
-                } catch(e) { console.error("Session Check Error", e); }
+                    }, (error) => { console.error("Listener error:", error); });
             },
 
             checkAccountStatus: function(data) {
@@ -362,20 +389,23 @@
                     const diffTime = expiry - now;
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     if (diffTime < 0) return { valid: false, reason: 'expired' };
-                    if (diffDays <= 1) return { valid: true, warning: true };
+                    if (diffDays <= 1 && diffDays > -1) return { valid: true, warning: true };
                 }
                 return { valid: true };
             },
 
             showBlockScreen: function(reason) {
-                document.getElementById('authScreen').style.display = 'none';
-                document.getElementById('appScreen').style.display = 'none';
                 const screen = document.getElementById('blockScreen');
                 const title = document.getElementById('blockTitle');
                 const msg = document.getElementById('blockMsg');
                 screen.style.display = 'flex';
-                if (reason === 'suspended') msg.innerText = this.t('msg_sus');
-                else { title.innerText = "Subscription Expired"; msg.innerText = this.t('msg_exp'); }
+                if (reason === 'suspended') {
+                    title.innerText = this.state.lang==='ar'?"الحساب معطل":"Compte suspendu";
+                    msg.innerText = this.t('msg_sus');
+                } else {
+                    title.innerText = this.state.lang==='ar'?"انتهى الاشتراك":"Abonnement expiré";
+                    msg.innerText = this.t('msg_exp');
+                }
             },
 
             addDuration: function(date, type) {
@@ -404,7 +434,12 @@
 
             toggleLang: function() {
                 this.state.lang = this.state.lang==='ar'?'fr':'ar'; const l = this.state.lang; const d = dict[l];
-                document.documentElement.dir = l==='ar'?'rtl':'ltr'; document.getElementById('langBtn').innerText = l==='ar'?'Français':'العربية';
+                document.documentElement.dir = l==='ar'?'rtl':'ltr'; 
+                // تحديث نص الأزرار
+                const btnText = l==='ar'?'Français':'العربية';
+                document.getElementById('langBtn').innerText = btnText;
+                document.getElementById('innerLangBtn').innerText = btnText;
+
                 document.getElementById('t_title').innerText = d.title; document.getElementById('logName').placeholder = d.comp; document.getElementById('logPhone').placeholder = d.phone; document.getElementById('logCode').placeholder = d.code; document.getElementById('logBtn').innerText = d.btn; document.getElementById('t_getcode').innerText = d.get; document.getElementById('t_contact').innerText = d.cont; document.getElementById('t_logout').innerText = d.logout; document.getElementById('t_install').innerText = d.t_install;
                 document.querySelectorAll('[data-key]').forEach(el => el.innerText = d[el.getAttribute('data-key')]);
                 if(this.state.cid) this.nav(document.querySelector('.nav-item.active') ? document.querySelector('.nav-item.active').getAttribute('onclick').split("'")[1] : 'home');
@@ -418,7 +453,7 @@
                 try {
                     if(p==='46154399' && c==='371915') { 
                         this.state.admin=true; this.state.cid='ADMIN'; 
-                        this.saveSession('ADMIN', 'Admin', '46154399', '371915', true);
+                        this.saveSession('ADMIN', 'Admin', '46154399', '371915', null, true);
                         this.start('Admin','46154399'); return; 
                     }
                     const s = await db.collection('activation_codes').where('code','==',c).get();
@@ -446,18 +481,19 @@
                     }
                     
                     this.state.cid=cid; this.state.name=n; this.state.phone=p;
-                    this.saveSession(cid, n, p, c, false);
-                    this.start(n,p);
+                    this.saveSession(cid, n, p, c, doc.id, false);
+                    this.monitorSession(doc.id, {cid, name:n, phone:p});
 
                 } catch(er) { alert(er.message); btn.disabled=false; btn.innerText=this.t('btn'); }
             },
 
-            saveSession: function(cid, name, phone, code, isAdmin) {
-                localStorage.setItem('mda_session', JSON.stringify({cid, name, phone, code, admin: isAdmin}));
+            saveSession: function(cid, name, phone, code, codeDocId, isAdmin) {
+                localStorage.setItem('mda_session', JSON.stringify({cid, name, phone, code, codeDocId, admin: isAdmin}));
             },
 
             logout: function() {
                 localStorage.removeItem('mda_session');
+                if(sessionListener) sessionListener();
                 location.reload();
             },
 
@@ -471,6 +507,10 @@
                 } else {
                     document.getElementById('adminLink').style.display = 'none';
                 }
+                
+                // Hide floating login lang button when logged in
+                document.getElementById('loginLangBtn').style.display = 'none';
+                
                 this.nav('home'); 
             },
 
