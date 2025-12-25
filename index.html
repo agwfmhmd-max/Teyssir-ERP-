@@ -135,7 +135,7 @@
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
 
         .table-scroll { overflow-x: auto; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; /* Wider for admin table */ }
         th, td { padding: 12px; text-align: start; border-bottom: 1px solid #eee; font-size: 13px; }
         th { background: #f8f9fa; white-space: nowrap; font-weight: bold; color: var(--primary); }
 
@@ -173,11 +173,26 @@
         #adminLink { display: none !important; }
         .status-active { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
         .status-suspended { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+        .pay-history { font-size: 10px; color: #666; margin-top: 5px; max-height: 40px; overflow-y: auto; }
+        
+        /* Subscription Block */
+        .block-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.98); z-index: 9999;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px;
+        }
+        .block-icon { font-size: 60px; margin-bottom: 20px; color: var(--danger); }
+        .expiry-warning {
+            background: #fff3cd; color: #856404; padding: 10px; text-align: center;
+            font-size: 13px; font-weight: bold; border-bottom: 1px solid #ffeeba;
+            display: none;
+        }
 
         /* --- Print --- */
         .print-box { display: none; }
         @media print { 
-            .app-container, .auth-wrap, .lang-float { display: none !important; } 
+            .app-container, .auth-wrap, .lang-float, #expiryWarning { display: none !important; } 
             .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; } 
         }
     </style>
@@ -185,6 +200,20 @@
 <body>
 
     <button onclick="app.toggleLang()" class="lang-float" id="langBtn">Français</button>
+
+    <!-- Expiry Warning -->
+    <div id="expiryWarning" class="expiry-warning"></div>
+
+    <!-- Block Screen -->
+    <div id="blockScreen" class="block-screen">
+        <i class="fa-solid fa-lock block-icon"></i>
+        <h2 id="blockTitle" style="color:var(--danger)">الحساب معلق</h2>
+        <p id="blockMsg" style="margin-bottom:20px;">انتهت فترة الاشتراك. يرجى التواصل لتجديد الخدمة.</p>
+        <a href="https://wa.me/22220479962" class="wa-link" style="width:auto; padding:10px 30px;">
+            <i class="fa-brands fa-whatsapp"></i> تواصل للدفع
+        </a>
+        <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px; width:auto;">تسجيل خروج</button>
+    </div>
 
     <!-- Auth -->
     <div id="authScreen" class="auth-wrap">
@@ -213,7 +242,7 @@
                 <div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div>
                 <div><div id="h_name" style="font-weight:bold;"></div><div id="h_phone" style="font-size:12px; color:#666;"></div></div>
             </div>
-            <button onclick="location.reload()" class="btn btn-dan" style="width:auto; padding:8px 15px;" id="t_logout">خروج</button>
+            <button onclick="app.logout()" class="btn btn-dan" style="width:auto; padding:8px 15px;" id="t_logout">خروج</button>
         </header>
         <aside class="sidebar" id="sidebar">
             <div style="padding: 0 20px 20px; text-align:center;">
@@ -227,7 +256,7 @@
             <div class="nav-item" onclick="app.nav('expenses')"><i class="fa-solid fa-wallet"></i> <span data-key="exp">المصروفات</span></div>
             <div class="nav-item" onclick="app.nav('salaries')"><i class="fa-solid fa-users"></i> <span data-key="sal">الرواتب</span></div>
             <div class="nav-item" onclick="app.nav('reports')"><i class="fa-solid fa-chart-pie"></i> <span data-key="rep">التقارير</span></div>
-            <div id="adminLink" class="nav-item" onclick="app.nav('admin')" style="color:red;"><i class="fa-solid fa-lock"></i> Admin</div>
+            <div id="adminLink" class="nav-item hidden" onclick="app.nav('admin')" style="color:red;"><i class="fa-solid fa-lock"></i> Admin</div>
         </aside>
         <main id="workspace" class="main-content"></main>
     </div>
@@ -275,7 +304,14 @@
                 sys_active:"النظام يعمل بنجاح",
                 err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
                 prompt_new_price: "أدخل سعر البيع الجديد",
+                
+                // Admin & Subscription
                 adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
+                adm_gen: "توليد رمز جديد", adm_renew: "تجديد ($)", adm_pay_hist: "سجل الدفعات",
+                msg_sus: "تم تعطيل الحساب من الإدارة. يرجى التواصل للدفع.",
+                msg_exp: "انتهت فترة الاشتراك. يرجى الدفع لتجديد الخدمة.",
+                msg_warn: "تحذير: اشتراكك ينتهي قريباً (يوم واحد متبقي). يرجى التجديد.",
+                sub_day: "يومي", sub_week: "أسبوعي", sub_month: "شهري", sub_year: "سنوي",
                 adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف"
             },
             fr: {
@@ -298,18 +334,100 @@
                 sys_active:"Système Actif",
                 err_price_logic: "Erreur: Le prix de vente doit être supérieur au prix d'achat",
                 prompt_new_price: "Entrez le nouveau prix de vente",
+                
+                // Admin & Subscription
                 adm_time: "Date", adm_comp: "Société", adm_phone: "Tél", adm_code: "Code", adm_stat: "Statut", adm_act: "Action",
+                adm_gen: "Générer Code", adm_renew: "Renouveler ($)", adm_pay_hist: "Historique",
+                msg_sus: "Compte suspendu par l'admin. Contactez pour payer.",
+                msg_exp: "Abonnement expiré. Veuillez payer pour renouveler.",
+                msg_warn: "Attention: Votre abonnement expire bientôt (1 jour).",
+                sub_day: "Journalier", sub_week: "Hebdomadaire", sub_month: "Mensuel", sub_year: "Annuel",
                 adm_stop: "Suspendre", adm_start: "Activer", adm_del: "Supprimer"
             }
         };
 
         const app = {
-            state: { cid:null, name:'', phone:'', admin:false, lang:'ar' },
+            state: { cid:null, name:'', phone:'', admin:false, lang:'ar', codeDocId: null },
             cart: [],
 
-            installPWA: function() {
-                if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((c) => { if (c.outcome==='accepted') document.getElementById('installBtn').style.display='none'; deferredPrompt=null; }); }
+            init: function() {
+                if (deferredPrompt) { deferredPrompt.prompt(); }
+                const session = localStorage.getItem('mda_session');
+                if (session) {
+                    const s = JSON.parse(session);
+                    this.verifySession(s);
+                }
             },
+
+            verifySession: async function(s) {
+                try {
+                    const doc = await db.collection('activation_codes').where('code', '==', s.code).get();
+                    if (!doc.empty) {
+                        const data = doc.docs[0].data();
+                        this.state.codeDocId = doc.docs[0].id;
+                        
+                        const statusCheck = this.checkAccountStatus(data);
+                        if (statusCheck.valid) {
+                            this.state.cid = s.cid;
+                            this.state.name = s.name;
+                            this.state.phone = s.phone;
+                            this.state.admin = s.admin;
+                            this.start(s.name, s.phone);
+                            
+                            if (statusCheck.warning) {
+                                document.getElementById('expiryWarning').innerText = this.t('msg_warn');
+                                document.getElementById('expiryWarning').style.display = 'block';
+                            }
+                        } else {
+                            this.showBlockScreen(statusCheck.reason);
+                        }
+                    } else {
+                        this.logout();
+                    }
+                } catch(e) {
+                    console.error("Session Check Error", e);
+                }
+            },
+
+            checkAccountStatus: function(data) {
+                if (data.status === 'suspended') return { valid: false, reason: 'suspended' };
+                if (data.expiryDate) {
+                    const now = new Date();
+                    const expiry = new Date(data.expiryDate);
+                    const diffTime = expiry - now;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    if (diffTime < 0) return { valid: false, reason: 'expired' };
+                    if (diffDays <= 1) return { valid: true, warning: true };
+                }
+                return { valid: true };
+            },
+
+            showBlockScreen: function(reason) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'none';
+                const screen = document.getElementById('blockScreen');
+                const title = document.getElementById('blockTitle');
+                const msg = document.getElementById('blockMsg');
+                
+                screen.style.display = 'flex';
+                if (reason === 'suspended') {
+                    msg.innerText = this.t('msg_sus');
+                } else {
+                    title.innerText = "Subscription Expired";
+                    msg.innerText = this.t('msg_exp');
+                }
+            },
+
+            addDuration: function(date, type) {
+                const d = new Date(date);
+                if(type === 'day') d.setDate(d.getDate() + 1);
+                if(type === 'week') d.setDate(d.getDate() + 7);
+                if(type === 'month') d.setMonth(d.getMonth() + 1);
+                if(type === 'year') d.setFullYear(d.getFullYear() + 1);
+                return d.toISOString();
+            },
+
             formatDate: function(isoString) {
                 if (!isoString) return '-';
                 const d = new Date(isoString);
@@ -320,9 +438,11 @@
                 const minutes = String(d.getMinutes()).padStart(2, '0');
                 return `${day}/${month}/${year} ${hours}:${minutes}`;
             },
+            
             randomStr: function(l) {
                 const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'; let r=''; for(let i=0;i<l;i++) r+=c.charAt(Math.floor(Math.random()*c.length)); return r;
             },
+
             toggleLang: function() {
                 this.state.lang = this.state.lang==='ar'?'fr':'ar'; const l = this.state.lang; const d = dict[l];
                 document.documentElement.dir = l==='ar'?'rtl':'ltr'; document.getElementById('langBtn').innerText = l==='ar'?'Français':'العربية';
@@ -337,20 +457,55 @@
                 e.preventDefault(); const btn=document.getElementById('logBtn'); btn.innerText=this.t('wait'); btn.disabled=true;
                 const n=document.getElementById('logName').value, p=document.getElementById('logPhone').value, c=document.getElementById('logCode').value;
                 try {
-                    if(p==='46154399' && c==='371915') { this.state.admin=true; this.state.cid='ADMIN'; this.start('Admin','46154399'); return; }
+                    if(p==='46154399' && c==='371915') { 
+                        this.state.admin=true; this.state.cid='ADMIN'; 
+                        this.saveSession('ADMIN', 'Admin', '46154399', '371915', true);
+                        this.start('Admin','46154399'); return; 
+                    }
+                    
                     const s = await db.collection('activation_codes').where('code','==',c).get();
                     if(s.empty) throw new Error(this.t('err_login'));
-                    const d = s.docs[0].data();
-                    if(d.status==='suspended') throw new Error(this.t('err_sus'));
+                    
+                    const doc = s.docs[0];
+                    const d = doc.data();
+                    this.state.codeDocId = doc.id;
+
+                    const statusCheck = this.checkAccountStatus(d);
+                    if (!statusCheck.valid) {
+                        this.showBlockScreen(statusCheck.reason);
+                        return;
+                    }
+
                     if((d.targetPhone && d.targetPhone!==p) || (d.used && d.actualPhone!==p)) throw new Error(this.t('err_login'));
+                    
                     let cid=d.companyId;
                     if(!d.used) {
                         const r = await db.collection('companies').add({name:n, phone:p, code:c, createdAt:new Date().toISOString()});
-                        cid=r.id; await db.collection('activation_codes').doc(s.docs[0].id).update({used:true, companyId:cid, actualName:n, actualPhone:p, status:'active', usedAt:new Date().toISOString()});
+                        cid=r.id; 
+                        const now = new Date();
+                        const expiry = this.addDuration(now, d.subscriptionType || 'month');
+                        await db.collection('activation_codes').doc(doc.id).update({
+                            used:true, companyId:cid, actualName:n, actualPhone:p, status:'active', 
+                            usedAt:now.toISOString(), expiryDate: expiry
+                        });
                     }
-                    this.state.cid=cid; this.state.name=n; this.state.phone=p; this.start(n,p);
+                    
+                    this.state.cid=cid; this.state.name=n; this.state.phone=p;
+                    this.saveSession(cid, n, p, c, false);
+                    this.start(n,p);
+
                 } catch(er) { alert(er.message); btn.disabled=false; btn.innerText=this.t('btn'); }
             },
+
+            saveSession: function(cid, name, phone, code, isAdmin) {
+                localStorage.setItem('mda_session', JSON.stringify({cid, name, phone, code, admin: isAdmin}));
+            },
+
+            logout: function() {
+                localStorage.removeItem('mda_session');
+                location.reload();
+            },
+
             start: function(n,p) { 
                 document.getElementById('authScreen').style.display='none'; 
                 document.getElementById('appScreen').style.display='flex'; 
@@ -467,7 +622,6 @@
                     th=`<tr><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_print')}</th></tr>`;
                     docs.forEach(d=>{ 
                         const str=encodeURIComponent(JSON.stringify(d.items)); 
-                        // DATE FIX FOR MOBILE
                         const dateFormatted = this.formatDate(d.createdAt);
                         h+=`<tr><td>${dateFormatted}</td><td>${d.customer}</td><td>${d.total}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${d.id}','${d.customer}',${d.total},'${str}')">${this.t('th_print')}</button></td></tr>`; 
                     });
@@ -575,14 +729,8 @@
             },
             print: function(id, c, t, items) {
                 const dir = this.state.lang==='ar'?'rtl':'ltr';
-                // DATE FIX PRINT
-                const d = new Date();
-                const day = String(d.getDate()).padStart(2, '0');
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const year = d.getFullYear();
-                const hours = String(d.getHours()).padStart(2, '0');
-                const mins = String(d.getMinutes()).padStart(2, '0');
-                const formattedDate = `${day}/${month}/${year} ${hours}:${mins}`;
+                const d = new Date().toLocaleDateString();
+                const formattedDate = this.formatDate(new Date().toISOString());
 
                 const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`;
                 let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join('');
@@ -602,37 +750,107 @@
             },
 
             admin: async function(div) {
-                div.innerHTML = `<div class="card"><input id="an" class="inp inp-group" placeholder="Name"><input id="ap" class="inp inp-group" placeholder="Phone"><button onclick="app.gen()" class="btn btn-prim">Generate</button></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`;
-                const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(20).get();
-                let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_stat')}</th><th>${this.t('adm_act')}</th></tr>`, b='';
+                div.innerHTML = `
+                    <div class="card">
+                        <input id="an" class="inp" placeholder="Name">
+                        <input id="ap" class="inp" placeholder="Phone">
+                        <select id="adur" class="select-dur" style="width:100%;padding:12px;margin-bottom:15px;border-radius:10px;">
+                            <option value="day">${this.t('sub_day')}</option>
+                            <option value="week">${this.t('sub_week')}</option>
+                            <option value="month" selected>${this.t('sub_month')}</option>
+                            <option value="year">${this.t('sub_year')}</option>
+                        </select>
+                        <button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button>
+                    </div>
+                    <div class="card">
+                        <div class="table-scroll">
+                            <table id="at"><thead></thead><tbody></tbody></table>
+                        </div>
+                    </div>`;
+                
+                const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get();
+                let h=`<tr>
+                    <th>${this.t('adm_time')}</th>
+                    <th>${this.t('adm_code')}</th>
+                    <th>${this.t('adm_comp')}</th>
+                    <th>${this.t('adm_phone')}</th>
+                    <th>Expires</th>
+                    <th>${this.t('adm_pay_hist')}</th>
+                    <th>${this.t('adm_act')}</th>
+                </tr>`;
+                let b='';
+                
                 s.forEach(d=>{
                     const v=d.data();
-                    const rawDate = v.used ? v.usedAt : v.createdAt;
-                    const dateStr = this.formatDate(rawDate);
+                    const dateStr = this.formatDate(v.createdAt);
                     const comp = v.actualName || v.targetCompanyName || '-';
                     const ph = v.actualPhone || v.targetPhone || '-';
-                    const stStyle = v.status==='active' ? 'background:#d1fae5;color:#065f46' : 'background:#fee2e2;color:#991b1b';
+                    const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-';
+                    
+                    let payHist = '';
+                    if(v.paymentHistory) {
+                        payHist = `<div class="pay-history">Count: ${v.paymentHistory.length}`;
+                        v.paymentHistory.forEach(ph => payHist += `<br>${new Date(ph.date).toLocaleDateString()}`);
+                        payHist += '</div>';
+                    }
+
                     b+=`<tr>
                         <td>${dateStr}</td>
+                        <td style="font-family:monospace;font-weight:bold">${v.code}</td>
                         <td>${comp}</td>
                         <td>${ph}</td>
-                        <td style="font-family:monospace;font-weight:bold">${v.code}</td>
-                        <td><span style="padding:3px 8px;border-radius:10px;font-size:12px;${stStyle}">${v.status}</span></td>
+                        <td style="color:${new Date(v.expiryDate)<new Date()?'red':'green'}">${expDate}</td>
+                        <td>${payHist}</td>
                         <td>
-                            <button onclick="app.tst('${d.id}','${v.status}')" class="btn btn-sec" style="padding:5px 10px;font-size:12px">${v.status==='active'?this.t('adm_stop'):this.t('adm_start')}</button>
-                            <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px 10px;font-size:12px">${this.t('adm_del')}</button>
+                            <button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px;">${this.t('adm_renew')}</button>
+                            <button onclick="app.tst('${d.id}','${v.status}')" class="btn btn-prim" style="padding:5px;font-size:11px;">${v.status==='active'?'Stop':'Start'}</button>
+                            <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px;">Del</button>
                         </td>
                     </tr>`;
                 });
                 document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b;
             },
+
             gen: async function() {
-                const n=document.getElementById('an').value, p=document.getElementById('ap').value;
-                if(n&&p) { await db.collection('activation_codes').add({code:this.randomStr(10), targetCompanyName:n, targetPhone:p, status:'active', used:false, createdAt:new Date().toISOString()}); this.nav('admin'); }
+                const n=document.getElementById('an').value, p=document.getElementById('ap').value, dur=document.getElementById('adur').value;
+                if(n&&p) { 
+                    await db.collection('activation_codes').add({
+                        code:this.randomStr(10), targetCompanyName:n, targetPhone:p, 
+                        status:'active', used:false, createdAt:new Date().toISOString(),
+                        subscriptionType: dur, paymentHistory: []
+                    }); 
+                    this.nav('admin'); 
+                }
             },
+
+            renewCompany: async function(id, type) {
+                if(!confirm("Confirm Payment & Renewal?")) return;
+                const doc = await db.collection('activation_codes').doc(id).get();
+                const data = doc.data();
+                let baseDate = new Date();
+                if(data.expiryDate && new Date(data.expiryDate) > baseDate) {
+                    baseDate = new Date(data.expiryDate);
+                }
+                const newExpiry = this.addDuration(baseDate, type);
+                const payment = { date: new Date().toISOString(), amount: 'Paid', type: type };
+                const history = data.paymentHistory || [];
+                history.push(payment);
+
+                await db.collection('activation_codes').doc(id).update({
+                    expiryDate: newExpiry,
+                    paymentHistory: history,
+                    status: 'active'
+                });
+                
+                alert("Renewed until: " + new Date(newExpiry).toLocaleDateString());
+                this.nav('admin');
+            },
+
             tst: async function(id,st) { await db.collection('activation_codes').doc(id).update({status:st==='active'?'suspended':'active'}); this.nav('admin'); },
-            delCode: async function(id) { if(confirm('Delete?')) { await db.collection('activation_codes').doc(id).delete(); this.nav('admin'); } }
+            delCode: async function(id) { if(confirm('Delete?')) { await db.collection('activation_codes').doc(id).delete(); this.nav('admin'); } },
         };
+        
+        window.onload = function() { app.init(); };
     </script>
 </body>
 </html>
