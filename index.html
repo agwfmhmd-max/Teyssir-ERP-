@@ -111,11 +111,10 @@
         .add-btn-large:active { transform: scale(0.98); }
 
         .cart-items { max-height: 45vh; overflow-y: auto; }
-        /* لون نص السلة رمادي غامق ليكون واضحاً على الخلفية البيضاء */
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: var(--text-dark); }
 
         /* حالة الاشتراك والإدارة */
-        #adminLink { display: none; } /* يظهر فقط للمشرف */
+        #adminLink { display: none; }
         .status-active { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .status-suspended { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .pay-history { font-size: 10px; color: #666; margin-top: 5px; max-height: 40px; overflow-y: auto; background: #fff; padding: 2px; border: 1px solid #eee; }
@@ -143,6 +142,26 @@
             <i class="fa-brands fa-whatsapp"></i> تواصل للدفع
         </a>
         <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px; width:auto;">تسجيل خروج</button>
+    </div>
+
+    <!-- نافذة تعليمات الآيفون -->
+    <div id="iosInstallModal" style="display:none; position:fixed; bottom:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:flex-end;">
+        <div style="background:white; width:100%; max-width:500px; border-radius:20px 20px 0 0; padding:30px; text-align:center;">
+            <img src="logo.png" style="width:50px; border-radius:10px; margin-bottom:15px;">
+            <h3 style="margin-top:0; color:var(--primary);">تثبيت التطبيق على الآيفون</h3>
+            <p style="color:#666; font-size:14px; margin-bottom:20px;">لتثبيت التطبيق وتشغيله بدون إنترنت:</p>
+            <div style="text-align:right; margin-bottom:20px;">
+                <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-share-from-square" style="color:#007aff; font-size:20px;"></i>
+                    <span>1. اضغط على زر <b>مشاركة</b> في الأسفل</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fa-regular fa-square-plus" style="color:#000; font-size:20px;"></i>
+                    <span>2. اختر <b>إضافة إلى الصفحة الرئيسية</b></span>
+                </div>
+            </div>
+            <button onclick="document.getElementById('iosInstallModal').style.display='none'" class="btn btn-prim" style="width:100%;">فهمت</button>
+        </div>
     </div>
 
     <!-- Auth -->
@@ -199,7 +218,12 @@
 
     <script>
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').style.display = 'block'; });
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn=document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; });
+
+        const isIos = () => { const userAgent = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test(userAgent); }
+        const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+        if (isIos() && !isInStandaloneMode()) { const btn = document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; }
 
         const firebaseConfig = {
             apiKey: "AIzaSyA6glwj94Onm0r6gRtxtoyqEISpPChDcHo",
@@ -291,11 +315,14 @@
             },
 
             installPWA: async function() {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') { document.getElementById('installBtn').style.display = 'none'; }
-                deferredPrompt = null;
+                if (isIos()) {
+                    document.getElementById('iosInstallModal').style.display = 'flex';
+                } else if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') { document.getElementById('installBtn').style.display = 'none'; }
+                    deferredPrompt = null;
+                }
             },
 
             verifySession: async function(s) {
