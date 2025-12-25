@@ -22,41 +22,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- الألوان --- */
+        /* --- الألوان (فاتحة ونظيفة) --- */
         :root { 
-            --primary: #1a4585; 
-            --accent: #dcb14a; 
+            --primary: #1a4585; /* أزرق ملكي */
+            --accent: #dcb14a;  /* ذهبي */
             --bg: #f8f9fa;      
             --white: #ffffff;
-            --text-dark: #374151; 
+            --text-dark: #374151; /* رمادي غامق */
             --text-light: #6b7280;
             --border: #e5e7eb;
             --danger: #ef4444; 
             --success: #10b981;
-            --header-h: 65px; 
+            --header-h: 65px;
+            --lang-green: #006935; /* لون زر الترجمة الجديد */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text-dark); overflow-x: hidden; }
 
-        /* --- زر اللغة (في شاشة الدخول فقط) --- */
-        .lang-float-login {
-            position: fixed; top: 20px; z-index: 2000;
-            background: var(--white); border: 1px solid var(--primary); color: var(--primary);
-            padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 14px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(26, 69, 133, 0.15); transition: 0.3s;
+        /* --- زر الترجمة الجديد (مثل الصورة) --- */
+        .lang-btn-style {
+            position: fixed; top: 15px; z-index: 2000;
+            width: 45px; height: 45px;
+            background-color: var(--lang-green); 
+            color: white;
+            border: none;
+            border-radius: 12px; /* حواف ناعمة */
+            font-size: 24px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
         }
-        /* عكس الاتجاه ليكون متعاكساً مع المحتوى */
-        html[dir="rtl"] .lang-float-login { left: 20px; } 
-        html[dir="ltr"] .lang-float-login { right: 20px; }
-
-        /* زر اللغة داخل الهيدر (صغير) */
-        .header-lang-btn {
-            background: transparent; border: 1px solid var(--primary); color: var(--primary);
-            padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 12px; cursor: pointer;
-            margin-inline-end: 10px; /* مسافة بينه وبين الخروج */
-        }
-        .header-lang-btn:hover { background: #f0f4ff; }
+        .lang-btn-style:active { transform: scale(0.95); }
+        
+        /* مكان الزر يتغير حسب اللغة */
+        html[dir="rtl"] .lang-btn-style { left: 20px; } 
+        html[dir="ltr"] .lang-btn-style { right: 20px; }
 
         /* شاشة الدخول */
         .auth-wrap { display: flex; min-height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%); padding: 20px; }
@@ -75,16 +77,7 @@
 
         /* التخطيط العام */
         .app-container { display: none; flex-direction: column; min-height: 100vh; }
-        
-        /* الهيدر المحسن */
-        .top-header { 
-            height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px; 
-            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
-        }
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .header-left { display: flex; align-items: center; } /* حاوية للأزرار اليسرى */
-        
+        .top-header { height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
 
         .sidebar { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--white); z-index: 1500; padding-top: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.05); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-inline-end: 1px solid var(--border); }
@@ -136,20 +129,24 @@
         .status-active { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .status-suspended { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .pay-history { font-size: 10px; color: #666; margin-top: 5px; max-height: 40px; overflow-y: auto; background: #fff; padding: 2px; border: 1px solid #eee; }
+        
+        /* Subscription Block */
         .block-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
         .block-icon { font-size: 70px; margin-bottom: 20px; color: var(--danger); opacity: 0.8; }
         .expiry-warning { background: #fffbeb; color: #92400e; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; border-bottom: 1px solid #fcd34d; display: none; }
         .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
 
-        /* الطباعة */
+        /* Print */
         .print-box { display: none; }
-        @media print { .app-container, .auth-wrap, .lang-float, .lang-float-login, #expiryWarning { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
+        @media print { .app-container, .auth-wrap, .lang-btn-style, #expiryWarning { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
     </style>
 </head>
 <body>
 
-    <!-- زر اللغة العائم (فقط لشاشة الدخول) -->
-    <div id="loginLangBtn" class="lang-float-login" onclick="app.toggleLang()">Français</div>
+    <!-- زر الترجمة الجديد (الأخضر) -->
+    <button onclick="app.toggleLang()" class="lang-btn-style">
+        <i class="fa-solid fa-language"></i>
+    </button>
 
     <div id="expiryWarning" class="expiry-warning"></div>
 
@@ -188,9 +185,11 @@
         <div class="auth-card">
             <img src="logo.png" alt="Logo" style="width:100px; margin-bottom:20px; border-radius:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
             <h2 style="color:var(--primary); margin-top:0; margin-bottom: 25px; font-weight: 800;" id="t_title">ERP System</h2>
+            
             <div id="installBtn" onclick="app.installPWA()">
                 <i class="fa-solid fa-download"></i> <span id="t_install">تثبيت التطبيق</span>
             </div>
+            
             <form onsubmit="app.login(event)">
                 <input id="logName" class="inp" placeholder="اسم الشركة" required>
                 <input id="logPhone" type="tel" class="inp" placeholder="رقم الهاتف" required>
@@ -208,16 +207,11 @@
     <div id="appScreen" class="app-container">
         <div class="sidebar-overlay" onclick="app.toggleMenu()"></div>
         <header class="top-header">
-            <div class="header-right">
+            <div style="display:flex; align-items:center; gap:15px;">
                 <div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div>
                 <div><div id="h_name" style="font-weight:bold; color:var(--primary); font-size:1.1em;"></div><div id="h_phone" style="font-size:12px; color:#888;"></div></div>
             </div>
-            
-            <div class="header-left">
-                <!-- زر الترجمة الداخلي (بجوار الخروج) -->
-                <button onclick="app.toggleLang()" class="header-lang-btn" id="innerLangBtn">Français</button>
-                <button onclick="app.logout()" class="btn btn-dan" style="width:auto; padding:8px 20px; font-size:13px;" id="t_logout"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
-            </div>
+            <button onclick="app.logout()" class="btn btn-dan" style="width:auto; padding:8px 20px; font-size:13px;" id="t_logout"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
         </header>
         <aside class="sidebar" id="sidebar">
             <div style="padding: 25px; text-align:center; background: #fcfcfc; border-bottom: 1px solid var(--border);">
@@ -237,6 +231,7 @@
         <main id="workspace" class="main-content"></main>
     </div>
 
+    <!-- Print -->
     <div id="printArea" class="print-box"></div>
 
     <script>
@@ -245,6 +240,7 @@
 
         const isIos = () => { const userAgent = window.navigator.userAgent.toLowerCase(); return /iphone|ipad|ipod/.test(userAgent); }
         const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
         if (isIos() && !isInStandaloneMode()) { const btn = document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; }
 
         const firebaseConfig = {
@@ -337,6 +333,7 @@
                         this.state.cid = 'ADMIN'; this.state.name = 'Admin'; this.state.phone = '46154399'; this.state.admin = true;
                         this.start('Admin', '46154399');
                     } else {
+                        // Monitor normal user session in real-time
                         this.monitorSession(s.codeDocId, s);
                     }
                 }
@@ -435,11 +432,8 @@
             toggleLang: function() {
                 this.state.lang = this.state.lang==='ar'?'fr':'ar'; const l = this.state.lang; const d = dict[l];
                 document.documentElement.dir = l==='ar'?'rtl':'ltr'; 
-                // تحديث نص الأزرار
-                const btnText = l==='ar'?'Français':'العربية';
-                document.getElementById('langBtn').innerText = btnText;
-                document.getElementById('innerLangBtn').innerText = btnText;
-
+                // Fix: Remove text assignment to langBtn (it has an icon now)
+                
                 document.getElementById('t_title').innerText = d.title; document.getElementById('logName').placeholder = d.comp; document.getElementById('logPhone').placeholder = d.phone; document.getElementById('logCode').placeholder = d.code; document.getElementById('logBtn').innerText = d.btn; document.getElementById('t_getcode').innerText = d.get; document.getElementById('t_contact').innerText = d.cont; document.getElementById('t_logout').innerText = d.logout; document.getElementById('t_install').innerText = d.t_install;
                 document.querySelectorAll('[data-key]').forEach(el => el.innerText = d[el.getAttribute('data-key')]);
                 if(this.state.cid) this.nav(document.querySelector('.nav-item.active') ? document.querySelector('.nav-item.active').getAttribute('onclick').split("'")[1] : 'home');
@@ -507,10 +501,6 @@
                 } else {
                     document.getElementById('adminLink').style.display = 'none';
                 }
-                
-                // Hide floating login lang button when logged in
-                document.getElementById('loginLangBtn').style.display = 'none';
-                
                 this.nav('home'); 
             },
 
