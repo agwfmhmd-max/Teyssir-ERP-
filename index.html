@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERP System - Enterprise</title>
     
-    <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a4585">
     <meta name="mobile-web-app-capable" content="yes">
@@ -13,110 +12,87 @@
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="icon" type="image/png" href="logo.png">
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- الألوان (فاتحة ونظيفة) --- */
         :root { 
-            --primary: #1a4585; /* أزرق ملكي */
-            --accent: #dcb14a;  /* ذهبي */
-            --bg: #f8f9fa;      
-            --white: #ffffff;
-            --text-dark: #374151; /* رمادي غامق */
-            --text-light: #6b7280;
-            --border: #e5e7eb;
-            --danger: #ef4444; 
-            --success: #10b981;
-            --lang-green: #006935;
-            --header-h: 65px; 
+            --primary: #1a4585; --accent: #dcb14a; --bg: #f8f9fa; --white: #ffffff;
+            --text-dark: #374151; --text-light: #6b7280; --border: #e5e7eb;
+            --danger: #ef4444; --success: #10b981; --lang-green: #006935; --header-h: 65px; 
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text-dark); overflow-x: hidden; }
 
-        /* زر اللغة */
         .lang-btn-style {
-            position: fixed; top: 20px; z-index: 20000;
-            width: 45px; height: 45px;
-            background-color: var(--lang-green); 
-            color: white; border: none; border-radius: 12px; font-size: 20px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
+            position: fixed; top: 20px; z-index: 20000; width: 45px; height: 45px;
+            background-color: var(--lang-green); color: white; border: none; border-radius: 10px;
+            font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;
         }
         .lang-btn-style:active { transform: scale(0.95); }
         html[dir="rtl"] .lang-btn-style { left: 20px; } html[dir="ltr"] .lang-btn-style { right: 20px; }
 
-        /* شاشة الحظر */
         .block-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #ffffff !important; z-index: 10000;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; padding: 30px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #ffffff; z-index: 10000;
+            display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px;
         }
         .block-icon { font-size: 80px; margin-bottom: 20px; color: var(--danger); }
         .block-title { font-size: 28px; color: var(--danger); margin-bottom: 15px; font-weight: bold; }
         .block-msg { font-size: 18px; color: #555; margin-bottom: 30px; line-height: 1.6; max-width: 500px; }
 
-        /* شاشة الترحيب */
         .welcome-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 30000; justify-content: center; align-items: center;
-            backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.85); z-index: 30000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
         .welcome-content {
             background: white; width: 90%; max-width: 400px; padding: 30px;
-            border-radius: 20px; text-align: center; border-top: 5px solid var(--primary);
-            animation: zoomIn 0.3s ease;
+            border-radius: 20px; text-align: center; border-top: 5px solid var(--primary); animation: zoomIn 0.3s ease;
         }
         @keyframes zoomIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
         .welcome-text { font-size: 16px; color: #666; margin: 20px 0; line-height: 1.6; }
 
-        /* شاشة الدخول */
         .auth-wrap { display: flex; min-height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%); padding: 20px; }
         .auth-card { background: var(--white); width: 100%; max-width: 420px; padding: 40px 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(26, 69, 133, 0.08); border: 1px solid var(--border); }
         .inp { width: 100%; padding: 14px; border: 1px solid #d1d5db; border-radius: 12px; font-size: 16px; margin-bottom: 15px; outline: none; background: #f9fafb; color: var(--text-dark); transition: 0.3s; }
         .inp:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(26, 69, 133, 0.1); }
         .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
         .btn-prim { background: var(--primary); color: var(--white); }
         .btn-sec { background: var(--accent); color: var(--white); }
         .btn-dan { background: var(--danger); color: var(--white); }
         
         .wa-link { display: flex; align-items: center; justify-content: center; gap: 10px; background: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 50px; font-weight: bold; margin-top: 20px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.2); }
-        
         #installBtn { display: none; width: 100%; background: var(--primary); color: white; margin-bottom: 20px; padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(26, 69, 133, 0.3); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-        /* Dashboard */
         .app-container { display: none; flex-direction: column; min-height: 100vh; }
         .top-header { height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
+
         .sidebar { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--white); z-index: 1500; padding-top: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.05); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-inline-end: 1px solid var(--border); }
         html[dir="rtl"] .sidebar { right: 0; transform: translateX(100%); } html[dir="rtl"] .sidebar.open { transform: translateX(0); }
         html[dir="ltr"] .sidebar { left: 0; transform: translateX(-100%); } html[dir="ltr"] .sidebar.open { transform: translateX(0); }
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 69, 133, 0.2); backdrop-filter: blur(2px); z-index: 1400; display: none; }
         .sidebar-overlay.show { display: block; }
+
         .nav-item { padding: 16px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-light); font-weight: 500; cursor: pointer; border-left: 4px solid transparent; border-right: 4px solid transparent; transition: 0.2s; }
         .nav-item:hover { background: #f3f4f6; color: var(--primary); }
-        .nav-item.active { background: #eef2ff; color: var(--primary); border-color: var(--primary); }
+        .nav-item.active { background: #eef2ff; color: var(--primary); }
+        html[dir="rtl"] .nav-item.active { border-right-color: var(--primary); } html[dir="ltr"] .nav-item.active { border-left-color: var(--primary); }
         .main-content { flex: 1; padding: 25px; overflow-y: auto; }
 
-        /* Cards */
         .card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid var(--border); }
         .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th, td { padding: 16px; text-align: start; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-dark); }
         th { background: #f9fafb; white-space: nowrap; font-weight: bold; color: var(--primary); }
-        
-        /* POS Styles */
+
         .pos-container { display: grid; gap: 20px; }
         @media(min-width: 768px) { .pos-container { height: calc(100vh - 120px); grid-template-columns: 1.6fr 1fr; } .sidebar { position: fixed; top: var(--header-h); bottom: 0; width: 250px; transform: none !important; box-shadow: none; border-inline-end: 1px solid var(--border); z-index: 900; } html[dir="rtl"] .main-content { margin-right: 250px; } html[dir="ltr"] .main-content { margin-left: 250px; } .menu-btn, .sidebar-overlay { display: none !important; } }
+        
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; overflow-y: auto; max-height: 60vh; padding: 5px; }
         .prod-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; justify-content: space-between; height: 120px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .prod-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(26, 69, 133, 0.15); }
@@ -124,74 +100,65 @@
         .prod-card .price { color: var(--primary); font-weight: bold; font-size: 16px; margin: 5px 0; }
         .prod-card .stock { font-size: 12px; color: var(--text-light); background: #f3f4f6; padding: 3px 8px; border-radius: 10px; display: inline-block; }
         .selected-product-panel { background: #eef2ff; border: 1px solid var(--primary); border-radius: 12px; padding: 20px; margin-top: 15px; display: none; animation: slideUp 0.3s ease; box-shadow: 0 10px 30px rgba(26, 69, 133, 0.1); }
+        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
         .selected-info { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(26, 69, 133, 0.1); padding-bottom: 10px; font-weight: bold; color: var(--primary); font-size: 16px; }
         .action-row { display: flex; gap: 15px; }
         .big-qty-input { flex: 1; height: 55px; font-size: 24px; text-align: center; border: 2px solid #d1d5db; border-radius: 12px; font-weight: bold; background: var(--white); color: var(--text-dark); }
         .add-btn-large { flex: 2; height: 55px; background: var(--primary); color: var(--white); border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(26, 69, 133, 0.2); }
         .cart-items { max-height: 45vh; overflow-y: auto; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; color: var(--text-dark); }
-
-        /* Admin & Status */
         #adminLink { display: none; }
         .status-active { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .status-suspended { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .pay-history { font-size: 10px; color: #666; margin-top: 5px; max-height: 40px; overflow-y: auto; background: #fff; padding: 2px; border: 1px solid #eee; }
-        
         .expiry-warning { background: #fffbeb; color: #92400e; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; border-bottom: 1px solid #fcd34d; display: none; }
         .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
 
-        /* Print */
         .print-box { display: none; }
         @media print { .app-container, .auth-wrap, .lang-btn-style, #expiryWarning { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
     </style>
 </head>
 <body>
 
-    <!-- زر اللغة (أخضر وعائم) -->
     <button onclick="app.toggleLang()" class="lang-btn-style">
         <i class="fa-solid fa-language"></i>
     </button>
 
     <div id="expiryWarning" class="expiry-warning"></div>
 
-    <!-- نافذة الترحيب -->
     <div id="welcomeModal" class="welcome-modal">
         <div class="welcome-content">
             <img src="logo.png" style="width:80px; margin-bottom:15px; border-radius:15px;">
-            <h2 style="color:var(--primary); margin-top:0;" data-key="title">ERP System</h2>
-            <p class="welcome-text" style="color:#666; margin-bottom:20px;">
-                النظام المتكامل لإدارة الأعمال.<br>للبدء، تحتاج لرمز تفعيل.
+            <h2 style="color:var(--primary); margin-top:0;" data-key="w_title">مرحباً بك</h2>
+            <p class="welcome-text" style="color:#666; margin-bottom:20px;" data-key="w_text">
+                النظام المتكامل لإدارة الأعمال. للبدء تحتاج لرمز تفعيل.
             </p>
             <a href="https://wa.me/22220479962" class="wa-link" style="margin-bottom:20px; justify-content:center;">
-                <i class="fa-brands fa-whatsapp"></i> تواصل مع المطور
+                <i class="fa-brands fa-whatsapp"></i> <span data-key="cont">تواصل مع المطور</span>
             </a>
-            <button onclick="app.closeWelcome()" class="btn btn-prim" style="width:100%;">فهمت</button>
+            <button onclick="app.closeWelcome()" class="btn btn-prim" style="width:100%;" data-key="w_btn">فهمت</button>
         </div>
     </div>
 
-    <!-- شاشة الحظر -->
     <div id="blockScreen" class="block-screen">
         <i class="fa-solid fa-triangle-exclamation block-icon"></i>
         <h2 id="blockTitle" class="block-title">الحساب معلق</h2>
         <p id="blockMsg" class="block-msg">انتهت فترة الاشتراك.</p>
         <a href="https://wa.me/22220479962" class="wa-link" style="width:auto; padding:12px 40px; font-size: 16px;">
-            <i class="fa-brands fa-whatsapp"></i> تواصل للدفع
+            <i class="fa-brands fa-whatsapp"></i> <span data-key="pay_now">تواصل للدفع</span>
         </a>
         <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px; width:auto;">
-            <i class="fa-solid fa-right-from-bracket"></i> تسجيل خروج
+            <i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">خروج</span>
         </button>
     </div>
 
-    <!-- Auth -->
     <div id="authScreen" class="auth-wrap">
         <div class="auth-card">
             <img src="logo.png" alt="Logo" style="width:100px; margin-bottom:20px; border-radius:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
             <h2 style="color:var(--primary); margin-top:0; margin-bottom: 25px; font-weight: 800;" data-key="title">ERP System</h2>
-            
             <div id="installBtn" onclick="app.installPWA()">
                 <i class="fa-solid fa-download"></i> <span data-key="t_install">تثبيت التطبيق</span>
             </div>
-            
             <form onsubmit="app.login(event)">
                 <input id="logName" class="inp" data-ph="comp" placeholder="اسم الشركة" required>
                 <input id="logPhone" type="tel" class="inp" data-ph="phone" placeholder="رقم الهاتف" required>
@@ -200,14 +167,11 @@
             </form>
             <div style="margin-top:30px; border-top:1px solid var(--border); padding-top:20px;">
                 <p style="margin:0 0 10px; color:var(--text-light); font-size:0.9em;" data-key="get">للحصول على الرمز:</p>
-                <a href="https://wa.me/22220479962" class="wa-link">
-                    <i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span>
-                </a>
+                <a href="https://wa.me/22220479962" class="wa-link"><i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span></a>
             </div>
         </div>
     </div>
 
-    <!-- App -->
     <div id="appScreen" class="app-container">
         <div class="sidebar-overlay" onclick="app.toggleMenu()"></div>
         <header class="top-header">
@@ -215,7 +179,6 @@
                 <div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div>
                 <div><div id="h_name" style="font-weight:bold; color:var(--primary); font-size:1.1em;"></div><div id="h_phone" style="font-size:12px; color:#888;"></div></div>
             </div>
-            <!-- زر الخروج محذوف من هنا نهائياً -->
         </header>
         <aside class="sidebar" id="sidebar">
             <div style="padding: 25px; text-align:center; background: #fcfcfc; border-bottom: 1px solid var(--border);">
@@ -235,12 +198,15 @@
         <main id="workspace" class="main-content"></main>
     </div>
 
-    <!-- Print -->
     <div id="printArea" class="print-box"></div>
 
     <script>
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn=document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; });
+
+        const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+        const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+        if (isIos() && !isInStandaloneMode()) { const btn = document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; }
 
         const firebaseConfig = {
             apiKey: "AIzaSyA6glwj94Onm0r6gRtxtoyqEISpPChDcHo",
@@ -262,7 +228,7 @@
                 title: "نظام ERP", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
                 btn:"تسجيل الدخول", wait:"جاري التحقق...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور",
                 home:"الرئيسية", pos:"نقطة البيع", inv:"أرشيف الفواتير", stock:"المخزون",
-                exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية",
+                exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"خروج",
                 p_sel:"اختر منتجاً للبيع", p_pr:"السعر", p_qt:"العدد", p_add:"إضافة للفاتورة",
                 p_cl:"اسم العميل", p_save:"حفظ وطباعة", p_tot:"الإجمالي", t_install: "تثبيت التطبيق",
                 tbl_prod:"المنتج", tbl_qty:"الكمية", tbl_tot:"المجموع", tbl_act:"حذف",
@@ -278,11 +244,13 @@
                 sys_active:"النظام يعمل بنجاح",
                 err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
                 prompt_new_price: "أدخل سعر البيع الجديد",
+                pay_now: "تواصل للدفع",
+                w_title: "مرحباً بك", w_text: "النظام المتكامل لإدارة الأعمال. للبدء تحتاج لرمز تفعيل.", w_btn: "فهمت",
                 
                 // Admin
                 adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
                 adm_gen: "توليد رمز جديد", adm_renew: "تجديد ($)", adm_pay_hist: "سجل الدفعات",
-                msg_sus: "تم تعطيل الحساب من الإدارة. يرجى التواصل للدفع.",
+                msg_sus: "تم تعطيل الحساب من الإدارة.",
                 msg_exp: "انتهت فترة الاشتراك. يرجى الدفع لتجديد الخدمة.",
                 msg_warn: "تحذير: اشتراكك ينتهي قريباً (يوم واحد متبقي). يرجى التجديد.",
                 sub_day: "يومي", sub_week: "أسبوعي", sub_month: "شهري", sub_year: "سنوي",
@@ -292,7 +260,7 @@
                 title: "Système ERP", comp:"Nom de Société", phone:"Téléphone", code:"Code d'activation",
                 btn:"Connexion", wait:"Vérification...", get:"Pour obtenir le code:", cont:"Contacter le développeur",
                 home:"Accueil", pos:"Point de Vente", inv:"Factures", stock:"Stock",
-                exp:"Dépenses", sal:"Salaires", rep:"Rapports",
+                exp:"Dépenses", sal:"Salaires", rep:"Rapports", logout:"Déconnexion",
                 p_sel:"Choisir un produit", p_pr:"Prix", p_qt:"Qté", p_add:"Ajouter",
                 p_cl:"Nom du Client", p_save:"Enregistrer & Imprimer", p_tot:"Total", t_install: "Installer l'app",
                 tbl_prod:"Produit", tbl_qty:"Qté", tbl_tot:"Total", tbl_act:"Suppr",
@@ -308,12 +276,14 @@
                 sys_active:"Système Actif",
                 err_price_logic: "Erreur: Le prix de vente doit être supérieur au prix d'achat",
                 prompt_new_price: "Entrez le nouveau prix de vente",
+                pay_now: "Contacter pour payer",
+                w_title: "Bienvenue", w_text: "Système ERP complet. Code d'activation requis.", w_btn: "Compris",
                 
                 // Admin
                 adm_time: "Date", adm_comp: "Société", adm_phone: "Tél", adm_code: "Code", adm_stat: "Statut", adm_act: "Action",
                 adm_gen: "Générer Code", adm_renew: "Renouveler ($)", adm_pay_hist: "Historique",
-                msg_sus: "Compte suspendu par l'admin. Contactez pour payer.",
-                msg_exp: "Abonnement expiré. Veuillez payer pour renouveler.",
+                msg_sus: "Compte suspendu par l'admin.",
+                msg_exp: "Abonnement expiré.",
                 msg_warn: "Attention: Votre abonnement expire bientôt (1 jour).",
                 sub_day: "Journalier", sub_week: "Hebdomadaire", sub_month: "Mensuel", sub_year: "Annuel",
                 adm_stop: "Suspendre", adm_start: "Activer", adm_del: "Supprimer"
@@ -325,11 +295,9 @@
             cart: [],
 
             init: function() {
-                // Welcome Screen Check
                 if (!localStorage.getItem('welcomeSeen')) {
                     document.getElementById('welcomeModal').style.display = 'flex';
                 }
-
                 if (deferredPrompt) { deferredPrompt.prompt(); }
                 const session = localStorage.getItem('mda_session');
                 if (session) {
@@ -451,11 +419,11 @@
 
             toggleLang: function() {
                 this.state.lang = this.state.lang==='ar'?'fr':'ar'; const l = this.state.lang; const d = dict[l];
-                document.documentElement.dir = l==='ar'?'rtl':'ltr'; document.getElementById('langBtn').innerText = l==='ar'?'Français':'العربية';
-                // Update Text with data-key and data-ph
+                document.documentElement.dir = l==='ar'?'rtl':'ltr'; 
+                // Using data-key for all translations
                 document.querySelectorAll('[data-key]').forEach(el => el.innerText = d[el.getAttribute('data-key')]);
                 document.querySelectorAll('[data-ph]').forEach(el => el.placeholder = d[el.getAttribute('data-ph')]);
-                
+
                 if(this.state.cid) this.nav(document.querySelector('.nav-item.active') ? document.querySelector('.nav-item.active').getAttribute('onclick').split("'")[1] : 'home');
             },
             t: function(k) { return dict[this.state.lang][k] || k; },
@@ -535,28 +503,264 @@
                 }, 50);
             },
 
-            // ... (POS, LIST, REPORTS, ADMIN Functions remain same as previous version)
             home: function(div) { div.innerHTML = `<div class="card" style="text-align:center; padding:40px;"><img src="logo.png" style="width:80px; margin-bottom:15px; border-radius:10px;"><h3>${this.state.name}</h3><p>${this.t('sys_active')}</p></div>`; },
+
             pos: async function(div) {
-                this.cart=[]; selectedProduct=null; const s = await db.collection('products').where('companyId','==',this.state.cid).get();
-                let productsHTML = ''; s.forEach(d => { const p = d.data(); if(p.stock > 0) { productsHTML += `<div class="prod-card" onclick="app.selectProduct('${d.id}', '${p.name}', ${p.sellPrice}, ${p.buyPrice}, ${p.stock}, this)"><h4>${p.name}</h4><div class="price">${p.sellPrice.toLocaleString()}</div><div class="stock">Stock: ${p.stock}</div></div>`; } });
-                div.innerHTML = `<div class="pos-container"><div class="card" style="display:flex; flex-direction:column; max-height:85vh;"><h3 style="margin:0 0 10px; color:var(--primary);">${this.t('p_sel')}</h3><div class="product-grid">${productsHTML || '<p style="text-align:center;width:100%">Empty</p>'}</div><div id="selectionPanel" class="selected-product-panel"><div class="selected-info"><span id="dispName"></span><span id="dispPrice"></span></div><div class="action-row"><input id="sQty" type="number" class="big-qty-input" value="1" min="1" placeholder="1"><button onclick="app.addToCart()" class="add-btn-large"><i class="fa-solid fa-cart-plus"></i> ${this.t('p_add')}</button></div></div></div><div class="card" style="background:#ffffff; height:100%; display:flex; flex-direction:column; border:1px solid var(--primary);"><h3 style="margin:0; color:var(--primary);">${this.t('inv')}</h3><div class="cart-items" id="cartContainer"><div style="text-align:center;padding:20px;color:#999">${this.t('empty')}</div></div><div style="margin-top:auto; padding-top:10px;"><input id="posCust" class="inp" placeholder="${this.t('p_cl')}" style="margin-bottom:5px;"><div id="cartTotal" style="font-size:20px; font-weight:bold; text-align:center; color:var(--primary); margin:10px 0;">0 MRU</div><button onclick="app.ps()" class="btn btn-prim" style="width:100%; padding:15px; font-size:18px;"><i class="fa-solid fa-print"></i> ${this.t('p_save')}</button></div></div></div>`;
+                this.cart=[]; selectedProduct=null; 
+                const s = await db.collection('products').where('companyId','==',this.state.cid).get();
+                let productsHTML = '';
+                s.forEach(d => { 
+                    const p = d.data(); 
+                    if(p.stock > 0) { 
+                        productsHTML += `<div class="prod-card" onclick="app.selectProduct('${d.id}', '${p.name}', ${p.sellPrice}, ${p.buyPrice}, ${p.stock}, this)"><h4>${p.name}</h4><div class="price">${p.sellPrice.toLocaleString()}</div><div class="stock">Stock: ${p.stock}</div></div>`; 
+                    } 
+                });
+
+                div.innerHTML = `
+                    <div class="pos-container">
+                        <div class="card" style="display:flex; flex-direction:column; max-height:85vh;">
+                            <h3 style="margin:0 0 10px; color:var(--primary);">${this.t('p_sel')}</h3>
+                            <div class="product-grid">${productsHTML || '<p style="text-align:center;width:100%">Empty</p>'}</div>
+                            
+                            <div id="selectionPanel" class="selected-product-panel">
+                                <div class="selected-info"><span id="dispName"></span><span id="dispPrice"></span></div>
+                                <div class="action-row">
+                                    <input id="sQty" type="number" class="big-qty-input" value="1" min="1" placeholder="1">
+                                    <button onclick="app.addToCart()" class="add-btn-large"><i class="fa-solid fa-cart-plus"></i> ${this.t('p_add')}</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="background:#ffffff; height:100%; display:flex; flex-direction:column; border:1px solid var(--primary);">
+                            <h3 style="margin:0; color:var(--primary);">${this.t('inv')}</h3>
+                            <div class="cart-items" id="cartContainer"><div style="text-align:center;padding:20px;color:#999">${this.t('empty')}</div></div>
+                            <div style="margin-top:auto; padding-top:10px;">
+                                <input id="posCust" class="inp" placeholder="${this.t('p_cl')}" style="margin-bottom:5px;">
+                                <div id="cartTotal" style="font-size:20px; font-weight:bold; text-align:center; color:var(--primary); margin:10px 0;">0 MRU</div>
+                                <button onclick="app.ps()" class="btn btn-prim" style="width:100%; padding:15px; font-size:18px;"><i class="fa-solid fa-print"></i> ${this.t('p_save')}</button>
+                            </div>
+                        </div>
+                    </div>`;
             },
-            selectProduct: function(id, name, sell, buy, stock, el) { document.querySelectorAll('.prod-card').forEach(e => { e.style.border='1px solid var(--border)'; e.style.backgroundColor='#fff'; }); el.style.border='2px solid var(--primary)'; el.style.backgroundColor='#eef2ff'; selectedProduct = { id, name, sell, buy, stock }; document.getElementById('dispName').innerText = name; document.getElementById('dispPrice').innerText = sell.toLocaleString() + " MRU"; const panel = document.getElementById('selectionPanel'); panel.style.display = 'block'; const inp = document.getElementById('sQty'); inp.value = 1; inp.focus(); },
-            addToCart: function() { if(!selectedProduct) return alert(this.t('p_sel')); const q = Number(document.getElementById('sQty').value); if(q<=0) return; if(q>selectedProduct.stock) return alert(this.t('max_qty')+selectedProduct.stock); const ex = this.cart.findIndex(i=>i.id===selectedProduct.id); if(ex>-1) { if(this.cart[ex].q+q > selectedProduct.stock) return alert(this.t('max_qty')+selectedProduct.stock); this.cart[ex].q+=q; this.cart[ex].t=this.cart[ex].q*this.cart[ex].p; } else { this.cart.push({id:selectedProduct.id, n:selectedProduct.name, p:selectedProduct.sell, bp:selectedProduct.buy, q:q, t:selectedProduct.sell*q}); } selectedProduct=null; document.getElementById('selectionPanel').style.display='none'; document.querySelectorAll('.prod-card').forEach(e => { e.style.border='1px solid var(--border)'; e.style.backgroundColor='#fff'; }); this.renderCart(); },
-            renderCart: function() { const c = document.getElementById('cartContainer'); let h=''; let t=0; this.cart.forEach((i,x)=>{ t+=i.t; h+=`<div class="cart-item"><div><b>${i.n}</b> <small>(${i.p}x${i.q})</small></div><div style="display:flex;align-items:center;gap:10px;"><b>${i.t}</b><i onclick="app.remCart(${x})" class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer"></i></div></div>`; }); c.innerHTML=h||`<div style="text-align:center;padding:20px;color:#666">${this.t('empty')}</div>`; document.getElementById('cartTotal').innerText=t.toLocaleString()+' MRU'; },
+            selectProduct: function(id, name, sell, buy, stock, el) {
+                document.querySelectorAll('.prod-card').forEach(e => { e.style.border='1px solid var(--border)'; e.style.backgroundColor='#fff'; });
+                el.style.border='2px solid var(--primary)'; el.style.backgroundColor='#eef2ff';
+                selectedProduct = { id, name, sell, buy, stock };
+                document.getElementById('dispName').innerText = name;
+                document.getElementById('dispPrice').innerText = sell.toLocaleString() + " MRU";
+                const panel = document.getElementById('selectionPanel');
+                panel.style.display = 'block';
+                const inp = document.getElementById('sQty');
+                inp.value = 1; inp.focus();
+            },
+            addToCart: function() {
+                if(!selectedProduct) return alert(this.t('p_sel'));
+                const q = Number(document.getElementById('sQty').value);
+                if(q<=0) return; if(q>selectedProduct.stock) return alert(this.t('max_qty')+selectedProduct.stock);
+                const ex = this.cart.findIndex(i=>i.id===selectedProduct.id);
+                if(ex>-1) {
+                    if(this.cart[ex].q+q > selectedProduct.stock) return alert(this.t('max_qty')+selectedProduct.stock);
+                    this.cart[ex].q+=q; this.cart[ex].t=this.cart[ex].q*this.cart[ex].p;
+                } else {
+                    this.cart.push({id:selectedProduct.id, n:selectedProduct.name, p:selectedProduct.sell, bp:selectedProduct.buy, q:q, t:selectedProduct.sell*q});
+                }
+                selectedProduct=null; document.getElementById('selectionPanel').style.display='none';
+                document.querySelectorAll('.prod-card').forEach(e => { e.style.border='1px solid var(--border)'; e.style.backgroundColor='#fff'; });
+                this.renderCart();
+            },
+            renderCart: function() {
+                const c = document.getElementById('cartContainer'); let h=''; let t=0;
+                this.cart.forEach((i,x)=>{ t+=i.t; h+=`<div class="cart-item"><div><b>${i.n}</b> <small>(${i.p}x${i.q})</small></div><div style="display:flex;align-items:center;gap:10px;"><b>${i.t}</b><i onclick="app.remCart(${x})" class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer"></i></div></div>`; });
+                c.innerHTML=h||`<div style="text-align:center;padding:20px;color:#666">${this.t('empty')}</div>`; document.getElementById('cartTotal').innerText=t.toLocaleString()+' MRU';
+            },
             remCart: function(x){ this.cart.splice(x,1); this.renderCart(); },
-            ps: async function() { if(!this.cart.length) return alert(this.t('empty')); const c=document.getElementById('posCust').value||'Client', t=Number(document.getElementById('cartTotal').innerText.replace(/[^0-9.]/g,'')); try { const r = await db.collection('invoices').add({companyId:this.state.cid, customer:c, items:this.cart, total:t, createdAt:new Date().toISOString()}); for(let i of this.cart) { const ref = db.collection('products').doc(i.id); await db.runTransaction(async tr=>{ const d=await tr.get(ref); tr.update(ref,{stock:d.data().stock-i.q}); }); } this.print(r.id,c,t,this.cart); this.nav('pos'); } catch(e){alert(e.message)} },
-            list: async function(div, type) { div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${type==='products'?this.t('stock'):type==='invoices'?this.t('inv'):type==='expenses'?this.t('exp'):this.t('sal')}</h3>${type!=='invoices'?`<button onclick="app.add('${type}')" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>`:''}</div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody><tr><td>Loading...</td></tr></tbody></table></div></div>`; const s = await db.collection(type).where('companyId','==',this.state.cid).get(); let docs = s.docs.map(d=>({id:d.id,...d.data()})); if(type==='invoices') docs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); let h='', th=''; if(type==='invoices') { th=`<tr><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_print')}</th></tr>`; docs.forEach(d=>{ const str=encodeURIComponent(JSON.stringify(d.items)); const dateFormatted = this.formatDate(d.createdAt); h+=`<tr><td>${dateFormatted}</td><td>${d.customer}</td><td>${d.total}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${d.id}','${d.customer}',${d.total},'${str}')">${this.t('th_print')}</button></td></tr>`; }); } else if(type==='products') { th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`; docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td><button onclick="app.editProd('${d.id}',${d.buyPrice},${d.sellPrice})" style="border:none;cursor:pointer;color:var(--primary)">✎</button></td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`); } else { th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_del')}</th></tr>`; docs.forEach(d=>{ h+=`<tr><td>${d.val1}</td><td>${d.val2}</td><td>${d.val3}</td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`; }); } document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="4">-</td></tr>'; },
-            add: async function(t) { if(t==='products') { const n=prompt(this.t('prompt_name')), b=Number(prompt(this.t('prompt_buy'))), s=Number(prompt(this.t('prompt_sell'))), q=Number(prompt(this.t('prompt_qty'))); if(n&&b) { if(s<=b) return alert(this.t('err_price_logic')); await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()}); this.nav('inventory'); } } else { const v1=prompt(this.t('prompt_name')), v2=prompt(this.t('prompt_note')), v3=Number(prompt(this.t('prompt_amount'))); if(v1&&v3) { await db.collection(t).add({companyId:this.state.cid, val1:v1, val2:v2, val3:v3, createdAt:new Date().toISOString()}); this.nav(t); } } },
-            editProd: async function(id, b, os) { let ns = prompt(this.t('prompt_new_price'), os); if(!ns) return; ns=Number(ns); if(ns<=b) return alert(this.t('err_price_logic')); await db.collection('products').doc(id).update({sellPrice:ns}); this.nav('inventory'); },
-            del: async function(id, col) { if(confirm(this.t('confirm_del'))) { if (col === 'products') { const expSnap = await db.collection('expenses').where('relatedId', '==', id).get(); expSnap.forEach(doc => { db.collection('expenses').doc(doc.id).delete(); }); } await db.collection(col).doc(id).delete(); this.nav(col==='products'?'inventory':col); } },
-            reports: async function(div) { div.innerHTML='Loading...'; const [i,p,e,s] = await Promise.all([ db.collection('invoices').where('companyId','==',this.state.cid).get(), db.collection('products').where('companyId','==',this.state.cid).get(), db.collection('expenses').where('companyId','==',this.state.cid).get(), db.collection('salaries').where('companyId','==',this.state.cid).get() ]); let totalSales = 0; let cogs = 0; let unsoldStockValue = 0; let generalExpenses = 0; let salaries = 0; i.forEach(doc => { const d = doc.data(); totalSales += d.total; if(d.items){ d.items.forEach(item => { if(item.bp && item.q) cogs += (item.bp * item.q); }); } }); p.forEach(doc => { const d = doc.data(); if(d.buyPrice && d.stock) unsoldStockValue += (d.buyPrice * d.stock); }); e.forEach(d => generalExpenses += Number(d.data().val3)); s.forEach(d => salaries += Number(d.data().val3)); const totalExpenses = cogs + unsoldStockValue + generalExpenses + salaries; const netProfit = totalSales - totalExpenses; div.innerHTML = `<h2>${this.t('rep')}</h2><div class="grid-stats"><div class="card"><h3>${this.t('income')}</h3><h2 style="color:#10b981">+${totalSales.toLocaleString()}</h2></div><div class="card"><h3>${this.t('expense')}</h3><h2 style="color:#ef4444">-${totalExpenses.toLocaleString()}</h2><div style="font-size:0.8em; color:#888; text-align:right; margin-top:5px; line-height:1.6;"><div>${this.t('cogs')}: ${cogs.toLocaleString()}</div><div>${this.t('unsold')}: ${unsoldStockValue.toLocaleString()}</div><div>${this.t('exp')}: ${(generalExpenses+salaries).toLocaleString()}</div></div></div></div><div class="card" style="text-align:center; background:#fff; border:1px solid var(--primary)"><h3>${this.t('profit')}</h3><h1>${netProfit.toLocaleString()} MRU</h1></div>`; },
-            reprint: function(id, c, t, itemsStr) { const items = JSON.parse(decodeURIComponent(itemsStr)); this.print(id,c,t,items); },
-            print: function(id, c, t, items) { const dir = this.state.lang==='ar'?'rtl':'ltr'; const formattedDate = this.formatDate(new Date().toISOString()); const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); document.getElementById('printArea').innerHTML = `<div style="padding:20px; direction:${dir}; font-family:'Tajawal'"><center><h2>${this.state.name}</h2><p>${this.state.phone}</p></center><hr><p>INV: ${id.substring(0,5)} | ${formattedDate} <br> ${this.t('th_client')}: ${c}</p><table style="width:100%; border-collapse:collapse; text-align:center;">${headers}${rows}</table><h3>${this.t('p_tot')}: ${t.toLocaleString()} MRU</h3><center><small>MDA ERP System</small></center></div>`; window.print(); },
-            admin: async function(div) { div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-dur" style="width:100%;padding:12px;margin-bottom:15px;border-radius:10px;background:#f9fafb;color:#333;border:1px solid #ddd;"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_pay_hist')}</th><th>${this.t('adm_act')}</th></tr>`, b=''; s.forEach(d=>{ const v=d.data(); const dateStr = this.formatDate(v.createdAt); const comp = v.actualName || v.targetCompanyName || '-'; const ph = v.actualPhone || v.targetPhone || '-'; const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; let payHist = ''; if(v.paymentHistory) { payHist = `<div class="pay-history">Count: ${v.paymentHistory.length}`; v.paymentHistory.forEach(ph => payHist += `<br>${new Date(ph.date).toLocaleDateString()}`); payHist += '</div>'; } b+=`<tr><td>${dateStr}</td><td style="font-family:monospace;font-weight:bold">${v.code}</td><td>${comp}</td><td>${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td>${payHist}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px;">${this.t('adm_renew')}</button> <button onclick="app.tst('${d.id}','${v.status}')" class="btn btn-prim" style="padding:5px;font-size:11px;">${v.status==='active'?'Stop':'Start'}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px;">Del</button></td></tr>`; }); document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; },
-            gen: async function() { const n=document.getElementById('an').value, p=document.getElementById('ap').value, dur=document.getElementById('adur').value; if(n&&p) { await db.collection('activation_codes').add({code:this.randomStr(10), targetCompanyName:n, targetPhone:p, status:'active', used:false, createdAt:new Date().toISOString(), subscriptionType: dur, paymentHistory: []}); this.nav('admin'); } },
-            renewCompany: async function(id, type) { if(!confirm("Confirm Payment & Renewal?")) return; const doc = await db.collection('activation_codes').doc(id).get(); const data = doc.data(); let baseDate = new Date(); if(data.expiryDate && new Date(data.expiryDate) > baseDate) { baseDate = new Date(data.expiryDate); } const newExpiry = this.addDuration(baseDate, type); const payment = { date: new Date().toISOString(), amount: 'Paid', type: type }; const history = data.paymentHistory || []; history.push(payment); await db.collection('activation_codes').doc(id).update({ expiryDate: newExpiry, paymentHistory: history, status: 'active' }); alert("Renewed until: " + new Date(newExpiry).toLocaleDateString()); this.nav('admin'); },
+            
+            ps: async function() {
+                if(!this.cart.length) return alert(this.t('empty'));
+                const c=document.getElementById('posCust').value||'Client', t=Number(document.getElementById('cartTotal').innerText.replace(/[^0-9.]/g,''));
+                try {
+                    const r = await db.collection('invoices').add({companyId:this.state.cid, customer:c, items:this.cart, total:t, createdAt:new Date().toISOString()});
+                    for(let i of this.cart) {
+                        const ref = db.collection('products').doc(i.id);
+                        await db.runTransaction(async tr=>{ const d=await tr.get(ref); tr.update(ref,{stock:d.data().stock-i.q}); });
+                    }
+                    this.print(r.id,c,t,this.cart); this.nav('pos');
+                } catch(e){alert(e.message)}
+            },
+
+            list: async function(div, type) {
+                div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${type==='products'?this.t('stock'):type==='invoices'?this.t('inv'):type==='expenses'?this.t('exp'):this.t('sal')}</h3>${type!=='invoices'?`<button onclick="app.add('${type}')" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>`:''}</div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody><tr><td>Loading...</td></tr></tbody></table></div></div>`;
+                const s = await db.collection(type).where('companyId','==',this.state.cid).get();
+                let docs = s.docs.map(d=>({id:d.id,...d.data()})); if(type==='invoices') docs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                let h='', th='';
+                if(type==='invoices') {
+                    th=`<tr><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_print')}</th></tr>`;
+                    docs.forEach(d=>{ 
+                        const str=encodeURIComponent(JSON.stringify(d.items)); 
+                        const dateFormatted = this.formatDate(d.createdAt);
+                        h+=`<tr><td>${dateFormatted}</td><td>${d.customer}</td><td>${d.total}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${d.id}','${d.customer}',${d.total},'${str}')">${this.t('th_print')}</button></td></tr>`; 
+                    });
+                } else if(type==='products') {
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`;
+                    docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td><button onclick="app.editProd('${d.id}',${d.buyPrice},${d.sellPrice})" style="border:none;cursor:pointer;color:var(--primary)">✎</button></td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`);
+                } else {
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_del')}</th></tr>`;
+                    docs.forEach(d=>{ h+=`<tr><td>${d.val1}</td><td>${d.val2}</td><td>${d.val3}</td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`; });
+                }
+                document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="4">-</td></tr>';
+            },
+
+            add: async function(t) {
+                if(t==='products') {
+                    const n=prompt(this.t('prompt_name')), b=Number(prompt(this.t('prompt_buy'))), s=Number(prompt(this.t('prompt_sell'))), q=Number(prompt(this.t('prompt_qty')));
+                    if(n&&b) {
+                        if(s<=b) return alert(this.t('err_price_logic'));
+                        await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()});
+                        this.nav('inventory');
+                    }
+                } else {
+                    const v1=prompt(this.t('prompt_name')), v2=prompt(this.t('prompt_note')), v3=Number(prompt(this.t('prompt_amount')));
+                    if(v1&&v3) { await db.collection(t).add({companyId:this.state.cid, val1:v1, val2:v2, val3:v3, createdAt:new Date().toISOString()}); this.nav(t); }
+                }
+            },
+            editProd: async function(id, b, os) {
+                let ns = prompt(this.t('prompt_new_price'), os); if(!ns) return; ns=Number(ns);
+                if(ns<=b) return alert(this.t('err_price_logic'));
+                await db.collection('products').doc(id).update({sellPrice:ns}); this.nav('inventory');
+            },
+            del: async function(id, col) { 
+                if(confirm(this.t('confirm_del'))) { 
+                    if (col === 'products') {
+                        const expSnap = await db.collection('expenses').where('relatedId', '==', id).get();
+                        expSnap.forEach(doc => { db.collection('expenses').doc(doc.id).delete(); });
+                    }
+                    await db.collection(col).doc(id).delete(); 
+                    this.nav(col==='products'?'inventory':col); 
+                } 
+            },
+
+            reports: async function(div) {
+                div.innerHTML='Loading...';
+                const [i,p,e,s] = await Promise.all([
+                    db.collection('invoices').where('companyId','==',this.state.cid).get(),
+                    db.collection('products').where('companyId','==',this.state.cid).get(),
+                    db.collection('expenses').where('companyId','==',this.state.cid).get(),
+                    db.collection('salaries').where('companyId','==',this.state.cid).get()
+                ]);
+
+                let totalSales = 0; let cogs = 0; let unsoldStockValue = 0; let generalExpenses = 0; let salaries = 0;
+
+                i.forEach(doc => {
+                    const d = doc.data(); totalSales += d.total;
+                    if(d.items){ d.items.forEach(item => { if(item.bp && item.q) cogs += (item.bp * item.q); }); }
+                });
+                p.forEach(doc => { const d = doc.data(); if(d.buyPrice && d.stock) unsoldStockValue += (d.buyPrice * d.stock); });
+                e.forEach(d => generalExpenses += Number(d.data().val3));
+                s.forEach(d => salaries += Number(d.data().val3));
+
+                const totalExpenses = cogs + unsoldStockValue + generalExpenses + salaries;
+                const netProfit = totalSales - totalExpenses;
+                
+                div.innerHTML = `
+                    <h2>${this.t('rep')}</h2>
+                    <div class="grid-stats">
+                        <div class="card"><h3>${this.t('income')}</h3><h2 style="color:#10b981">+${totalSales.toLocaleString()}</h2></div>
+                        <div class="card"><h3>${this.t('expense')}</h3><h2 style="color:#ef4444">-${totalExpenses.toLocaleString()}</h2>
+                            <div style="font-size:0.8em; color:#888; text-align:right; margin-top:5px; line-height:1.6;">
+                                <div>${this.t('cogs')}: ${cogs.toLocaleString()}</div>
+                                <div>${this.t('unsold')}: ${unsoldStockValue.toLocaleString()}</div>
+                                <div>${this.t('exp')}: ${(generalExpenses+salaries).toLocaleString()}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="text-align:center; background:#fff; border:1px solid var(--primary)">
+                        <h3>${this.t('profit')}</h3><h1>${netProfit.toLocaleString()} MRU</h1>
+                    </div>`;
+            },
+
+            reprint: function(id, c, t, itemsStr) {
+                const items = JSON.parse(decodeURIComponent(itemsStr));
+                this.print(id,c,t,items);
+            },
+            print: function(id, c, t, items) {
+                const dir = this.state.lang==='ar'?'rtl':'ltr';
+                const formattedDate = this.formatDate(new Date().toISOString());
+                const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`;
+                let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join('');
+                document.getElementById('printArea').innerHTML = `
+                    <div style="padding:20px; direction:${dir}; font-family:'Tajawal'">
+                        <center><h2>${this.state.name}</h2><p>${this.state.phone}</p></center>
+                        <hr>
+                        <p>INV: ${id.substring(0,5)} | ${formattedDate} <br> ${this.t('th_client')}: ${c}</p>
+                        <table style="width:100%; border-collapse:collapse; text-align:center;">${headers}${rows}</table>
+                        <h3>${this.t('p_tot')}: ${t.toLocaleString()} MRU</h3>
+                        <center><small>MDA ERP System</small></center>
+                    </div>
+                `;
+                window.print();
+            },
+
+            admin: async function(div) {
+                div.innerHTML = `
+                    <div class="card">
+                        <input id="an" class="inp" placeholder="Name">
+                        <input id="ap" class="inp" placeholder="Phone">
+                        <select id="adur" class="select-dur" style="width:100%;padding:12px;margin-bottom:15px;border-radius:10px;background:#f9fafb;color:#333;border:1px solid #ddd;">
+                            <option value="day">${this.t('sub_day')}</option>
+                            <option value="week">${this.t('sub_week')}</option>
+                            <option value="month" selected>${this.t('sub_month')}</option>
+                            <option value="year">${this.t('sub_year')}</option>
+                        </select>
+                        <button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button>
+                    </div>
+                    <div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`;
+                
+                const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get();
+                let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_pay_hist')}</th><th>${this.t('adm_act')}</th></tr>`, b='';
+                s.forEach(d=>{
+                    const v=d.data();
+                    const dateStr = this.formatDate(v.createdAt);
+                    const comp = v.actualName || v.targetCompanyName || '-';
+                    const ph = v.actualPhone || v.targetPhone || '-';
+                    const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-';
+                    let payHist = '';
+                    if(v.paymentHistory) {
+                        payHist = `<div class="pay-history">Count: ${v.paymentHistory.length}`;
+                        v.paymentHistory.forEach(ph => payHist += `<br>${new Date(ph.date).toLocaleDateString()}`);
+                        payHist += '</div>';
+                    }
+                    b+=`<tr><td>${dateStr}</td><td style="font-family:monospace;font-weight:bold">${v.code}</td><td>${comp}</td><td>${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td>${payHist}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px;">${this.t('adm_renew')}</button> <button onclick="app.tst('${d.id}','${v.status}')" class="btn btn-prim" style="padding:5px;font-size:11px;">${v.status==='active'?'Stop':'Start'}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px;">Del</button></td></tr>`;
+                });
+                document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b;
+            },
+
+            gen: async function() {
+                const n=document.getElementById('an').value, p=document.getElementById('ap').value, dur=document.getElementById('adur').value;
+                if(n&&p) { 
+                    await db.collection('activation_codes').add({
+                        code:this.randomStr(10), targetCompanyName:n, targetPhone:p, 
+                        status:'active', used:false, createdAt:new Date().toISOString(),
+                        subscriptionType: dur, paymentHistory: []
+                    }); 
+                    this.nav('admin'); 
+                }
+            },
+
+            renewCompany: async function(id, type) {
+                if(!confirm("Confirm Payment & Renewal?")) return;
+                const doc = await db.collection('activation_codes').doc(id).get();
+                const data = doc.data();
+                let baseDate = new Date();
+                if(data.expiryDate && new Date(data.expiryDate) > baseDate) { baseDate = new Date(data.expiryDate); }
+                const newExpiry = this.addDuration(baseDate, type);
+                const payment = { date: new Date().toISOString(), amount: 'Paid', type: type };
+                const history = data.paymentHistory || [];
+                history.push(payment);
+                await db.collection('activation_codes').doc(id).update({ expiryDate: newExpiry, paymentHistory: history, status: 'active' });
+                alert("Renewed until: " + new Date(newExpiry).toLocaleDateString());
+                this.nav('admin');
+            },
+
             tst: async function(id,st) { await db.collection('activation_codes').doc(id).update({status:st==='active'?'suspended':'active'}); this.nav('admin'); },
             delCode: async function(id) { if(confirm('Delete?')) { await db.collection('activation_codes').doc(id).delete(); this.nav('admin'); } },
         };
