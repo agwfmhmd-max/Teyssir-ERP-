@@ -12,6 +12,7 @@
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="icon" type="image/png" href="logo.png">
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
@@ -22,7 +23,7 @@
         :root { 
             --primary: #1a4585; --accent: #dcb14a; --bg: #f8f9fa; --white: #ffffff;
             --text-dark: #374151; --text-light: #6b7280; --border: #e5e7eb;
-            --danger: #ef4444; --success: #10b981; --lang-green: #006935; --header-h: 65px; 
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --lang-green: #006935; --header-h: 65px; 
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -33,99 +34,164 @@
         .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Language Button */
-        .lang-btn-style { position: fixed; top: 20px; z-index: 20000; width: 45px; height: 45px; background-color: var(--lang-green); color: white; border: none; border-radius: 10px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        html[dir="rtl"] .lang-btn-style { left: 20px; } html[dir="ltr"] .lang-btn-style { right: 20px; }
+        /* UI Elements */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-prim { background: var(--primary); color: var(--white); }
+        .btn-sec { background: var(--accent); color: var(--white); }
+        .btn-dan { background: var(--danger); color: var(--white); }
+        .btn-warn { background: var(--warning); color: var(--white); }
+        .btn-success { background: var(--success); color: var(--white); }
+        .inp, .select-box { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 15px; margin-bottom: 12px; outline: none; background: #f9fafb; color: var(--text-dark); }
+        .inp:focus, .select-box:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 3px rgba(26, 69, 133, 0.1); }
+
+        /* Language Btn */
+        .lang-btn-style { position: fixed; top: 15px; z-index: 20000; width: 40px; height: 40px; background-color: var(--lang-green); color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; }
+        html[dir="rtl"] .lang-btn-style { left: 15px; } html[dir="ltr"] .lang-btn-style { right: 15px; }
+
+        /* Block Screen */
+        .block-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #ffffff; z-index: 50000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; }
+        .block-icon { font-size: 80px; margin-bottom: 20px; color: var(--danger); }
+        .wa-link { display: flex; align-items: center; justify-content: center; gap: 10px; background: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 50px; font-weight: bold; margin-top: 15px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); }
+
+        /* Welcome */
+        .welcome-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 60000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .welcome-content { background: white; width: 90%; max-width: 450px; padding: 30px; border-radius: 20px; text-align: center; border-top: 5px solid var(--primary); animation: zoomIn 0.3s ease; position: relative; }
+        .welcome-features { text-align: right; margin: 20px 0; font-size: 14px; color: #555; display: inline-block; width: 100%; }
+        .feature-item { margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .feature-item i { color: var(--success); }
+        @keyframes zoomIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
 
         /* Auth */
         .auth-wrap { display: none; min-height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%); padding: 20px; }
         .auth-card { background: var(--white); width: 100%; max-width: 420px; padding: 40px 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(26, 69, 133, 0.08); border: 1px solid var(--border); }
-        .inp { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; margin-bottom: 10px; outline: none; background: #f9fafb; color: var(--text-dark); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-prim { background: var(--primary); color: var(--white); }
-        .btn-sec { background: var(--accent); color: var(--white); }
-        .btn-dan { background: var(--danger); color: var(--white); }
-        .btn-suc { background: var(--success); color: var(--white); }
-        .btn-small { padding: 5px 10px; font-size: 12px; width: auto; }
+        #installBtn { display: none; width: 100%; background: var(--primary); color: white; margin-bottom: 20px; padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(26, 69, 133, 0.3); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
         /* Layout */
         .app-container { display: none; flex-direction: column; min-height: 100vh; }
-        .top-header { height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: sticky; top: 0; z-index: 1000; }
-        .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; }
-        .sidebar { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--white); z-index: 1500; padding-top: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.05); transition: transform 0.3s ease; border-inline-end: 1px solid var(--border); }
+        /* HEADER MODIFIED FOR CENTERING */
+        .top-header { height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; padding: 0 20px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; position: absolute; right: 20px; } /* Right in RTL */
+        html[dir="ltr"] .menu-btn { left: 20px; right: auto; }
+        
+        .header-title { font-weight:800; color:var(--primary); font-size:1.3em; text-align: center; width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .sidebar { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--white); z-index: 1500; padding-top: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.05); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-inline-end: 1px solid var(--border); overflow-y: auto; }
         html[dir="rtl"] .sidebar { right: 0; transform: translateX(100%); } html[dir="rtl"] .sidebar.open { transform: translateX(0); }
         html[dir="ltr"] .sidebar { left: 0; transform: translateX(-100%); } html[dir="ltr"] .sidebar.open { transform: translateX(0); }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1400; display: none; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 69, 133, 0.2); backdrop-filter: blur(2px); z-index: 1400; display: none; }
         .sidebar-overlay.show { display: block; }
-        .nav-item { padding: 15px 20px; display: flex; align-items: center; gap: 12px; color: var(--text-dark); font-weight: 500; cursor: pointer; border-left: 4px solid transparent; border-right: 4px solid transparent; transition: 0.2s; }
-        .nav-item.active { background: #eef2ff; color: var(--primary); border-color: var(--primary); }
-        .main-content { flex: 1; padding: 25px; overflow-y: auto; }
         
-        /* Components */
-        .card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid var(--border); }
-        .home-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .home-card { background: white; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.02); cursor: pointer; height: 130px; display:flex; flex-direction:column; justify-content:center; align-items:center; }
-        .home-icon { font-size: 35px; margin-bottom: 10px; color: var(--primary); }
-        .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        th, td { padding: 12px; text-align: start; border-bottom: 1px solid var(--border); font-size: 13px; }
-        th { background: #f9fafb; font-weight: bold; color: var(--primary); white-space: nowrap; }
+        .nav-item { padding: 14px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-light); font-weight: 500; cursor: pointer; border-left: 4px solid transparent; border-right: 4px solid transparent; transition: 0.2s; font-size: 15px; }
+        .nav-item:hover { background: #f3f4f6; color: var(--primary); }
+        .nav-item.active { background: #eef2ff; color: var(--primary); }
+        html[dir="rtl"] .nav-item.active { border-right-color: var(--primary); } html[dir="ltr"] .nav-item.active { border-left-color: var(--primary); }
         
-        /* POS */
-        .pos-container { display: grid; gap: 20px; }
-        @media(min-width: 768px) { .pos-container { height: calc(100vh - 120px); grid-template-columns: 1.6fr 1fr; } .sidebar { position: fixed; top: var(--header-h); bottom: 0; width: 250px; z-index: 900; transform: none !important; } html[dir="rtl"] .main-content { margin-right: 250px; } html[dir="ltr"] .main-content { margin-left: 250px; } .menu-btn, .sidebar-overlay { display: none !important; } }
-        .search-results { position: absolute; top: 75px; left: 15px; right: 15px; background: white; border: 1px solid #ddd; z-index: 100; max-height: 250px; overflow-y: auto; display: none; }
-        .search-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; }
-        .search-item:hover { background: #e0f2f1; }
-        .selected-product-panel { background: #eef2ff; border: 1px solid var(--primary); border-radius: 12px; padding: 20px; margin-top: 15px; display: none; }
-        .cart-items { max-height: 45vh; overflow-y: auto; }
+        .main-content { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 80px; }
+        .card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid var(--border); }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
         
-        /* Modals & Print */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 90%; max-width: 450px; padding: 25px; border-radius: 15px; max-height: 90vh; overflow-y: auto; }
-        .print-box { display: none; }
-        @media print { 
-            body * { visibility: hidden; } 
-            .print-box, .print-box * { visibility: visible; } 
-            .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color:black; padding:20px; } 
-            table th, table td { border: 1px solid #000; color:black; }
-        }
+        /* Reports Filters */
+        .filters-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: #f0f4ff; padding: 15px; border-radius: 12px; justify-content: center; }
+        .filter-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--primary); background: white; color: var(--primary); cursor: pointer; font-weight: bold; flex: 1; text-align: center; max-width: 150px; }
+        .filter-btn.active { background: var(--primary); color: white; }
+        
+        /* Tables */
+        .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px 16px; text-align: start; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-dark); }
+        th { background: #f9fafb; white-space: nowrap; font-weight: bold; color: var(--primary); }
 
+        /* POS Responsive Design */
+        .pos-layout { display: flex; flex-direction: column; gap: 15px; height: auto; }
+        
+        .search-container { position: relative; }
+        .search-results { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid var(--border); border-radius: 10px; max-height: 250px; overflow-y: auto; z-index: 20; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; }
+        .search-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; }
+        .search-item:hover { background: #f0f4ff; }
+        
+        .pos-left { display: flex; flex-direction: column; gap: 10px; }
+        .pos-right { background: white; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: visible; }
+        
+        .cart-list { max-height: 250px; overflow-y: auto; padding: 5px; background: #fff; border: 1px solid var(--border); border-radius: 10px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; background: #fff; }
+        .checkout-area { background: #f9fafb; padding: 15px; border-top: 1px solid var(--border); border-radius: 0 0 16px 16px; }
+
+        @media(min-width: 768px) { 
+            .main-content { padding: 25px; }
+            .pos-layout { flex-direction: row; height: calc(100vh - 120px); } 
+            .pos-left { flex: 1.5; height: 100%; }
+            .pos-right { flex: 1; height: 100%; overflow: hidden; }
+            .cart-list { flex: 1; max-height: none; border: none; }
+            .sidebar { position: fixed; top: var(--header-h); bottom: 0; width: 250px; transform: none !important; box-shadow: none; border-inline-end: 1px solid var(--border); z-index: 900; } 
+            html[dir="rtl"] .main-content { margin-right: 250px; } html[dir="ltr"] .main-content { margin-left: 250px; } 
+            .menu-btn, .sidebar-overlay { display: none !important; } 
+        }
+        
+        /* Modal General */
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9000; display:none; justify-content:center; align-items:center; }
+        .modal-box { background:white; width:90%; max-width:450px; padding:25px; border-radius:15px; box-shadow:0 10px 40px rgba(0,0,0,0.2); animation:slideUp 0.2s ease; max-height: 90vh; overflow-y: auto; }
+        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+        /* Status */
         #adminLink { display: none; }
-        #installBtn { display: none; width: 100%; background: var(--accent); color: white; margin-bottom: 15px; padding: 10px; border-radius: 10px; text-align: center; cursor: pointer; }
-        .expiry-warning { background: #fff8e1; color: #f57f17; padding: 8px; text-align: center; font-size: 12px; font-weight: bold; display: none; position: fixed; top: 0; width: 100%; z-index: 1050; }
-        .block-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 60000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .welcome-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 70000; justify-content: center; align-items: center; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .expiry-warning { background: #fffbeb; color: #92400e; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; border-bottom: 1px solid #fcd34d; display: none; position: fixed; top: 0; width: 100%; z-index: 1050; }
+
+        .print-box { display: none; }
+        @media print { .app-container, .auth-wrap, .lang-btn-style, #expiryWarning, #mainLoader { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
     </style>
 </head>
 <body>
 
-    <div id="mainLoader"><div class="spinner"></div><p style="color:var(--primary);font-weight:bold;">Teyssir ERP...</p></div>
+    <div id="mainLoader"><div class="spinner"></div><p style="color:var(--primary);font-weight:bold;">Loading Teyssir ERP...</p></div>
+
     <button onclick="app.toggleLang()" class="lang-btn-style"><i class="fa-solid fa-language"></i></button>
-    <div id="expiryWarning"></div>
+    <div id="expiryWarning" class="expiry-warning"></div>
+
+    <!-- Modals -->
+    <div id="genericModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 id="modalTitle" style="margin-top:0; color:var(--primary);">عنوان</h3>
+            <div id="modalContent"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button id="modalActionBtn" class="btn btn-prim">حفظ</button>
+                <button onclick="document.getElementById('genericModal').style.display='none'" class="btn btn-sec" style="background:#ccc; color:#333">إغلاق</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Welcome -->
     <div id="welcomeModal" class="welcome-modal">
-        <div class="modal-content" style="text-align:center;">
-            <img src="logo.png" style="width:80px; margin-bottom:15px;">
-            <h2 style="color:var(--primary); margin-top:0;" data-key="w_title">مرحباً بك</h2>
-            <p style="color:#666; margin-bottom:20px;" data-key="w_text">النظام المتكامل.</p>
-            <a href="https://wa.me/22220479962" class="btn btn-sec" style="text-decoration:none; justify-content:center; margin-bottom:10px;">
-                <i class="fa-brands fa-whatsapp"></i> <span data-key="cont">تواصل مع المطور</span>
+        <div class="welcome-content">
+            <img src="logo.png" style="width:100px; margin-bottom:15px; border-radius:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <h2 style="color:var(--primary); margin-top:0;" data-key="w_title">أهلاً بك في Teyssir ERP</h2>
+            <p style="color:#666; font-size:16px;">النظام المالي المتكامل لإدارة أعمالك بذكاء وسهولة.</p>
+            
+            <div class="welcome-features">
+                <div class="feature-item"><i class="fa-solid fa-circle-check"></i> <span>نظام نقاط بيع (POS) متطور وسريع.</span></div>
+                <div class="feature-item"><i class="fa-solid fa-circle-check"></i> <span>إدارة شاملة للمخزون والفواتير والعملاء.</span></div>
+                <div class="feature-item"><i class="fa-solid fa-circle-check"></i> <span>تقارير مالية دقيقة ولحظية.</span></div>
+                <div class="feature-item"><i class="fa-solid fa-circle-check"></i> <span>يدعم العمل على جميع الأجهزة (هاتف، كمبيوتر).</span></div>
+            </div>
+
+            <a href="https://wa.me/22220479962" class="wa-link" style="margin-bottom:20px; justify-content:center;">
+                <i class="fa-brands fa-whatsapp"></i> <span data-key="cont">تواصل للتفعيل</span>
             </a>
-            <button onclick="app.closeWelcome()" class="btn btn-prim" style="width:100%;" data-key="w_btn">فهمت</button>
+            <button onclick="app.closeWelcome()" class="btn btn-prim" style="width:100%;" data-key="w_btn">ابدأ الآن</button>
         </div>
     </div>
 
     <!-- Blocked -->
     <div id="blockScreen" class="block-screen">
-        <i class="fa-solid fa-lock" style="font-size:60px; color:var(--danger); margin-bottom:20px;"></i>
-        <h2 style="color:var(--danger); margin-bottom:10px;" data-key="msg_sus">الحساب معلق</h2>
-        <p style="color:#666; margin-bottom:30px;" data-key="msg_exp">انتهت فترة الاشتراك.</p>
-        <a href="https://wa.me/22220479962" class="btn btn-sec" style="text-decoration:none; padding:10px 40px;">
+        <i class="fa-solid fa-triangle-exclamation block-icon"></i>
+        <h2 id="blockTitle" class="block-title">الحساب معلق</h2>
+        <p id="blockMsg" class="block-msg">انتهت فترة الاشتراك.</p>
+        <a href="https://wa.me/22220479962" class="wa-link" style="width:auto; padding:12px 40px; font-size: 16px;">
             <i class="fa-brands fa-whatsapp"></i> <span data-key="pay_now">تواصل للدفع</span>
         </a>
-        <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px;">
+        <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px; width:auto;">
             <i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">خروج</span>
         </button>
     </div>
@@ -133,20 +199,21 @@
     <!-- Auth -->
     <div id="authScreen" class="auth-wrap">
         <div class="auth-card">
-            <img src="logo.png" style="width:90px; margin-bottom:15px;">
-            <h2 style="color:var(--primary); margin:0 0 20px;" data-key="title">Teyssir ERP</h2>
-            <div id="installBtn" onclick="app.installPWA()">📲 <span data-key="t_install">تثبيت التطبيق</span></div>
+            <img src="logo.png" alt="Logo" style="width:100px; margin-bottom:20px; border-radius:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+            <h2 style="color:var(--primary); margin-top:0; margin-bottom: 25px; font-weight: 800;" data-key="title">Teyssir ERP</h2>
+            <div id="installBtn" onclick="app.installPWA()"><i class="fa-solid fa-download"></i> <span data-key="t_install">تثبيت التطبيق</span></div>
             <form onsubmit="app.login(event)">
                 <input id="logName" class="inp" data-ph="comp" placeholder="اسم الشركة" required>
                 <input id="logPhone" type="tel" class="inp" data-ph="phone" placeholder="رقم الهاتف" required>
                 <input id="logCode" type="password" class="inp" data-ph="code" placeholder="رمز التفعيل" required>
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
                      <button type="submit" id="logBtn" class="btn btn-prim" style="flex:1" data-key="btn">دخول</button>
-                     <button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة</button>
+                     <button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (24 ساعة)</button>
                 </div>
             </form>
-            <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">
-                <a href="https://wa.me/22220479962" style="color:var(--primary); text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> <span data-key="cont">تواصل مع المطور</span></a>
+            <div style="margin-top:30px; border-top:1px solid var(--border); padding-top:20px;">
+                <p style="margin:0 0 10px; color:var(--text-light); font-size:0.9em;" data-key="get">للحصول على الرمز:</p>
+                <a href="https://wa.me/22220479962" class="wa-link"><i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span></a>
             </div>
         </div>
     </div>
@@ -155,104 +222,32 @@
     <div id="appScreen" class="app-container">
         <div class="sidebar-overlay" onclick="app.toggleMenu()"></div>
         <header class="top-header">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <i class="fa-solid fa-bars menu-btn" onclick="app.toggleMenu()" style="font-size:22px; color:var(--primary); cursor:pointer;"></i>
-                <div id="backBtn" class="hidden" onclick="app.nav('home')" style="font-size:20px; cursor:pointer; color:var(--text-light);"><i class="fa-solid fa-arrow-right"></i></div>
-                <h3 style="margin:0; font-size:16px; color:var(--primary);" id="pageTitle">الرئيسية</h3>
-            </div>
+            <div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div>
+            <!-- Centered Title -->
+            <div class="header-title">Teyssir ERP</div>
         </header>
-        
         <aside class="sidebar" id="sidebar">
-            <div style="padding:20px; text-align:center; border-bottom:1px solid #eee;">
-                <img src="logo.png" style="width:60px;">
-                <h4 style="margin:10px 0 0; color:var(--primary);">Teyssir ERP</h4>
+            <div style="padding: 25px; text-align:center; background: #fcfcfc; border-bottom: 1px solid var(--border);">
+                <img src="logo.png" style="width:70px; border-radius:10px;">
+                <div id="h_name" style="font-weight:bold; color:var(--primary); margin-top:10px;"></div>
+                <div id="h_phone" style="font-size:12px; color:#888;"></div>
             </div>
-            <div style="padding:10px 0; overflow-y:auto; flex:1;">
-                <div class="nav-item" onclick="app.nav('home')"><i class="fa-solid fa-home"></i> <span data-key="home">الرئيسية</span></div>
-                <div class="nav-item" onclick="app.nav('pos')"><i class="fa-solid fa-cash-register"></i> <span data-key="pos">نقطة البيع</span></div>
-                <div class="nav-item" onclick="app.nav('customers')"><i class="fa-solid fa-users"></i> <span data-key="customers">الزبناء</span></div>
-                <div class="nav-item" onclick="app.nav('suppliers')"><i class="fa-solid fa-truck-field"></i> <span data-key="suppliers">الموردين</span></div>
-                <div class="nav-item" onclick="app.nav('banks')"><i class="fa-solid fa-building-columns"></i> <span data-key="banks">البنوك</span></div>
-                <div class="nav-item" onclick="app.nav('revenue')"><i class="fa-solid fa-hand-holding-dollar"></i> <span data-key="revenue">الإيرادات</span></div>
-                <div class="nav-item" onclick="app.nav('invoices')"><i class="fa-solid fa-file-invoice"></i> <span data-key="inv">الفواتير</span></div>
+            <div style="padding: 10px 0;">
+                <div class="nav-item active" onclick="app.nav('home')"><i class="fa-solid fa-home"></i> <span data-key="home">الرئيسية</span></div>
+                <div class="nav-item" onclick="app.nav('pos')"><i class="fa-solid fa-cart-shopping"></i> <span data-key="pos">نقطة البيع</span></div>
+                <div class="nav-item" onclick="app.nav('customers')"><i class="fa-solid fa-users"></i> <span data-key="cust">الزبناء</span></div>
+                <div class="nav-item" onclick="app.nav('invoices')"><i class="fa-solid fa-file-invoice-dollar"></i> <span data-key="inv">الفواتير</span></div>
                 <div class="nav-item" onclick="app.nav('inventory')"><i class="fa-solid fa-boxes-stacked"></i> <span data-key="stock">المخزون</span></div>
                 <div class="nav-item" onclick="app.nav('expenses')"><i class="fa-solid fa-wallet"></i> <span data-key="exp">المصروفات</span></div>
+                <div class="nav-item" onclick="app.nav('revenues')"><i class="fa-solid fa-hand-holding-dollar"></i> <span data-key="rev">الإيرادات</span></div>
+                <div class="nav-item" onclick="app.nav('banks')"><i class="fa-solid fa-building-columns"></i> <span data-key="banks">البنوك</span></div>
+                <div class="nav-item" onclick="app.nav('suppliers')"><i class="fa-solid fa-truck-field"></i> <span data-key="supp">الموردين</span></div>
                 <div class="nav-item" onclick="app.nav('salaries')"><i class="fa-solid fa-users-gear"></i> <span data-key="sal">الرواتب</span></div>
                 <div class="nav-item" onclick="app.nav('reports')"><i class="fa-solid fa-chart-pie"></i> <span data-key="rep">التقارير</span></div>
-                <div id="adminLink" class="nav-item hidden" onclick="app.nav('admin')" style="color:var(--danger); margin-top:10px;"><i class="fa-solid fa-lock"></i> Admin</div>
+                <div id="adminLink" class="nav-item" onclick="app.nav('admin')" style="color:var(--danger); border-top:1px solid var(--border); margin-top:10px;"><i class="fa-solid fa-lock"></i> Admin</div>
             </div>
         </aside>
-        
         <main id="workspace" class="main-content"></main>
-    </div>
-
-    <!-- Modals -->
-    <div id="paymentModal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-top:0; color:var(--primary);" data-key="pay_title">تفاصيل الدفع</h3>
-            <div style="background:#f4f6f8; padding:15px; border-radius:10px; text-align:center; margin-bottom:15px;">
-                <span data-key="p_tot">الإجمالي</span><br><strong id="payTotalDisplay" style="font-size:24px; color:var(--primary);">0</strong>
-            </div>
-            
-            <label style="font-size:12px; display:block; margin-bottom:5px;" data-key="p_cl">الزبون</label>
-            <div style="display:flex; gap:5px; margin-bottom:10px;">
-                <select id="payCustomer" class="inp" style="width:100%; margin:0;"></select>
-                <button onclick="app.quickAdd('customers')" class="btn btn-sec" style="width:40px;">+</button>
-            </div>
-            
-            <label style="font-size:12px; display:block; margin-bottom:5px;" data-key="th_amount">المبلغ المدفوع</label>
-            <input type="number" id="payAmount" class="inp" placeholder="0" oninput="app.calcDebt()">
-            <div id="debtDisplay" style="color:var(--danger); font-size:12px; margin-bottom:15px; font-weight:bold;"></div>
-            
-            <label style="font-size:12px; display:block; margin-bottom:5px;">طريقة الدفع</label>
-            <select id="payMethod" class="inp" onchange="app.toggleBankSelect('pay')" style="width:100%;">
-                <option value="cash" data-key="pay_cash">كاش</option>
-                <option value="bank" data-key="pay_bank">بنك</option>
-            </select>
-            
-            <div id="bankSelectDiv" style="display:none; margin-top:10px;">
-                <label style="font-size:12px; display:block; margin-bottom:5px;" data-key="banks">البنك</label>
-                <div style="display:flex; gap:5px;">
-                    <select id="payBank" class="inp" style="width:100%; margin:0;"></select>
-                    <button onclick="app.quickAdd('banks')" class="btn btn-sec" style="width:40px;">+</button>
-                </div>
-            </div>
-            
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="app.confirmInvoice()" class="btn btn-prim" style="flex:1" data-key="p_save">حفظ</button>
-                <button onclick="document.getElementById('paymentModal').style.display='none'" class="btn btn-dan" style="flex:1">X</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pay Debt Modal -->
-    <div id="debtModal" class="modal">
-        <div class="modal-content">
-            <h3 style="color:var(--primary)">تسديد دين</h3>
-            <div id="debtCustName" style="margin-bottom:10px;"></div>
-            <input type="number" id="debtAmount" class="inp" placeholder="المبلغ">
-            <select id="debtMethod" class="inp" onchange="app.toggleBankSelect('debt')">
-                <option value="cash">كاش</option>
-                <option value="bank">بنك</option>
-            </select>
-            <select id="debtBank" class="inp" style="display:none;"></select>
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button onclick="app.payDebtConfirm()" class="btn btn-prim" style="flex:1">تسديد</button>
-                <button onclick="document.getElementById('debtModal').style.display='none'" class="btn btn-dan" style="flex:1">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reports Modal -->
-    <div id="stmtModal" class="modal">
-        <div class="modal-content" style="max-width:600px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 id="stmtTitle" style="margin:0; color:var(--primary)"></h3>
-                <button onclick="document.getElementById('stmtModal').style.display='none'" class="btn btn-dan btn-small">X</button>
-            </div>
-            <button onclick="app.printStatement()" class="btn btn-sec" style="width:100%; margin-bottom:10px;">طباعة الكشف</button>
-            <div id="stmtContent"></div>
-        </div>
     </div>
 
     <div id="printArea" class="print-box"></div>
@@ -260,6 +255,9 @@
     <script>
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn=document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; });
+        const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+        const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+        if (isIos() && !isInStandaloneMode()) { const btn = document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; }
 
         const firebaseConfig = {
             apiKey: "AIzaSyA6glwj94Onm0r6gRtxtoyqEISpPChDcHo",
@@ -275,516 +273,922 @@
 
         let selectedProduct = null;
         let sessionListener = null;
-        let allProductsCache = []; 
+        let checkInterval = null;
 
         const dict = {
             ar: {
-                home:"الرئيسية", pos:"نقطة البيع", customers:"الزبناء", suppliers:"الموردين", banks:"البنوك",
-                revenue:"الإيرادات", inv:"الفواتير", stock:"المخزون", exp:"المصروفات", sal:"الرواتب", rep:"التقارير",
-                title: "تسجيل الدخول", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
-                btn:"دخول", btn_trial: "تجربة مجانية", t_install: "تثبيت التطبيق",
-                w_title: "مرحباً بك", w_text: "رفيقك في التسيير", w_btn: "فهمت", cont: "تواصل مع المطور",
-                search_ph: "بحث عن منتج...", p_add: "إضافة", p_sel: "بحث عن منتج", p_save: "دفع وحفظ", p_tot: "الإجمالي",
-                empty: "فارغة", pay_title: "تفاصيل الدفع", pay_cash: "كاش", pay_bank: "بنك", pay_now: "تواصل للدفع",
-                th_date:"التاريخ", th_client:"العميل", th_amount:"المبلغ", th_note:"ملاحظة",
+                title: "Teyssir ERP", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
+                btn:"دخول", btn_trial: "تجربة (24 ساعة)", wait:"جاري...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور",
+                home:"الرئيسية", pos:"نقطة البيع", inv:"أرشيف الفواتير", stock:"المخزون",
+                exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"خروج",
+                cust:"الزبناء", banks:"البنوك", supp:"الموردين", rev:"الإيرادات",
+                p_sel:"بحث عن منتج...", p_pr:"السعر", p_qt:"العدد", p_add:"إضافة",
+                p_cl:"الزبون", p_save:"حفظ وطباعة", p_tot:"الإجمالي", t_install: "تثبيت التطبيق",
+                tbl_prod:"المنتج", tbl_qty:"الكمية", tbl_tot:"المجموع", tbl_act:"حذف",
+                th_date:"التاريخ", th_client:"العميل", th_amount:"المبلغ", th_print:"طباعة",
+                th_name:"الاسم", th_buy:"شراء", th_sell:"بيع", th_stock:"المخزون", th_del:"حذف", th_edit:"تعديل",
+                th_item:"البند", th_note:"ملاحظات", th_cost:"التكلفة", th_emp:"الموظف", th_job:"الوظيفة", th_sal:"الراتب",
+                income:"إجمالي المبيعات", expense:"إجمالي المصروفات", profit:"صافي الربح", cogs:"تكلفة البضاعة المباعة", unsold:"قيمة المخزون الحالي",
+                err_login:"البيانات غير صحيحة", err_sus:"الحساب معطل",
+                empty:"السلة فارغة", max_qty:"الكمية المتاحة: ",
+                prompt_name:"الاسم", prompt_buy:"سعر الشراء", prompt_sell:"سعر البيع", prompt_qty:"الكمية",
+                prompt_note:"ملاحظة", prompt_amount:"المبلغ", 
+                confirm_del:"هل أنت متأكد؟",
+                sys_active:"النظام يعمل بنجاح",
+                err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
+                prompt_new_price: "أدخل السعر الجديد",
+                pay_now: "تواصل للدفع",
+                w_title: "أهلاً بك في Teyssir ERP", w_text: "نظام متكامل.", w_btn: "ابدأ الآن",
+                trial_used: "عذراً، لقد استخدمت التجربة المجانية من قبل.",
+                
+                new_cust: "زبون جديد", pay_method: "طريقة الدفع", cash: "كاش", bank: "بنك",
+                select_bank: "اختر البنك", paid: "المدفوع", remain: "المتبقي (دين)", full_pay: "دفع كامل",
+                part_pay: "دفع جزئي", debt_rec: "تسجيل دين", trans_saved: "تم حفظ العملية",
+                balance: "الرصيد", pay_debt: "تسديد دين", stmt: "كشف حساب",
+                
+                rep_daily: "تقرير اليوم", rep_monthly: "تقرير الشهر", rep_all: "الكل", rep_filter: "تصفية",
+                rep_sales_det: "تفاصيل المبيعات", rep_exp_det: "تفاصيل المصروفات", rep_det_all: "سجل العمليات التفصيلي",
+                rep_gen: "ملخص عام", total_in: "الداخل (إيراد)", total_out: "الخارج (مصروف)", net_cash: "الصافي",
                 th_inv_no: "رقم الفاتورة", th_profit: "الربح", th_type: "النوع",
-                income:"المبيعات", cogs:"تكلفة المبيعات", expense:"المصروفات", profit:"الربح الصافي",
-                rep_daily: "يومي", rep_monthly: "شهري", rep_all: "الكل", rep_filter: "تصفية",
-                rep_sales_det: "تفاصيل المبيعات", rep_exp_det: "تفاصيل المصروفات",
-                rep_cust: "كشف زبون", rep_bank: "كشف بنك", rep_supp: "كشف مورد",
-                msg_sus: "الحساب معطل", msg_exp: "انتهى الاشتراك", msg_warn: "⚠️ تحذير: اشتراكك ينتهي قريباً",
-                adm_gen: "توليد", adm_renew: "تجديد", adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف"
+                
+                adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
+                adm_gen: "توليد رمز جديد", adm_renew: "تجديد ($)", adm_pay_hist: "سجل الدفعات",
+                msg_sus: "تم تعطيل الحساب من الإدارة.",
+                msg_exp: "انتهت فترة الاشتراك.",
+                msg_warn: "تحذير: اشتراكك ينتهي قريباً.",
+                sub_day: "يومي", sub_week: "أسبوعي", sub_month: "شهري", sub_year: "سنوي",
+                adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف"
             },
             fr: {
-                home:"Accueil", pos:"Vente", customers:"Clients", suppliers:"Fournisseurs", banks:"Banques",
-                revenue:"Revenus", inv:"Factures", stock:"Stock", exp:"Dépenses", sal:"Salaires", rep:"Rapports",
-                title: "Connexion", comp:"Société", phone:"Tél", code:"Code", btn:"Entrer", btn_trial: "Essai", t_install: "Installer",
-                w_title: "Bienvenue", w_text: "Votre partenaire", w_btn: "Compris", cont: "Contacter",
-                search_ph: "Rechercher...", p_add: "Ajouter", p_sel: "Recherche", p_save: "Payer", p_tot: "Total",
-                empty: "Vide", pay_title: "Détails", pay_cash: "Espèces", pay_bank: "Banque", pay_now: "Payer",
-                th_date:"Date", th_client:"Client", th_amount:"Montant", th_note:"Note",
+                title: "Teyssir ERP", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
+                btn:"Entrer", btn_trial: "Essai Gratuit (24h)", wait:"Vérification...", get:"Pour le code:", cont:"Contacter Développeur",
+                home:"Accueil", pos:"Point de Vente", inv:"Factures", stock:"Stock",
+                exp:"Dépenses", sal:"Salaires", rep:"Rapports", logout:"Déconnexion",
+                cust:"Clients", banks:"Banques", supp:"Fournisseurs", rev:"Revenus",
+                p_sel:"Chercher produit...", p_pr:"Prix", p_qt:"Qté", p_add:"Ajouter",
+                p_cl:"Client", p_save:"Enregistrer", p_tot:"Total", t_install: "Installer l'app",
+                tbl_prod:"Produit", tbl_qty:"Qté", tbl_tot:"Total", tbl_act:"Suppr",
+                th_date:"Date", th_client:"Client", th_amount:"Montant", th_print:"Imprimer",
+                th_name:"Nom", th_buy:"Achat", th_sell:"Vente", th_stock:"Stock", th_del:"Suppr", th_edit:"Modif",
+                th_item:"Article", th_note:"Note", th_cost:"Coût", th_emp:"Employé", th_job:"Fonction", th_sal:"Salaire",
+                income:"Revenus", expense:"Dépenses Gen.", profit:"Bénéfice Net", cogs:"Coût Marchandises", unsold:"Valeur Stock",
+                err_login:"Données invalides", err_sus:"Compte suspendu",
+                empty:"Panier vide", max_qty:"Max disponible: ",
+                prompt_name:"Nom", prompt_buy:"Prix Achat", prompt_sell:"Prix Vente", prompt_qty:"Quantité",
+                prompt_note:"Note", prompt_amount:"Montant", 
+                confirm_del:"Confirmer ?",
+                sys_active:"Système Actif",
+                err_price_logic: "Erreur: Prix de vente < Prix d'achat",
+                prompt_new_price: "Nouveau prix",
+                pay_now: "Payer maintenant",
+                w_title: "Bienvenue", w_text: "Teyssir ERP - Système complet.", w_btn: "Commencer",
+                trial_used: "Désolé, essai gratuit déjà utilisé.",
+                
+                new_cust: "Nouveau Client", pay_method: "Mode Paiement", cash: "Espèces", bank: "Banque",
+                select_bank: "Choisir Banque", paid: "Payé", remain: "Reste (Dette)", full_pay: "Paiement Complet",
+                part_pay: "Paiement Partiel", debt_rec: "Dette Enreg.", trans_saved: "Enregistré",
+                balance: "Solde", pay_debt: "Payer Dette", stmt: "Relevé",
+                
+                rep_daily: "Rapport Journalier", rep_monthly: "Rapport Mensuel", rep_all: "Tout", rep_filter: "Filtrer",
+                rep_sales_det: "Détails Ventes", rep_exp_det: "Détails Dépenses", rep_det_all: "Détails Transactions",
+                rep_gen: "Résumé Général", total_in: "Entrées", total_out: "Sorties", net_cash: "Net",
                 th_inv_no: "N° Facture", th_profit: "Profit", th_type: "Type",
-                income:"Ventes", cogs:"Coût Ventes", expense:"Dépenses", profit:"Net",
-                rep_daily: "Journalier", rep_monthly: "Mensuel", rep_all: "Tout", rep_filter: "Filtrer",
-                rep_sales_det: "Détails Ventes", rep_exp_det: "Détails Dépenses",
-                rep_cust: "Relevé Client", rep_bank: "Relevé Banque", rep_supp: "Relevé Fourn.",
-                msg_sus: "Suspendu", msg_exp: "Expiré", msg_warn: "⚠️ Attention: Expire bientôt",
-                adm_gen: "Générer", adm_renew: "Renouveler", adm_stop: "Suspendre", adm_start: "Activer", adm_del: "Supprimer"
+                
+                adm_time: "Date", adm_comp: "Société", adm_phone: "Tél", adm_code: "Code", adm_stat: "Statut", adm_act: "Action",
+                adm_gen: "Générer", adm_renew: "Renouveler", adm_pay_hist: "Historique",
+                msg_sus: "Compte suspendu.",
+                msg_exp: "Abonnement expiré.",
+                msg_warn: "Attention: Expire bientôt.",
+                sub_day: "Jour", sub_week: "Hebdo", sub_month: "Mois", sub_year: "Année",
+                adm_stop: "Stop", adm_start: "Start", adm_del: "Del"
             }
         };
 
         const app = {
-            state: { cid:null, name:'', phone:'', admin:false, lang:'ar', currentView:'home' },
+            state: { cid:null, name:'', phone:'', admin:false, lang:'ar', codeDocId: null, expiryDate: null, currentView: 'home' },
             cart: [],
-
+            cachedProducts: [], // For POS Search
+            
             init: function() {
                 this.showLoader();
-                if (!localStorage.getItem('welcomeSeen')) document.getElementById('welcomeModal').style.display = 'flex';
+                if (!localStorage.getItem('welcomeSeen')) {
+                    document.getElementById('welcomeModal').style.display = 'flex';
+                }
+                if (deferredPrompt) { deferredPrompt.prompt(); }
                 
                 const session = localStorage.getItem('mda_session');
-                if(session) this.verifySession(JSON.parse(session));
-                else { this.hideLoader(); document.getElementById('authScreen').style.display='flex'; }
+                if (session) {
+                    const s = JSON.parse(session);
+                    if(s.admin) {
+                        this.state.cid='ADMIN'; this.state.name='Admin'; this.state.phone='46154399'; this.state.admin=true;
+                        this.start('Admin', '46154399');
+                    } else {
+                        this.monitorSession(s.codeDocId, s);
+                    }
+                } else {
+                    this.switchScreen('authScreen');
+                }
             },
+
+            // --- Basic Helpers ---
             showLoader: function() { document.getElementById('mainLoader').style.display = 'flex'; },
             hideLoader: function() { document.getElementById('mainLoader').style.display = 'none'; },
-            
-            toggleLang: function() {
-                this.state.lang = this.state.lang==='ar'?'fr':'ar';
-                document.documentElement.dir = this.state.lang==='ar'?'rtl':'ltr';
-                const d = dict[this.state.lang];
-                document.querySelectorAll('[data-key]').forEach(el => el.innerText = d[el.getAttribute('data-key')] || el.getAttribute('data-key'));
-                document.querySelectorAll('[data-ph]').forEach(el => el.placeholder = d[el.getAttribute('data-ph')] || el.getAttribute('data-ph'));
-                if(this.state.cid) this.nav(this.state.currentView);
+            switchScreen: function(name) {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'none';
+                document.getElementById('blockScreen').style.display = 'none';
+                document.getElementById(name).style.display = 'flex';
+                this.hideLoader();
             },
-            t: function(k) { return dict[this.state.lang][k] || k; },
-
-            // ... (Login, Session, Trial - Kept same as previous working version) ...
-             verifySession: async function(s) {
-                if(s.admin) { this.state.cid='ADMIN'; this.state.name='Admin'; this.state.admin=true; this.start('Admin',''); return; }
-                this.state.cid = s.cid; this.state.name = s.name; this.state.phone = s.phone;
-                this.monitorSession(s.codeDocId, s);
+            closeWelcome: function() { document.getElementById('welcomeModal').style.display = 'none'; localStorage.setItem('welcomeSeen', 'true'); },
+            installPWA: async function() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') { document.getElementById('installBtn').style.display = 'none'; } deferredPrompt = null; },
+            
+            // --- TRIAL 24H ---
+            startTrial: async function() {
+                if(localStorage.getItem('mda_trial_done')) return alert(this.t('trial_used'));
+                this.showLoader();
+                const n = document.getElementById('logName').value;
+                const p = document.getElementById('logPhone').value;
+                if(!n || !p) { this.hideLoader(); return alert("Name & Phone required"); }
+                try {
+                    const tCode = 'TRIAL-' + this.randomStr(8);
+                    const now = new Date();
+                    // 24 Hours Trial
+                    const expiry = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+                    const codeRef = await db.collection('activation_codes').add({
+                        code: tCode, targetCompanyName: n, targetPhone: p, status: 'active', used: true, usedAt: now.toISOString(),
+                        expiryDate: expiry.toISOString(), subscriptionType: 'trial', isTrial: true
+                    });
+                    const compRef = await db.collection('companies').add({ name: n, phone: p, code: tCode, createdAt: now.toISOString() });
+                    await codeRef.update({ companyId: compRef.id, actualName: n, actualPhone: p });
+                    localStorage.setItem('mda_trial_done', 'true');
+                    this.state.cid = compRef.id; this.state.name = n; this.state.phone = p;
+                    this.state.codeDocId = codeRef.id;
+                    this.saveSession(compRef.id, n, p, tCode, codeRef.id, false);
+                    this.monitorSession(codeRef.id, {cid:compRef.id, name:n, phone:p});
+                    this.start(n,p);
+                } catch(e) { this.hideLoader(); alert(e.message); }
             },
             monitorSession: function(docId, s) {
                 if(!docId) { this.logout(); return; }
-                sessionListener = db.collection('activation_codes').doc(docId).onSnapshot((doc) => {
-                    if (!doc.exists) { this.logout(); return; }
-                    const d = doc.data();
-                    if(d.status==='suspended' || (d.expiryDate && new Date()>new Date(d.expiryDate))) {
-                        document.getElementById('blockScreen').style.display='flex';
-                        document.getElementById('authScreen').style.display='none';
-                        document.getElementById('appScreen').style.display='none';
-                        this.hideLoader();
-                    } else {
-                        if(document.getElementById('blockScreen').style.display==='flex' || document.getElementById('authScreen').style.display!=='none') {
-                            this.state.cid = s.cid; this.state.name = s.name; this.state.phone = s.phone; this.state.admin = false;
-                            this.start(s.name, s.phone);
+                sessionListener = db.collection('activation_codes').doc(docId)
+                    .onSnapshot((doc) => {
+                        if (!doc.exists) { this.logout(); return; }
+                        const data = doc.data();
+                        this.state.expiryDate = data.expiryDate;
+                        this.performStatusCheck(data);
+                        if(document.getElementById('authScreen').style.display === 'flex' && data.status === 'active') {
+                             this.state.cid = s.cid; this.state.name = s.name; this.state.phone = s.phone; this.state.admin = false;
+                             this.state.codeDocId = docId;
+                             this.start(s.name, s.phone);
                         }
-                        if(d.expiryDate) {
-                            const diff = (new Date(d.expiryDate) - new Date()) / (1000*60*60*24);
-                            if(diff <= 1) { document.getElementById('expiryWarning').innerText = this.t('msg_warn'); document.getElementById('expiryWarning').style.display = 'block'; }
-                            else document.getElementById('expiryWarning').style.display = 'none';
-                        }
+                    });
+                if(checkInterval) clearInterval(checkInterval);
+                checkInterval = setInterval(() => {
+                    if(this.state.expiryDate) {
+                        const now = new Date(); const expiry = new Date(this.state.expiryDate);
+                        if (now > expiry) { this.showBlockScreen('expired'); }
                     }
-                });
+                }, 5000); 
             },
+            performStatusCheck: function(data) {
+                const statusCheck = this.checkAccountStatus(data);
+                if (statusCheck.valid) {
+                    if(document.getElementById('blockScreen').style.display === 'flex') { this.switchScreen('appScreen'); }
+                    if (statusCheck.warning) { document.getElementById('expiryWarning').innerText = this.t('msg_warn'); document.getElementById('expiryWarning').style.display = 'block'; } 
+                    else { document.getElementById('expiryWarning').style.display = 'none'; }
+                } else { this.switchScreen('blockScreen'); this.showBlockScreen(statusCheck.reason); }
+                this.hideLoader();
+            },
+            checkAccountStatus: function(data) {
+                if (data.status === 'suspended') return { valid: false, reason: 'suspended' };
+                if (data.expiryDate) {
+                    const now = new Date(); const expiry = new Date(data.expiryDate);
+                    const diffTime = expiry - now; const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    if (diffTime < 0) return { valid: false, reason: 'expired' };
+                    if (diffDays <= 1) return { valid: true, warning: true };
+                }
+                return { valid: true };
+            },
+            showBlockScreen: function(reason) {
+                this.switchScreen('blockScreen');
+                const title = document.getElementById('blockTitle');
+                const msg = document.getElementById('blockMsg');
+                if (reason === 'suspended') { title.innerText = this.t('msg_sus'); msg.innerText = ""; } 
+                else { title.innerText = this.t('msg_exp'); msg.innerText = ""; }
+            },
+            
+            // --- Utils ---
+            addDuration: function(date, type) { const d = new Date(date); if(type === 'day') d.setDate(d.getDate() + 1); if(type === 'week') d.setDate(d.getDate() + 7); if(type === 'month') d.setMonth(d.getMonth() + 1); if(type === 'year') d.setFullYear(d.getFullYear() + 1); return d.toISOString(); },
+            formatDate: function(isoString) { if (!isoString) return '-'; const d = new Date(isoString); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}`; },
+            randomStr: function(l) { const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'; let r=''; for(let i=0;i<l;i++) r+=c.charAt(Math.floor(Math.random()*c.length)); return r; },
+            t: function(k) { return dict[this.state.lang][k] || k; },
+            toggleLang: function() {
+                this.state.lang = this.state.lang==='ar'?'fr':'ar'; const l = this.state.lang; const d = dict[l];
+                document.documentElement.dir = l==='ar'?'rtl':'ltr'; 
+                document.querySelectorAll('[data-key]').forEach(el => el.innerText = d[el.getAttribute('data-key')]);
+                document.querySelectorAll('[data-ph]').forEach(el => el.placeholder = d[el.getAttribute('data-ph')]);
+                if(this.state.cid) this.nav(this.state.currentView);
+            },
+            toggleMenu: function() { document.getElementById('sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('show'); },
+
             login: async function(e) {
                 e.preventDefault(); this.showLoader();
                 const n=document.getElementById('logName').value, p=document.getElementById('logPhone').value, c=document.getElementById('logCode').value;
                 try {
                     if(p==='46154399' && c==='371915') { 
-                        const s = {cid:'ADMIN', name:'Admin', phone:p, admin:true};
-                        localStorage.setItem('mda_session', JSON.stringify(s));
-                        location.reload(); return; 
+                        this.state.admin=true; this.state.cid='ADMIN'; 
+                        this.saveSession('ADMIN', 'Admin', '46154399', '371915', null, true);
+                        this.start('Admin','46154399'); return; 
                     }
                     const s = await db.collection('activation_codes').where('code','==',c).get();
                     if(s.empty) throw new Error(this.t('err_login'));
-                    
-                    const doc = s.docs[0]; const d = doc.data();
-                    if(d.status==='suspended') { this.showBlock('suspended'); return; }
-                    
+                    const doc = s.docs[0]; const d = doc.data(); this.state.codeDocId = doc.id;
+                    const statusCheck = this.checkAccountStatus(d);
+                    if (!statusCheck.valid) { this.showBlockScreen(statusCheck.reason); return; }
+                    if((d.targetPhone && d.targetPhone!==p) || (d.used && d.actualPhone!==p)) throw new Error(this.t('err_login'));
                     let cid=d.companyId;
                     if(!d.used) {
                         const r = await db.collection('companies').add({name:n, phone:p, code:c, createdAt:new Date().toISOString()});
-                        cid=r.id; 
-                        const now = new Date(); const expiry = new Date(); 
-                        expiry.setMonth(expiry.getMonth() + 1);
-                        if(d.subscriptionType === 'year') expiry.setFullYear(expiry.getFullYear() + 1);
-                        await db.collection('activation_codes').doc(doc.id).update({used:true, companyId:cid, actualName:n, actualPhone:p, status:'active', usedAt:now.toISOString(), expiryDate: expiry.toISOString()});
+                        cid=r.id; const now = new Date(); const expiry = this.addDuration(now, d.subscriptionType || 'month');
+                        await db.collection('activation_codes').doc(doc.id).update({ used:true, companyId:cid, actualName:n, actualPhone:p, status:'active', usedAt:now.toISOString(), expiryDate: expiry });
                     }
-                    
-                    const sess = {cid, name:n, phone:p, codeDocId:doc.id, code:c, admin:false};
-                    localStorage.setItem('mda_session', JSON.stringify(sess));
-                    this.monitorSession(doc.id, sess);
-
+                    this.state.cid=cid; this.state.name=n; this.state.phone=p;
+                    this.saveSession(cid, n, p, c, doc.id, false);
+                    this.monitorSession(doc.id, {cid, name:n, phone:p});
+                    this.start(n,p);
                 } catch(er) { this.hideLoader(); alert(er.message); }
             },
-            startTrial: async function() {
-                if(localStorage.getItem('trial_used')) return alert("Trial already used");
-                const n=document.getElementById('logName').value; const p=document.getElementById('logPhone').value;
-                if(!n || !p) return alert("Name/Phone required");
-                this.showLoader();
-                try {
-                    const code = 'TR-'+Math.floor(Math.random()*100000);
-                    const expiry = new Date(); expiry.setDate(expiry.getDate()+1); // 1 Day
-                    const cRef = await db.collection('activation_codes').add({code, status:'active', used:true, expiryDate:expiry.toISOString(), isTrial:true, actualName:n, actualPhone:p});
-                    const r = await db.collection('companies').add({name:n, phone:p, createdAt:new Date().toISOString()});
-                    await cRef.update({companyId:r.id});
-                    localStorage.setItem('trial_used', 'true');
-                    const sess = {cid:r.id, name:n, phone:p, codeDocId:cRef.id, code};
-                    localStorage.setItem('mda_session', JSON.stringify(sess));
-                    this.monitorSession(cRef.id, sess);
-                } catch(e) { this.hideLoader(); alert(e.message); }
-            },
-            logout: function() { localStorage.removeItem('mda_session'); location.reload(); },
-            closeWelcome: function() { document.getElementById('welcomeModal').style.display='none'; localStorage.setItem('welcomeSeen', 'true'); },
-
-            start: function(n,p) {
-                this.hideLoader();
-                document.getElementById('authScreen').style.display='none';
-                document.getElementById('blockScreen').style.display='none';
-                document.getElementById('appScreen').style.display='flex';
-                document.getElementById('h_name').innerText=n;
-                document.getElementById('h_phone').innerText=p;
-                if(this.state.admin) document.getElementById('adminLink').classList.remove('hidden');
-                this.nav('home');
+            saveSession: function(cid, name, phone, code, codeDocId, isAdmin) { localStorage.setItem('mda_session', JSON.stringify({cid, name, phone, code, codeDocId, admin: isAdmin})); },
+            logout: function() { localStorage.removeItem('mda_session'); if(sessionListener) sessionListener(); location.reload(); },
+            start: function(n,p) { 
+                document.getElementById('h_name').innerText=n; document.getElementById('h_phone').innerText=p; 
+                if(this.state.admin) document.getElementById('adminLink').style.display='flex'; else document.getElementById('adminLink').style.display='none';
+                this.switchScreen('appScreen'); this.nav('home'); 
             },
 
             nav: function(page) {
+                if(page === 'admin' && !this.state.admin) return;
                 this.state.currentView = page;
-                document.getElementById('sidebar').classList.remove('open');
-                document.querySelector('.sidebar-overlay').classList.remove('show');
-                document.getElementById('backBtn').className = page==='home'?'hidden':'';
-                if(page!=='home') document.getElementById('pageTitle').innerText = this.t(page);
+                document.getElementById('sidebar').classList.remove('open'); document.querySelector('.sidebar-overlay').classList.remove('show');
+                document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+                const activeEl = document.querySelector(`.nav-item[onclick="app.nav('${page}')"]`); if(activeEl) activeEl.classList.add('active');
+                const ws = document.getElementById('workspace'); 
+                ws.innerHTML = '<div style="padding:50px;text-align:center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
                 
-                const ws = document.getElementById('workspace');
-                ws.innerHTML = '<div style="padding:50px; text-align:center;"><div class="spinner"></div></div>';
-                
-                setTimeout(() => {
+                setTimeout(async () => {
                     switch(page) {
                         case 'home': this.home(ws); break;
-                        case 'pos': this.pos(ws); break;
-                        case 'customers': this.renderPeople(ws, 'customers', this.t('customers')); break;
-                        case 'suppliers': this.renderPeople(ws, 'suppliers', this.t('suppliers')); break;
-                        case 'banks': this.renderBanks(ws); break;
-                        case 'revenue': this.renderRevenue(ws); break;
-                        case 'invoices': this.list(ws, 'invoices'); break;
-                        case 'inventory': this.list(ws, 'products'); break;
-                        case 'expenses': this.list(ws, 'expenses'); break;
-                        case 'salaries': this.list(ws, 'salaries'); break;
-                        case 'reports': this.reports(ws); break;
-                        case 'admin': this.admin(ws); break;
+                        case 'pos': await this.pos(ws); break;
+                        case 'customers': await this.listCustomers(ws); break;
+                        case 'banks': await this.listBanks(ws); break;
+                        case 'suppliers': await this.list(ws, 'suppliers'); break;
+                        case 'invoices': await this.list(ws, 'invoices'); break;
+                        case 'inventory': await this.list(ws, 'products'); break;
+                        case 'expenses': await this.list(ws, 'expenses'); break;
+                        case 'revenues': await this.list(ws, 'revenues'); break;
+                        case 'salaries': await this.list(ws, 'salaries'); break;
+                        case 'reports': await this.reports(ws); break;
+                        case 'admin': await this.admin(ws); break;
                     }
                 }, 50);
             },
 
-            // --- Home ---
-            home: function(div) {
+            home: function(div) { 
                 const items = [
-                    {k:'pos', i:'fa-cart-shopping', a:"app.nav('pos')"}, {k:'inv', i:'fa-file-invoice-dollar', a:"app.nav('invoices')"},
-                    {k:'customers', i:'fa-users', a:"app.nav('customers')"}, {k:'suppliers', i:'fa-truck-field', a:"app.nav('suppliers')"},
-                    {k:'stock', i:'fa-boxes-stacked', a:"app.nav('inventory')"}, {k:'banks', i:'fa-building-columns', a:"app.nav('banks')"},
-                    {k:'exp', i:'fa-wallet', a:"app.nav('expenses')"}, {k:'revenue', i:'fa-hand-holding-dollar', a:"app.nav('revenue')"},
+                    {k:'pos', i:'fa-cart-shopping', a:"app.nav('pos')"}, {k:'cust', i:'fa-users', a:"app.nav('customers')"},
+                    {k:'inv', i:'fa-file-invoice-dollar', a:"app.nav('invoices')"}, {k:'stock', i:'fa-boxes-stacked', a:"app.nav('inventory')"},
+                    {k:'exp', i:'fa-wallet', a:"app.nav('expenses')"}, {k:'rev', i:'fa-hand-holding-dollar', a:"app.nav('revenues')"},
+                    {k:'banks', i:'fa-building-columns', a:"app.nav('banks')"}, {k:'supp', i:'fa-truck-field', a:"app.nav('suppliers')"},
                     {k:'sal', i:'fa-users-gear', a:"app.nav('salaries')"}, {k:'rep', i:'fa-chart-pie', a:"app.nav('reports')"}
                 ];
-                let h = '<div class="home-grid">';
-                items.forEach(it => { h += `<div class="home-card" onclick="${it.a}"><div class="home-icon"><i class="fa-solid ${it.i}"></i></div><div class="home-label">${this.t(it.k)}</div></div>`; });
-                div.innerHTML = h + '</div>';
+                let h = '<div class="grid-stats">';
+                items.forEach(it => { h += `<div class="card" style="text-align:center;cursor:pointer;" onclick="${it.a}"><i class="fa-solid ${it.i}" style="font-size:28px;color:var(--primary);margin-bottom:10px;"></i><h3 style="margin:0;font-size:15px;" data-key="${it.k}">${this.t(it.k)}</h3></div>`; });
+                h += '</div>';
+                div.innerHTML = h; 
             },
 
-            // --- POS ---
+            // --- POS LOGIC ---
             pos: async function(div) {
                 this.cart = [];
-                const snap = await db.collection('products').where('companyId','==',this.state.cid).get();
-                allProductsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const snaps = await db.collection('products').where('companyId','==',this.state.cid).get();
+                this.cachedProducts = snaps.docs.map(d=>({id:d.id, ...d.data()}));
+                
+                const [custSnap, bankSnap] = await Promise.all([
+                    db.collection('customers').where('companyId','==',this.state.cid).get(),
+                    db.collection('banks').where('companyId','==',this.state.cid).get()
+                ]);
+                const customers = custSnap.docs.map(d=>({id:d.id, ...d.data()}));
+                const banks = bankSnap.docs.map(d=>({id:d.id, ...d.data()}));
 
                 div.innerHTML = `
-                    <div class="pos-container">
-                        <div class="card" style="position:relative; height:100%; display:flex; flex-direction:column;">
-                            <h3 style="color:var(--primary); margin-top:0;">${this.t('p_sel')}</h3>
-                            <input id="prodSearch" class="inp" placeholder="${this.t('search_ph')}" oninput="app.searchProduct(this.value)" autocomplete="off">
-                            <div id="searchResults" class="search-results"></div>
+                <div class="pos-layout">
+                    <div class="pos-left">
+                        <div class="card" style="padding:15px; margin:0;">
+                            <div class="search-container">
+                                <input type="text" id="prodSearch" class="inp" placeholder="${this.t('p_sel')}" oninput="app.searchProduct(this.value)" autocomplete="off" style="margin:0;">
+                                <div id="searchResults" class="search-results"></div>
+                            </div>
+                        </div>
+                        <div class="cart-list" id="cartContainer"><p style="text-align:center; color:#999; margin-top:20px;">${this.t('empty')}</p></div>
+                    </div>
+                    <div class="pos-right">
+                        <div class="checkout-area">
+                            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                                <select id="posCust" class="select-box" style="margin:0;">
+                                    <option value="">-- ${this.t('p_cl')} --</option>
+                                    ${customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+                                </select>
+                                <button onclick="app.quickAddCustomer()" class="btn btn-sec" style="width:auto;"><i class="fa-solid fa-plus"></i></button>
+                            </div>
                             
-                            <div id="posAction" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
-                                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                    <strong id="selName" style="color:var(--primary); font-size:18px;"></strong>
-                                    <strong id="selPrice" style="color:var(--success);"></strong>
-                                </div>
-                                <div style="display:flex; gap:10px;">
-                                    <input id="selQty" type="number" class="big-qty-input" value="1" min="1">
-                                    <button onclick="app.addToCart()" class="add-btn-large">${this.t('p_add')}</button>
-                                </div>
+                            <label style="font-size:12px; font-weight:bold;">${this.t('pay_method')}</label>
+                            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                                <label style="flex:1; background:#eee; padding:10px; border-radius:8px; text-align:center; cursor:pointer;"><input type="radio" name="payMethod" value="cash" checked onchange="app.toggleBankSelect(false)"> ${this.t('cash')}</label>
+                                <label style="flex:1; background:#eee; padding:10px; border-radius:8px; text-align:center; cursor:pointer;"><input type="radio" name="payMethod" value="bank" onchange="app.toggleBankSelect(true)"> ${this.t('bank')}</label>
                             </div>
-                        </div>
-                        <div class="card" style="background:#fff; border:1px solid var(--primary); display:flex; flex-direction:column;">
-                            <div class="cart-items" id="cartContainer" style="flex:1;"></div>
-                            <div style="border-top:1px solid #eee; padding-top:10px; margin-top:10px;">
-                                <div style="display:flex; justify-content:space-between; font-size:18px; font-weight:bold; margin-bottom:10px;">
-                                    <span>${this.t('p_tot')}</span><span id="cartTotal">0</span>
-                                </div>
-                                <button onclick="app.openPaymentModal()" class="btn btn-prim" style="width:100%">${this.t('p_save')}</button>
+
+                            <div id="bankSelectDiv" style="display:none; margin-bottom:10px;">
+                                <select id="posBank" class="select-box" style="margin:0;">
+                                    <option value="">-- ${this.t('select_bank')} --</option>
+                                    ${banks.map(b=>`<option value="${b.id}">${b.name}</option>`).join('')}
+                                </select>
                             </div>
+
+                            <div style="display:flex; justify-content:space-between; font-weight:bold; margin:15px 0; font-size:18px;">
+                                <span>${this.t('p_tot')}</span>
+                                <span id="cartTotal">0</span>
+                            </div>
+
+                            <div style="display:flex; gap:10px;">
+                                <input type="number" id="payAmount" class="inp" placeholder="${this.t('paid')}" oninput="app.calcDebt()">
+                                <input type="text" id="debtAmount" class="inp" placeholder="${this.t('remain')}" readonly style="background:#eee; color:red;">
+                            </div>
+
+                            <button onclick="app.finalizeInvoice()" class="btn btn-prim" style="margin-top:10px;"><i class="fa-solid fa-print"></i> ${this.t('p_save')}</button>
                         </div>
-                    </div>`;
+                    </div>
+                </div>`;
             },
-            searchProduct: function(val) {
-                const resDiv = document.getElementById('searchResults');
-                if(val.length < 1) { resDiv.style.display = 'none'; return; }
-                const results = allProductsCache.filter(p => p.name.toLowerCase().includes(val.toLowerCase()));
-                let html = '';
-                results.forEach(p => { html += `<div class="search-item" onclick="app.selectForPos('${p.id}')"><span>${p.name}</span><span style="font-weight:bold; color:var(--primary)">${p.sellPrice}</span></div>`; });
-                resDiv.innerHTML = html; resDiv.style.display = 'block';
+            searchProduct: function(q) {
+                const res = document.getElementById('searchResults');
+                if(!q || q.length < 1) { res.style.display='none'; return; }
+                const matches = this.cachedProducts.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
+                if(matches.length === 0) { res.style.display='none'; return; }
+                
+                res.innerHTML = matches.map(p => `
+                    <div class="search-item" onclick="app.promptQty('${p.id}', '${p.name}', ${p.sellPrice}, ${p.buyPrice}, ${p.stock})">
+                        <div><b>${p.name}</b><br><small style="color:gray">${this.t('th_stock')}: ${p.stock}</small></div>
+                        <div style="color:var(--primary); font-weight:bold;">${p.sellPrice}</div>
+                    </div>
+                `).join('');
+                res.style.display = 'block';
             },
-            selectForPos: function(id) {
-                const p = allProductsCache.find(x => x.id === id); selectedProduct = p;
-                document.getElementById('searchResults').style.display = 'none'; document.getElementById('prodSearch').value = '';
-                document.getElementById('posAction').style.display = 'block';
-                document.getElementById('selName').innerText = p.name; document.getElementById('selPrice').innerText = p.sellPrice;
-                document.getElementById('selQty').value = 1; document.getElementById('selQty').focus();
-            },
-            addToCart: function() {
-                const q = Number(document.getElementById('selQty').value);
-                this.cart.push({ id: selectedProduct.id, n: selectedProduct.name, p: selectedProduct.sellPrice, bp: selectedProduct.buyPrice, q: q, t: selectedProduct.sellPrice * q });
-                document.getElementById('posAction').style.display = 'none'; selectedProduct = null; this.renderCart();
+            promptQty: function(id, name, sell, buy, stock) {
+                document.getElementById('searchResults').style.display='none';
+                document.getElementById('prodSearch').value = '';
+                let q = prompt(`${name}\n${this.t('prompt_qty')} (Max: ${stock})`, 1);
+                if(!q) return; q = Number(q);
+                if(q <= 0) return;
+                if(q > stock) return alert(this.t('max_qty')+stock);
+                
+                const ex = this.cart.findIndex(i=>i.id===id);
+                if(ex>-1) {
+                    if(this.cart[ex].q+q > stock) return alert(this.t('max_qty')+stock);
+                    this.cart[ex].q+=q; this.cart[ex].t=this.cart[ex].q*this.cart[ex].p;
+                } else {
+                    this.cart.push({id, n:name, p:sell, bp:buy, q, t:sell*q});
+                }
+                this.renderCart();
             },
             renderCart: function() {
-                let h='', t=0; this.cart.forEach((i,x)=>{ t+=i.t; h+=`<div class="cart-item"><span>${i.n} (${i.q})</span><span>${i.t}</span><i class="fa-solid fa-trash" style="color:red;cursor:pointer" onclick="app.remCart(${x})"></i></div>`; });
-                document.getElementById('cartContainer').innerHTML = h; document.getElementById('cartTotal').innerText = t.toLocaleString();
+                const c = document.getElementById('cartContainer');
+                let h=''; let t=0;
+                this.cart.forEach((i,x)=>{ 
+                    t+=i.t; 
+                    h+=`<div class="cart-item">
+                        <div><b>${i.n}</b> <small>(${i.p} x ${i.q})</small></div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <b>${i.t}</b>
+                            <i onclick="app.remCart(${x})" class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer"></i>
+                        </div>
+                    </div>`; 
+                });
+                c.innerHTML=h||`<p style="text-align:center; color:#999; margin-top:20px;">${this.t('empty')}</p>`;
+                document.getElementById('cartTotal').innerText=t;
+                document.getElementById('payAmount').value = t; 
+                this.calcDebt();
             },
-            remCart: function(x) { this.cart.splice(x,1); this.renderCart(); },
-
-            // Payment
-            openPaymentModal: async function() {
-                if(!this.cart.length) return alert("Empty");
-                const custs = await db.collection('customers').where('companyId','==',this.state.cid).get();
-                const banks = await db.collection('banks').where('companyId','==',this.state.cid).get();
-                let cOpts = '<option value="">عام</option>'; custs.forEach(d => cOpts += `<option value="${d.id}">${d.data().name}</option>`);
-                let bOpts = ''; banks.forEach(d => bOpts += `<option value="${d.id}">${d.data().name}</option>`);
-                document.getElementById('payCustomer').innerHTML = cOpts; document.getElementById('payBank').innerHTML = bOpts;
-                const total = Number(document.getElementById('cartTotal').innerText.replace(/[^0-9.]/g,''));
-                document.getElementById('payTotalDisplay').innerText = total; document.getElementById('payAmount').value = total; this.calcDebt();
-                document.getElementById('paymentModal').style.display = 'flex';
-            },
+            remCart: function(x){ this.cart.splice(x,1); this.renderCart(); },
+            toggleBankSelect: function(show) { document.getElementById('bankSelectDiv').style.display = show?'block':'none'; },
             calcDebt: function() {
-                const t = Number(document.getElementById('payTotalDisplay').innerText); const p = Number(document.getElementById('payAmount').value);
-                const d = t - p; document.getElementById('debtDisplay').innerText = d > 0 ? "الباقي دين: "+d : "";
-            },
-            toggleBankSelect: function(type) {
-                const m = document.getElementById(type==='pay'?'payMethod':type==='debt'?'debtMethod':'salMethod').value;
-                document.getElementById(type==='pay'?'bankSelectDiv':type==='debt'?'debtBank':'salBank').style.display = m==='bank'?'block':'none';
-            },
-            confirmInvoice: async function() {
-                const custId = document.getElementById('payCustomer').value;
+                const tot = Number(document.getElementById('cartTotal').innerText);
                 const paid = Number(document.getElementById('payAmount').value);
-                const total = Number(document.getElementById('payTotalDisplay').innerText);
-                const method = document.getElementById('payMethod').value;
-                const bankId = document.getElementById('payBank').value;
-                const debt = total - paid;
-                
-                const batch = db.batch();
-                const invRef = db.collection('invoices').doc();
-                // Simple auto increment simulation
-                const invNum = 'INV-' + Date.now().toString().slice(-4);
-                
-                batch.set(invRef, {
-                    companyId: this.state.cid, number: invNum, customerId: custId || null,
-                    customer: custId ? document.getElementById('payCustomer').selectedOptions[0].text : 'General',
-                    items: this.cart, total: total, paid: paid, debt: debt,
-                    method: method, bankId: bankId || null, createdAt: new Date().toISOString()
-                });
-                
-                // Update Stock
-                this.cart.forEach(item => {
-                    batch.update(db.collection('products').doc(item.id), { stock: firebase.firestore.FieldValue.increment(-item.q) });
-                });
-                
-                // Update Customer
-                if(custId) {
-                    batch.update(db.collection('customers').doc(custId), { balance: firebase.firestore.FieldValue.increment(debt) }); // Debt increases
+                const debt = tot - paid;
+                document.getElementById('debtAmount').value = debt > 0 ? debt : 0;
+            },
+            quickAddCustomer: async function() {
+                const n = prompt(this.t('prompt_name'));
+                const ph = prompt(this.t('adm_phone'));
+                if(n) {
+                    const r = await db.collection('customers').add({companyId:this.state.cid, name:n, phone:ph||'', balance:0, createdAt:new Date().toISOString()});
+                    const sel = document.getElementById('posCust');
+                    const opt = document.createElement('option'); opt.value=r.id; opt.innerText=n; opt.selected=true;
+                    sel.appendChild(opt);
                 }
-                
-                // Update Money
-                if(paid > 0) {
-                    if(method === 'bank') {
-                        batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(paid) });
-                        batch.set(db.collection('bank_transactions').doc(), {companyId:this.state.cid, bankId, type:'deposit', amount:paid, date:new Date().toISOString(), ref:invNum});
-                    } else {
-                        // Revenue (Cash) - Not used in reports for profit, just tracking
-                        // Keep distinct from sales report which uses Invoices
-                    }
-                }
-                
-                await batch.commit();
-                document.getElementById('paymentModal').style.display = 'none';
-                this.print(invNum, total, this.cart, paid, debt);
-                this.nav('pos');
             },
-
-            // --- Lists ---
-            listGeneric: async function(div, col) { /* ... Same logic as before ... */
-                // Simplified for brevity, using same logic as previous response
-                div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3>${this.t(col)}</h3><button onclick="app.addGen('${col}')" class="btn btn-prim">+</button></div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody></tbody></table></div></div>`;
-                const s = await db.collection(col).where('companyId','==',this.state.cid).get();
-                let h=''; 
-                if(col==='expenses'||col==='revenue') {
-                     document.querySelector('#lst thead').innerHTML = `<tr><th>${this.t('th_date')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th></tr>`;
-                     s.forEach(d=>{ if(col==='expenses'&&d.data().type==='purchase')return; h+=`<tr><td>${new Date(d.data().date||d.data().createdAt).toLocaleDateString()}</td><td>${d.data().val1||d.data().note}</td><td>${d.data().val3||d.data().amount}</td></tr>`; });
-                }
-                document.querySelector('#lst tbody').innerHTML = h;
-            },
-            addGen: async function(col) {
-                const n=prompt("البيان"); const a=Number(prompt("المبلغ"));
-                if(n&&a) { await db.collection(col).add({companyId:this.state.cid, note:n, amount:a, val1:n, val3:a, date:new Date().toISOString(), createdAt:new Date().toISOString()}); this.nav(col); }
-            },
-
-            renderPeople: async function(div, col, title) {
-                let xtra = col==='customers' ? `<button class="btn btn-sec btn-small" onclick="app.showDebtPay()">تسديد دين</button>` : '';
-                div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3>${title}</h3><div style="display:flex;gap:5px">${xtra}<button onclick="app.addPerson('${col}')" class="btn btn-prim">+</button></div></div><div class="card"><table id="ptable"><thead><tr><th>الاسم</th><th>الهاتف</th><th>الرصيد/الدين</th><th>كشف</th></tr></thead><tbody></tbody></table></div>`;
-                const s = await db.collection(col).where('companyId','==',this.state.cid).get();
-                let h=''; s.forEach(d => { const v=d.data(); h+=`<tr><td>${v.name}</td><td>${v.phone}</td><td>${v.balance||v.debt||0}</td><td><i class="fa-solid fa-file-lines" style="color:green;cursor:pointer" onclick="app.showStatement('${col}','${d.id}','${v.name}')"></i> <i class="fa-solid fa-trash" style="color:red;cursor:pointer" onclick="app.del('${d.id}','${col}')"></i></td></tr>`; });
-                document.querySelector('#ptable tbody').innerHTML = h;
-            },
-            addPerson: async function(col) { const n=prompt("Name:"); const p=prompt("Phone:"); if(n) { await db.collection(col).add({companyId:this.state.cid, name:n, phone:p, balance:0}); this.nav(col); } },
             
-            showDebtPay: async function() {
-                const custs = await db.collection('customers').where('companyId','==',this.state.cid).get();
-                let opts=''; custs.forEach(d=>opts+=`<option value="${d.id}">${d.data().name} (${d.data().balance})</option>`);
-                document.getElementById('debtCustName').innerHTML = `<select id="debtCustSel" class="inp">${opts}</select>`;
-                
+            getNextInvoiceNumber: async function(transaction) {
+                const counterRef = db.collection('counters').doc(this.state.cid);
+                const doc = await transaction.get(counterRef);
+                let nextNum = 1;
+                if (doc.exists) {
+                    nextNum = doc.data().lastInvoiceNum + 1;
+                }
+                transaction.set(counterRef, { lastInvoiceNum: nextNum }, { merge: true });
+                return 'INV-' + String(nextNum).padStart(4, '0');
+            },
+
+            finalizeInvoice: async function() {
+                if(!this.cart.length) return alert(this.t('empty'));
+                const custId = document.getElementById('posCust').value;
+                const custName = document.getElementById('posCust').options[document.getElementById('posCust').selectedIndex]?.text || 'Walk-in';
+                if(!custId) return alert(this.t('p_cl') + " Required");
+
+                const total = Number(document.getElementById('cartTotal').innerText);
+                const paid = Number(document.getElementById('payAmount').value);
+                const isBank = document.querySelector('input[name="payMethod"]:checked').value === 'bank';
+                const bankId = isBank ? document.getElementById('posBank').value : null;
+
+                if(isBank && !bankId) return alert(this.t('select_bank'));
+
+                this.showLoader();
+                try {
+                    await db.runTransaction(async (transaction) => {
+                        const now = new Date().toISOString();
+                        const invNum = await this.getNextInvoiceNumber(transaction);
+
+                        const invRef = db.collection('invoices').doc();
+                        transaction.set(invRef, {
+                            companyId: this.state.cid, invNum: invNum, customer: custName, customerId: custId,
+                            items: this.cart, total, paid, debt: total-paid,
+                            paymentMethod: isBank?'bank':'cash', bankId: bankId,
+                            createdAt: now
+                        });
+
+                        for(let i of this.cart) {
+                            const pRef = db.collection('products').doc(i.id);
+                            transaction.update(pRef, { stock: firebase.firestore.FieldValue.increment(-i.q) });
+                        }
+
+                        if(total > paid) {
+                            const cRef = db.collection('customers').doc(custId);
+                            transaction.update(cRef, { balance: firebase.firestore.FieldValue.increment(total-paid) });
+                        }
+
+                        if(isBank && bankId) {
+                            const bRef = db.collection('banks').doc(bankId);
+                            transaction.update(bRef, { balance: firebase.firestore.FieldValue.increment(paid) });
+                        }
+
+                        const tRef = db.collection('transactions').doc();
+                        transaction.set(tRef, {
+                            companyId: this.state.cid, type: 'sale', refId: invRef.id,
+                            invNum: invNum, amount: total, paid: paid, debt: total-paid,
+                            method: isBank?'bank':'cash', bankId: bankId, customerId: custId,
+                            createdAt: now, note: `Invoice ${invNum}`
+                        });
+                        this.printData = { id: invNum, c: custName, t: total, items: this.cart, p: paid, d: total-paid };
+                    });
+
+                    this.print(this.printData.id, this.printData.c, this.printData.t, this.printData.items, this.printData.p, this.printData.d);
+                    this.nav('pos');
+                } catch(e) { console.error(e); alert(e.message); }
+                this.hideLoader();
+            },
+
+            // --- Customers Module ---
+            listCustomers: async function(div) {
+                div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('cust')}</h3><button onclick="app.addCustomerModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="custTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`;
+                const s = await db.collection('customers').where('companyId','==',this.state.cid).get();
+                let h='';
+                s.forEach(d => {
+                    const c = d.data();
+                    h += `<tr><td>${c.name}</td><td>${c.phone||'-'}</td>
+                        <td style="color:${c.balance>0?'red':'green'}">${c.balance.toLocaleString()}</td>
+                        <td>
+                            <button onclick="app.payDebtModal('${d.id}','${c.name}')" class="btn btn-sec" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;">${this.t('pay_debt')}</button>
+                            <button onclick="app.viewStatement('${d.id}','customer')" class="btn btn-prim" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;">${this.t('stmt')}</button>
+                        </td></tr>`;
+                });
+                document.querySelector('#custTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>';
+            },
+            addCustomerModal: function() {
+                const h = `<input id="ncName" class="inp" placeholder="${this.t('prompt_name')}"><input id="ncPhone" class="inp" placeholder="${this.t('adm_phone')}">`;
+                this.showModal(this.t('new_cust'), h, async () => {
+                    const n=document.getElementById('ncName').value, p=document.getElementById('ncPhone').value;
+                    if(n) { await db.collection('customers').add({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}); this.nav('customers'); }
+                });
+            },
+            payDebtModal: async function(cid, cname) {
                 const banks = await db.collection('banks').where('companyId','==',this.state.cid).get();
-                let bOpts=''; banks.forEach(d=>bOpts+=`<option value="${d.id}">${d.data().name}</option>`);
-                document.getElementById('debtBank').innerHTML = bOpts;
-                document.getElementById('debtModal').style.display='flex';
-            },
-            payDebtConfirm: async function() {
-                const cid = document.getElementById('debtCustSel').value;
-                const amt = Number(document.getElementById('debtAmount').value);
-                const met = document.getElementById('debtMethod').value;
-                const bid = document.getElementById('debtBank').value;
-                
-                const batch = db.batch();
-                // Reduce Debt
-                batch.update(db.collection('customers').doc(cid), {balance: firebase.firestore.FieldValue.increment(-amt)});
-                
-                // Add Money to Bank or create Cash Revenue Log
-                if(met==='bank') {
-                    batch.update(db.collection('banks').doc(bid), {balance: firebase.firestore.FieldValue.increment(amt)});
-                    batch.set(db.collection('bank_transactions').doc(), {companyId:this.state.cid, bankId:bid, type:'deposit', amount:amt, reason:'تسديد دين', date:new Date().toISOString()});
-                } 
-                // Create payment record for statement
-                batch.set(db.collection('customer_payments').doc(), {companyId:this.state.cid, customerId:cid, amount:amt, method:met, date:new Date().toISOString()});
+                let bOpts = `<option value="">-- Select Bank --</option>`;
+                banks.forEach(b => bOpts += `<option value="${b.id}">${b.data().name}</option>`);
 
-                await batch.commit();
-                document.getElementById('debtModal').style.display='none';
-                this.nav('customers');
-            },
-
-            renderBanks: async function(div) {
-                div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3>${this.t('banks')}</h3><button onclick="app.addBank()" class="btn btn-prim">+</button></div><div class="card"><table id="btable"><thead><tr><th>البنك</th><th>الرصيد</th><th>كشف</th></tr></thead><tbody></tbody></table></div>`;
-                const s = await db.collection('banks').where('companyId','==',this.state.cid).get();
-                let h=''; s.forEach(d => { const v=d.data(); h+=`<tr><td>${v.name}</td><td>${v.balance}</td><td><i class="fa-solid fa-file-lines" style="color:green;cursor:pointer" onclick="app.showStatement('banks','${d.id}','${v.name}')"></i></td></tr>`; });
-                document.querySelector('#btable tbody').innerHTML = h;
-            },
-            addBank: async function() { const n=prompt("Name:"); const b=Number(prompt("Balance:")); if(n) { await db.collection('banks').add({companyId:this.state.cid, name:n, balance:b}); this.nav('banks'); } },
-            
-            renderRevenue: async function(div) { this.listGeneric(div, 'revenue'); },
-            listInvoices: async function(div) {
-                div.innerHTML = `<div class="card"><div class="table-scroll"><table id="tbl"><thead><tr><th>رقم</th><th>العميل</th><th>المبلغ</th></tr></thead><tbody></tbody></table></div></div>`;
-                const s = await db.collection('invoices').where('companyId','==',this.state.cid).orderBy('createdAt','desc').get();
-                let h=''; s.forEach(d=>{ const v=d.data(); h+=`<tr><td>${v.number}</td><td>${v.customer}</td><td>${v.total}</td></tr>`; });
-                document.querySelector('#tbl tbody').innerHTML = h;
-            },
-            listInventory: async function(div) {
-                div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><h3>${this.t('stock')}</h3><button onclick="app.addProd()" class="btn btn-prim">+</button></div><div class="card"><div class="table-scroll"><table id="tbl"><thead><tr><th>الاسم</th><th>شراء</th><th>بيع</th><th>مخزون</th><th>تحكم</th></tr></thead><tbody></tbody></table></div></div>`;
-                const s = await db.collection('products').where('companyId','==',this.state.cid).get();
-                let h=''; s.forEach(d=>{ const v=d.data(); h+=`<tr><td>${v.name}</td><td>${v.buyPrice}</td><td>${v.sellPrice}</td><td>${v.stock}</td><td><i class="fa-solid fa-pen" style="color:blue;margin-left:10px;cursor:pointer" onclick="app.editProd('${d.id}', ${v.buyPrice}, ${v.sellPrice})"></i> <i class="fa-solid fa-trash" style="color:red;cursor:pointer" onclick="app.del('${d.id}','products')"></i></td></tr>`; });
-                document.querySelector('#tbl tbody').innerHTML = h;
-            },
-            addProd: async function() {
-                const n=prompt("الاسم"); const b=Number(prompt("شراء")); const s=Number(prompt("بيع")); const q=Number(prompt("الكمية"));
-                if(n&&b&&s) { await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q}); this.nav('inventory'); }
-            },
-            editProd: async function(id, b, s) { const ns = Number(prompt("سعر جديد", s)); if(ns) await db.collection('products').doc(id).update({sellPrice:ns}); this.nav('inventory'); },
-
-            // --- Reports ---
-            reports: function(div) {
-                div.innerHTML = `<h2>${this.t('rep')}</h2>
-                    <div class="grid-stats">
-                        <div class="card" onclick="app.genReport('day')"><h3>تقرير يومي</h3></div>
-                        <div class="card" onclick="app.genReport('month')"><h3>تقرير شهري</h3></div>
+                const h = `
+                    <p>Customer: <b>${cname}</b></p>
+                    <input type="number" id="pdAmount" class="inp" placeholder="${this.t('prompt_amount')}">
+                    <select id="pdMethod" class="select-box" onchange="document.getElementById('pdBankDiv').style.display = this.value==='bank'?'block':'none'">
+                        <option value="cash">${this.t('cash')}</option>
+                        <option value="bank">${this.t('bank')}</option>
+                    </select>
+                    <div id="pdBankDiv" style="display:none;">
+                        <select id="pdBank" class="select-box">${bOpts}</select>
                     </div>
-                    <div id="repRes"></div>`;
-            },
-            genReport: async function(type) {
-                // ... (Profit Report Logic - same as previous) ...
-                // Simplified display for brevity
-                document.getElementById('repRes').innerHTML = '<div class="card"><h3>تقرير الأرباح</h3><p>يتم الحساب...</p></div>';
+                `;
+                this.showModal(this.t('pay_debt'), h, async () => {
+                    const amt = Number(document.getElementById('pdAmount').value);
+                    const method = document.getElementById('pdMethod').value;
+                    const bid = document.getElementById('pdBank').value;
+                    if(!amt) return;
+                    if(method==='bank' && !bid) return alert(this.t('select_bank'));
+
+                    const batch = db.batch();
+                    const now = new Date().toISOString();
+                    
+                    const tRef = db.collection('transactions').doc();
+                    batch.set(tRef, {
+                        companyId: this.state.cid, type: 'debt_payment', 
+                        customerId: cid, amount: amt, method, bankId: bid, createdAt: now
+                    });
+                    batch.update(db.collection('customers').doc(cid), { balance: firebase.firestore.FieldValue.increment(-amt) });
+                    if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(amt) });
+
+                    await batch.commit();
+                    this.nav('customers');
+                });
             },
 
-            showStatement: async function(col, id, name) {
-                const modal = document.getElementById('stmtModal');
-                document.getElementById('stmtTitle').innerText = "كشف: " + name;
-                const div = document.getElementById('stmtContent');
-                div.innerHTML = 'Loading...';
-                modal.style.display = 'flex';
+            // --- Banks Module ---
+            listBanks: async function(div) {
+                div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('banks')}</h3><button onclick="app.addBankModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="bnkTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`;
+                const s = await db.collection('banks').where('companyId','==',this.state.cid).get();
+                let h='';
+                s.forEach(d => {
+                    const b = d.data();
+                    h += `<tr><td>${b.name}</td><td>${b.balance.toLocaleString()}</td><td><button onclick="app.viewStatement('${d.id}','bank')" class="btn btn-prim" style="padding:5px;">${this.t('stmt')}</button></td></tr>`;
+                });
+                document.querySelector('#bnkTbl tbody').innerHTML = h || '<tr><td colspan="3">-</td></tr>';
+            },
+            addBankModal: function() {
+                this.showModal(this.t('banks'), `<input id="nbName" class="inp" placeholder="${this.t('th_name')}"><input type="number" id="nbBal" class="inp" placeholder="${this.t('balance')}">`, async () => {
+                    const n=document.getElementById('nbName').value, b=Number(document.getElementById('nbBal').value);
+                    if(n) { await db.collection('banks').add({companyId:this.state.cid, name:n, balance:b||0, createdAt:new Date().toISOString()}); this.nav('banks'); }
+                });
+            },
+
+            // --- Generic Form Handler ---
+            addTransactionModal: async function(type) {
+                const banks = await db.collection('banks').where('companyId','==',this.state.cid).get();
+                let bOpts = `<option value="">-- Select Bank --</option>`;
+                banks.forEach(b => bOpts += `<option value="${b.id}">${b.data().name}</option>`);
+
+                const h = `
+                    <input id="trName" class="inp" placeholder="${this.t('prompt_name')}">
+                    <input id="trNote" class="inp" placeholder="${this.t('prompt_note')}">
+                    <input type="number" id="trAmount" class="inp" placeholder="${this.t('prompt_amount')}">
+                    <label>${this.t('pay_method')}</label>
+                    <select id="trMethod" class="select-box" onchange="document.getElementById('trBankDiv').style.display = this.value==='bank'?'block':'none'">
+                        <option value="cash">${this.t('cash')}</option>
+                        <option value="bank">${this.t('bank')}</option>
+                    </select>
+                    <div id="trBankDiv" style="display:none;"><select id="trBank" class="select-box">${bOpts}</select></div>
+                `;
                 
-                let rows = '';
-                if(col==='customers') {
-                    // Get Invoices (Debit)
-                    const invs = await db.collection('invoices').where('companyId','==',this.state.cid).where('customerId','==',id).get();
-                    // Get Payments (Credit)
-                    const pays = await db.collection('customer_payments').where('companyId','==',this.state.cid).where('customerId','==',id).get();
+                this.showModal(this.t(type), h, async () => {
+                    const val1 = document.getElementById('trName').value;
+                    const val2 = document.getElementById('trNote').value;
+                    const amt = Number(document.getElementById('trAmount').value);
+                    const method = document.getElementById('trMethod').value;
+                    const bid = document.getElementById('trBank').value;
                     
-                    let txs = [];
-                    invs.forEach(d => txs.push({date:d.data().createdAt, desc:`فاتورة ${d.data().number}`, debit:d.data().debt, credit:0}));
-                    pays.forEach(d => txs.push({date:d.data().date, desc:'تسديد', debit:0, credit:d.data().amount}));
+                    if(!val1 || !amt) return;
+                    if(method==='bank' && !bid) return alert(this.t('select_bank'));
+
+                    const batch = db.batch();
+                    const now = new Date().toISOString();
                     
-                    txs.sort((a,b)=>new Date(a.date)-new Date(b.date));
+                    const ref = db.collection(type).doc();
+                    batch.set(ref, { companyId:this.state.cid, val1, val2, val3:amt, method, bankId:bid, createdAt:now });
+
+                    const tRef = db.collection('transactions').doc();
+                    let tType = type === 'revenues' ? 'revenue' : (type === 'salaries' ? 'salary' : 'expense');
                     
-                    let bal = 0;
-                    txs.forEach(t => {
-                        if(t.debit > 0 || t.credit > 0) {
-                            bal += t.debit - t.credit;
-                            rows += `<tr><td>${new Date(t.date).toLocaleDateString()}</td><td>${t.desc}</td><td>${t.debit}</td><td>${t.credit}</td><td>${bal}</td></tr>`;
+                    batch.set(tRef, {
+                        companyId: this.state.cid, type: tType, refId: ref.id,
+                        amount: amt, method, bankId: bid, note: val1, createdAt: now
+                    });
+
+                    if(method==='bank' && bid) {
+                        const increment = type === 'revenues' ? amt : -amt; 
+                        batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(increment) });
+                    }
+
+                    await batch.commit();
+                    this.nav(type);
+                });
+            },
+
+            list: async function(div, type) { 
+                const titleKey = type==='invoices'?'inv':(type==='products'?'stock':(type==='revenues'?'rev':(type==='salaries'?'sal':(type==='suppliers'?'supp':'exp'))));
+                const addBtn = type!=='invoices' ? `<button onclick="${type==='products'?'app.addProd()':(type==='suppliers'?'app.addSupp()':'app.addTransactionModal(\''+type+'\')')}" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>` : '';
+                
+                div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody><tr><td>Loading...</td></tr></tbody></table></div></div>`;
+                
+                const s = await db.collection(type).where('companyId','==',this.state.cid).get();
+                let docs = s.docs.map(d=>({id:d.id,...d.data()})); 
+                if(type==='invoices') docs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); 
+                
+                let h='', th='';
+                if(type==='invoices') { 
+                    th=`<tr><th>${this.t('th_inv_no')}</th><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('paid')}</th><th>${this.t('th_print')}</th></tr>`; 
+                    docs.forEach(d=>{ 
+                        const str=encodeURIComponent(JSON.stringify(d.items)); 
+                        const displayNum = d.invNum || d.id.substring(0,6);
+                        h+=`<tr><td style="font-weight:bold">${displayNum}</td><td>${this.formatDate(d.createdAt)}</td><td>${d.customer}</td><td>${d.total}</td><td>${d.paid}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${displayNum}','${d.customer}',${d.total},'${str}',${d.paid},${d.debt})">${this.t('th_print')}</button></td></tr>`; 
+                    }); 
+                } else if(type==='products') { 
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`; 
+                    docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td><button onclick="app.editProd('${d.id}',${d.buyPrice},${d.sellPrice})" style="border:none;cursor:pointer;color:var(--primary)">✎</button></td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`); 
+                } else if (type === 'suppliers') {
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('th_del')}</th></tr>`;
+                    docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.phone||'-'}</td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`);
+                } else { 
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_del')}</th></tr>`; 
+                    docs.forEach(d=>{ h+=`<tr><td>${d.val1}</td><td>${d.val2}</td><td>${d.val3}</td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`; }); 
+                } 
+                document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="5">-</td></tr>'; 
+            },
+
+            // --- ADD PROD (Modified for Duplicates) ---
+            addProd: async function() { 
+                const n=prompt(this.t('prompt_name'));
+                if(!n) return;
+                const b=Number(prompt(this.t('prompt_buy')));
+                const s=Number(prompt(this.t('prompt_sell')));
+                const q=Number(prompt(this.t('prompt_qty'))); 
+                
+                if(n&&b) { 
+                    if(s<=b) return alert(this.t('err_price_logic')); 
+                    
+                    this.showLoader();
+                    // Check duplicate name
+                    const snap = await db.collection('products')
+                        .where('companyId','==',this.state.cid)
+                        .where('name', '==', n)
+                        .get();
+                    
+                    let merged = false;
+                    if(!snap.empty) {
+                        // Check if price matches
+                        snap.forEach(async doc => {
+                            if(!merged && doc.data().sellPrice === s) {
+                                // Merge Quantity
+                                merged = true;
+                                await db.collection('products').doc(doc.id).update({
+                                    stock: firebase.firestore.FieldValue.increment(q)
+                                });
+                                alert('تم دمج الكمية مع الصنف الموجود لأن السعر متطابق.');
+                            }
+                        });
+                    }
+
+                    if(!merged) {
+                        await db.collection('products').add({companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:new Date().toISOString()}); 
+                    }
+                    
+                    this.hideLoader();
+                    this.nav('inventory'); 
+                } 
+            },
+
+            addSupp: async function() {
+                const n=prompt(this.t('prompt_name')), p=prompt(this.t('adm_phone'));
+                if(n) { await db.collection('suppliers').add({companyId:this.state.cid, name:n, phone:p, createdAt:new Date().toISOString()}); this.nav('suppliers'); }
+            },
+            editProd: async function(id, b, os) { let ns = prompt(this.t('prompt_new_price'), os); if(!ns) return; ns=Number(ns); if(ns<=b) return alert(this.t('err_price_logic')); await db.collection('products').doc(id).update({sellPrice:ns}); this.nav('inventory'); },
+            del: async function(id, col) { if(confirm(this.t('confirm_del'))) { await db.collection(col).doc(id).delete(); this.nav(col==='products'?'inventory':col); } },
+
+            showModal: function(title, contentHtml, actionFn) {
+                document.getElementById('modalTitle').innerText = title;
+                document.getElementById('modalContent').innerHTML = contentHtml;
+                document.getElementById('genericModal').style.display = 'flex';
+                const btn = document.getElementById('modalActionBtn');
+                btn.onclick = async () => {
+                    this.showLoader();
+                    try { await actionFn(); document.getElementById('genericModal').style.display = 'none'; } 
+                    catch(e) { alert(e.message); }
+                    this.hideLoader();
+                };
+            },
+
+            viewStatement: async function(id, type) {
+                const modal = document.getElementById('genericModal');
+                document.getElementById('modalTitle').innerText = this.t('stmt');
+                document.getElementById('modalContent').innerHTML = '<div class="spinner"></div>';
+                document.getElementById('modalActionBtn').style.display = 'none';
+                modal.style.display = 'flex';
+
+                let q = db.collection('transactions').where('companyId','==',this.state.cid);
+                if(type === 'customer') q = q.where('customerId','==',id);
+                else if(type === 'bank') q = q.where('bankId','==',id);
+                
+                const snaps = await q.get();
+                let txs = snaps.docs.map(d=>d.data());
+                txs.sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt)); 
+
+                let h = `<table style="width:100%; font-size:12px;"><thead><tr><th>Date</th><th>Type</th><th>In</th><th>Out</th></tr></thead><tbody>`;
+                txs.forEach(t => {
+                    let dStr = new Date(t.createdAt).toLocaleDateString();
+                    let desc = t.type;
+                    let inAmt = 0, outAmt = 0;
+                    
+                    if(type === 'customer') {
+                        if(t.type === 'sale') { desc=`Inv ${t.invNum||''}`; outAmt = t.debt; } 
+                        if(t.type === 'debt_payment') { desc=`Pay`; inAmt = t.amount; }
+                    } else {
+                        if(t.type === 'revenue' || t.type === 'debt_payment') inAmt = t.amount;
+                        if(t.type === 'sale') inAmt = t.paid;
+                        if(t.type === 'expense' || t.type === 'salary') outAmt = t.amount;
+                    }
+                    
+                    h += `<tr><td>${dStr}</td><td>${desc}</td><td style="color:green">${inAmt||'-'}</td><td style="color:red">${outAmt||'-'}</td></tr>`;
+                });
+                h += '</tbody></table>';
+                document.getElementById('modalContent').innerHTML = h;
+                
+                const closeBtn = document.querySelector('#genericModal .btn-sec');
+                const oldClose = closeBtn.onclick;
+                closeBtn.onclick = () => { oldClose(); document.getElementById('modalActionBtn').style.display = 'block'; };
+            },
+
+            reprint: function(id, c, t, itemsStr, paid, debt) { const items = JSON.parse(decodeURIComponent(itemsStr)); this.print(id,c,t,items, paid, debt); },
+            print: function(id, c, t, items, paid, debt) { 
+                const dir = this.state.lang==='ar'?'rtl':'ltr'; 
+                const formattedDate = this.formatDate(new Date().toISOString()); 
+                const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; 
+                let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); 
+                
+                document.getElementById('printArea').innerHTML = `
+                    <div style="padding:20px; direction:${dir}; font-family:'Tajawal'">
+                        <center><h2>${this.state.name}</h2><p>${this.state.phone}</p></center>
+                        <hr>
+                        <p>INV: ${id} | ${formattedDate} <br> ${this.t('th_client')}: ${c}</p>
+                        <table style="width:100%; border-collapse:collapse; text-align:center;">${headers}${rows}</table>
+                        <hr>
+                        <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${this.t('p_tot')}:</span> <span>${t}</span></div>
+                        <div style="display:flex; justify-content:space-between;"><span>${this.t('paid')}:</span> <span>${paid}</span></div>
+                        <div style="display:flex; justify-content:space-between;"><span>${this.t('remain')}:</span> <span>${debt}</span></div>
+                        <center><small>Teyssir ERP</small></center>
+                    </div>`; 
+                window.print(); 
+            },
+
+            // --- DETAILED REPORTS (IMPROVED & FAST) ---
+            reports: async function(div) {
+                div.innerHTML = `
+                    <h2>${this.t('rep')}</h2>
+                    <div class="filters-bar">
+                        <button onclick="app.loadReport('day')" class="filter-btn active">${this.t('rep_daily')}</button>
+                        <button onclick="app.loadReport('month')" class="filter-btn">${this.t('rep_monthly')}</button>
+                    </div>
+                    <div id="reportContent"></div>
+                `;
+                this.loadReport('day');
+            },
+
+            loadReport: async function(period) {
+                const container = document.getElementById('reportContent');
+                container.innerHTML = '<div class="spinner"></div>';
+                
+                // Optimized client-side filtering for speed on general reports
+                // Since Firestore composite indexes are complex, we fetch company transactions and filter in JS.
+                // This is fast enough for typical SMB data.
+                
+                try {
+                    const snap = await db.collection('transactions')
+                        .where('companyId','==',this.state.cid)
+                        .get(); // Get all then filter. Reliable without index errors.
+
+                    const now = new Date();
+                    let start = new Date();
+                    let end = new Date();
+                    
+                    if(period === 'day') {
+                        start.setHours(0,0,0,0);
+                        end.setHours(23,59,59,999);
+                    } else {
+                        start.setDate(1); start.setHours(0,0,0,0);
+                        end.setMonth(end.getMonth() + 1); end.setDate(0); end.setHours(23,59,59,999);
+                    }
+
+                    const txs = [];
+                    // General Stats
+                    let totalSales = 0, totalExp = 0, totalRev = 0, totalDebtsCollected = 0;
+
+                    snap.forEach(d => {
+                        const t = d.data();
+                        const tDate = new Date(t.createdAt);
+                        if(tDate >= start && tDate <= end) {
+                            txs.push(t);
+                            // Calc Totals
+                            if(t.type === 'sale') totalSales += t.amount;
+                            if(t.type === 'expense' || t.type === 'salary') totalExp += t.amount;
+                            if(t.type === 'revenue') totalRev += t.amount;
+                            if(t.type === 'debt_payment') totalDebtsCollected += t.amount;
                         }
                     });
-                    div.innerHTML = `<div class="table-scroll"><table><thead><tr><th>تاريخ</th><th>بيان</th><th>مدين (عليه)</th><th>دائن (دفع)</th><th>الرصيد</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-                } else if(col==='banks') {
-                    // Bank Transactions
-                    const txs = await db.collection('bank_transactions').where('bankId','==',id).orderBy('date').get();
-                    let bal = 0;
-                    txs.forEach(d => {
-                        const v = d.data();
-                        const dep = v.type==='deposit'?v.amount:0;
-                        const wit = v.type==='withdraw'?v.amount:0;
-                        bal += dep - wit;
-                        rows += `<tr><td>${new Date(v.date).toLocaleDateString()}</td><td>${v.reason||'-'}</td><td>${dep}</td><td>${wit}</td><td>${bal}</td></tr>`;
+
+                    txs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                    
+                    const netProfit = (totalSales + totalRev) - totalExp;
+
+                    let h = `<table style="width:100%; font-size:13px;"><thead><tr><th>Type</th><th>Ref</th><th>In</th><th>Out</th></tr></thead><tbody>`;
+                    
+                    txs.forEach(t => {
+                        let typeLabel = t.type;
+                        let refLabel = t.note || (t.invNum ? t.invNum : '-');
+                        let inAmt = 0, outAmt = 0;
+
+                        if(t.type === 'sale') { typeLabel = 'Sale'; inAmt = t.paid; }
+                        else if(t.type === 'debt_payment') { typeLabel = 'Debt Pay'; inAmt = t.amount; }
+                        else if(t.type === 'revenue') { typeLabel = 'Revenue'; inAmt = t.amount; }
+                        else { typeLabel = t.type; outAmt = t.amount; }
+
+                        h += `<tr>
+                            <td>${typeLabel}</td>
+                            <td>${refLabel}<br><small>${new Date(t.createdAt).toLocaleTimeString()}</small></td>
+                            <td style="color:green">${inAmt ? inAmt : '-'}</td>
+                            <td style="color:red">${outAmt ? outAmt : '-'}</td>
+                        </tr>`;
                     });
-                    div.innerHTML = `<div class="table-scroll"><table><thead><tr><th>تاريخ</th><th>بيان</th><th>إيداع</th><th>سحب</th><th>الرصيد</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+                    h += '</tbody></table>';
+
+                    container.innerHTML = `
+                        <div class="card" style="background:#eef2ff; border:1px solid var(--primary);">
+                            <h3 style="margin-top:0; text-align:center;">${this.t('rep_gen')}</h3>
+                            <div class="grid-stats">
+                                <div style="text-align:center"><h4>Sales</h4><span style="color:green; font-weight:bold">${totalSales.toLocaleString()}</span></div>
+                                <div style="text-align:center"><h4>Expenses</h4><span style="color:red; font-weight:bold">${totalExp.toLocaleString()}</span></div>
+                                <div style="text-align:center"><h4>Net Profit</h4><span style="color:var(--primary); font-weight:bold">${netProfit.toLocaleString()}</span></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>${this.t('rep_det_all')}</h3>
+                            <div class="table-scroll" style="max-height:400px; overflow-y:auto">${h}</div>
+                        </div>
+                    `;
+                } catch(e) {
+                    container.innerHTML = `<p style="color:red">Error loading report: ${e.message}</p>`;
                 }
             },
-            printStatement: function() {
-                const content = document.getElementById('stmtContent').innerHTML;
-                const name = document.getElementById('stmtTitle').innerText;
-                document.getElementById('printArea').innerHTML = `<h2>${this.state.name}</h2><h3>${name}</h3>${content}`;
-                window.print();
-            },
 
-            // --- Admin ---
-            admin: async function(div) {
-                 const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(20).get();
-                 let h=''; s.forEach(d => { const v=d.data(); h+=`<tr><td>${v.code}</td><td>${v.actualName}</td><td>${v.actualPhone}</td><td>${v.expiryDate?new Date(v.expiryDate).toLocaleDateString():'-'}</td><td>${v.status}</td><td><button class="btn btn-sec btn-small" onclick="app.renew('${d.id}')">تجديد</button> <button class="btn btn-dan btn-small" onclick="app.toggleBlock('${d.id}','${v.status}')">حظر/فك</button></td></tr>`; });
-                 div.innerHTML = `<div class="card"><div class="table-scroll"><table id="at"><thead><tr><th>رمز</th><th>شركة</th><th>هاتف</th><th>انتهاء</th><th>حالة</th><th>تحكم</th></tr></thead><tbody>${h}</tbody></table></div></div>`;
+            // --- ADMIN ---
+            admin: async function(div) { 
+                div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-box"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; 
+                const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); 
+                let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; 
+                s.forEach(d=>{ 
+                    const v=d.data(); 
+                    const comp = v.actualName || v.targetCompanyName || '-'; 
+                    const ph = v.actualPhone || v.targetPhone || '-'; 
+                    const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; 
+                    const stopBtnText = v.status === 'active' ? 'إيقاف' : 'تفعيل';
+                    b+=`<tr>
+                        <td>${this.formatDate(v.createdAt)}</td>
+                        <td style="font-family:monospace;font-weight:bold">${v.code}</td>
+                        <td>${comp}</td>
+                        <td>${ph}</td>
+                        <td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td>
+                        <td>
+                            <button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_renew')}</button> 
+                            <button onclick="app.toggleStatus('${d.id}', '${v.status}')" class="btn btn-warn" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${stopBtnText}</button>
+                            <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_del')}</button>
+                        </td>
+                    </tr>`; 
+                }); 
+                document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; 
             },
-            renew: async function(id) { if(confirm("تجديد شهر؟")) { 
-                const doc = await db.collection('activation_codes').doc(id).get();
-                let d = new Date(doc.data().expiryDate || new Date());
-                d.setMonth(d.getMonth()+1);
-                await db.collection('activation_codes').doc(id).update({expiryDate:d.toISOString(), status:'active'});
+            gen: async function() { const n=document.getElementById('an').value, p=document.getElementById('ap').value, dur=document.getElementById('adur').value; if(n&&p) { await db.collection('activation_codes').add({code:this.randomStr(10), targetCompanyName:n, targetPhone:p, status:'active', used:false, createdAt:new Date().toISOString(), subscriptionType: dur, paymentHistory: []}); this.nav('admin'); } },
+            renewCompany: async function(id, type) { if(!confirm("Confirm?")) return; const doc = await db.collection('activation_codes').doc(id).get(); const data = doc.data(); let baseDate = new Date(); if(data.expiryDate && new Date(data.expiryDate) > baseDate) { baseDate = new Date(data.expiryDate); } const newExpiry = this.addDuration(baseDate, type); await db.collection('activation_codes').doc(id).update({ expiryDate: newExpiry }); alert("Renewed"); this.nav('admin'); },
+            toggleStatus: async function(id, st) {
+                if(!confirm(st==='active' ? 'هل أنت متأكد من تعطيل الحساب؟' : 'تفعيل الحساب؟')) return;
+                await db.collection('activation_codes').doc(id).update({status: st==='active'?'suspended':'active'});
                 this.nav('admin');
-            }},
-            toggleBlock: async function(id, s) { await db.collection('activation_codes').doc(id).update({status:s==='active'?'suspended':'active'}); this.nav('admin'); },
-
-            del: async function(id,c) { if(confirm('?')) { await db.collection(c).doc(id).delete(); this.nav(this.state.currentView); } },
-            toggleMenu: function() { document.getElementById('sidebar').classList.toggle('open'); document.querySelector('.sidebar-overlay').classList.toggle('show'); },
-            print: function(num, tot, items, paid, debt) {
-                const date = new Date().toLocaleString();
-                const h = items.map(i=>`<tr><td>${i.n}</td><td>${i.q}</td><td>${i.t}</td></tr>`).join('');
-                document.getElementById('printArea').innerHTML = `
-                    <div style="padding:20px; text-align:center; font-family:'Tajawal'">
-                        <h2>${this.state.name}</h2><p>${this.state.phone}</p><hr>
-                        <p>فاتورة: ${num} | ${date}</p>
-                        <table style="width:100%; border-collapse:collapse; text-align:center; border-bottom:1px solid #000; margin-bottom:10px;">
-                            <tr><th>صنف</th><th>عدد</th><th>مجموع</th></tr>
-                            ${h}
-                        </table>
-                        <h3>الإجمالي: ${tot}</h3>
-                        <p>المدفوع: ${paid} | الباقي: ${debt}</p>
-                        <small>شكراً لزيارتكم</small>
-                    </div>`;
-                window.print();
-            }
+            },
+            delCode: async function(id) { if(confirm('Delete?')) { await db.collection('activation_codes').doc(id).delete(); this.nav('admin'); } }
         };
-
+        
         window.onload = function() { app.init(); };
     </script>
 </body>
