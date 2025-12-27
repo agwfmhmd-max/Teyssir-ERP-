@@ -302,9 +302,9 @@
                 part_pay: "دفع جزئي", debt_rec: "تسجيل دين", trans_saved: "تم حفظ العملية",
                 balance: "الرصيد", pay_debt: "تسديد دين", stmt: "كشف حساب",
                 
-                rep_daily: "تقرير اليوم", rep_monthly: "تقرير الشهر", rep_all: "الكل", rep_filter: "تصفية",
+                rep_daily: "تقرير اليوم (بدون رواتب)", rep_monthly: "تقرير الشهر", rep_all: "التقرير العام", rep_filter: "تصفية",
                 rep_sales_det: "تفاصيل المبيعات", rep_exp_det: "تفاصيل المصروفات", rep_det_all: "سجل العمليات التفصيلي",
-                rep_gen: "ملخص عام", total_in: "الداخل (إيراد)", total_out: "الخارج (مصروف)", net_cash: "الصافي",
+                rep_gen: "الربح العام = (المبيعات + الإيرادات) - (تكلفة البضاعة + المصروفات + الرواتب)", total_in: "الداخل (إيراد)", total_out: "الخارج (مصروف)", net_cash: "الصافي",
                 th_inv_no: "رقم الفاتورة", th_profit: "الربح", th_type: "النوع",
                 
                 adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
@@ -345,9 +345,9 @@
                 part_pay: "Paiement Partiel", debt_rec: "Dette Enreg.", trans_saved: "Enregistré",
                 balance: "Solde", pay_debt: "Payer Dette", stmt: "Relevé",
                 
-                rep_daily: "Rapport Journalier", rep_monthly: "Rapport Mensuel", rep_all: "Tout", rep_filter: "Filtrer",
+                rep_daily: "Journalier (Sans Salaire)", rep_monthly: "Rapport Mensuel", rep_all: "Rapport Général", rep_filter: "Filtrer",
                 rep_sales_det: "Détails Ventes", rep_exp_det: "Détails Dépenses", rep_det_all: "Détails Transactions",
-                rep_gen: "Résumé Général", total_in: "Entrées", total_out: "Sorties", net_cash: "Net",
+                rep_gen: "Bénéfice Global = (Ventes + Revenus) - (Coût Marchandises + Dépenses + Salaires)", total_in: "Entrées", total_out: "Sorties", net_cash: "Net",
                 th_inv_no: "N° Facture", th_profit: "Profit", th_type: "Type",
                 
                 adm_time: "Date", adm_comp: "Société", adm_phone: "Tél", adm_code: "Code", adm_stat: "Statut", adm_act: "Action",
@@ -797,9 +797,12 @@
                             createdAt: now
                         });
 
+                        // Calculate Cost of Goods Sold (COGS)
+                        let totalCost = 0;
                         for(let i of this.cart) {
                             const pRef = db.collection('products').doc(i.id);
                             transaction.update(pRef, { stock: firebase.firestore.FieldValue.increment(-i.q) });
+                            totalCost += (i.bp * i.q);
                         }
 
                         if(total > paid) {
@@ -816,6 +819,7 @@
                         transaction.set(tRef, {
                             companyId: this.state.cid, type: 'sale', refId: invRef.id,
                             invNum: invNum, amount: total, paid: paid, debt: total-paid,
+                            cogs: totalCost, // Store COGS
                             method: isBank?'bank':'cash', bankId: bankId, customerId: custId,
                             createdAt: now, note: `Invoice ${invNum}`
                         });
@@ -1121,13 +1125,14 @@
                 window.print(); 
             },
 
-            // --- DETAILED REPORTS (IMPROVED & FAST) ---
+            // --- DETAILED REPORTS (3 TYPES: DAY, MONTH, ALL) ---
             reports: async function(div) {
                 div.innerHTML = `
                     <h2>${this.t('rep')}</h2>
                     <div class="filters-bar">
                         <button onclick="app.loadReport('day')" class="filter-btn active">${this.t('rep_daily')}</button>
                         <button onclick="app.loadReport('month')" class="filter-btn">${this.t('rep_monthly')}</button>
+                        <button onclick="app.loadReport('all')" class="filter-btn">${this.t('rep_all')}</button>
                     </div>
                     <div id="reportContent"></div>
                 `;
@@ -1138,14 +1143,10 @@
                 const container = document.getElementById('reportContent');
                 container.innerHTML = '<div class="spinner"></div>';
                 
-                // Optimized client-side filtering for speed on general reports
-                // Since Firestore composite indexes are complex, we fetch company transactions and filter in JS.
-                // This is fast enough for typical SMB data.
-                
                 try {
                     const snap = await db.collection('transactions')
                         .where('companyId','==',this.state.cid)
-                        .get(); // Get all then filter. Reliable without index errors.
+                        .get(); 
 
                     const now = new Date();
                     let start = new Date();
@@ -1154,60 +1155,91 @@
                     if(period === 'day') {
                         start.setHours(0,0,0,0);
                         end.setHours(23,59,59,999);
-                    } else {
+                    } else if (period === 'month') {
                         start.setDate(1); start.setHours(0,0,0,0);
                         end.setMonth(end.getMonth() + 1); end.setDate(0); end.setHours(23,59,59,999);
+                    } else if (period === 'all') {
+                        start = new Date(0); // Epoch
+                        end = new Date(); // Now
                     }
 
                     const txs = [];
-                    // General Stats
-                    let totalSales = 0, totalExp = 0, totalRev = 0, totalDebtsCollected = 0;
+                    let totalSales = 0;
+                    let totalRev = 0;
+                    let totalCOGS = 0;
+                    let totalExp = 0;
+                    let totalSal = 0;
 
                     snap.forEach(d => {
                         const t = d.data();
                         const tDate = new Date(t.createdAt);
                         if(tDate >= start && tDate <= end) {
+                            
+                            // EXCLUDE SALARY FROM DAILY REPORT
+                            if(period === 'day' && t.type === 'salary') return;
+
                             txs.push(t);
-                            // Calc Totals
-                            if(t.type === 'sale') totalSales += t.amount;
-                            if(t.type === 'expense' || t.type === 'salary') totalExp += t.amount;
-                            if(t.type === 'revenue') totalRev += t.amount;
-                            if(t.type === 'debt_payment') totalDebtsCollected += t.amount;
+                            // Accumulate based on type
+                            if(t.type === 'sale') {
+                                totalSales += t.paid; // Using PAID amount as per request
+                                if(t.cogs) totalCOGS += t.cogs;
+                            } else if (t.type === 'revenue') {
+                                totalRev += t.amount;
+                            } else if (t.type === 'expense') {
+                                totalExp += t.amount;
+                            } else if (t.type === 'salary') {
+                                totalSal += t.amount;
+                            }
                         }
                     });
 
                     txs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
                     
-                    const netProfit = (totalSales + totalRev) - totalExp;
+                    // Formula: (Sales + Rev) - (COGS + Exp + Sal)
+                    const netProfit = (totalSales + totalRev) - (totalCOGS + totalExp + totalSal);
 
-                    let h = `<table style="width:100%; font-size:13px;"><thead><tr><th>Type</th><th>Ref</th><th>In</th><th>Out</th></tr></thead><tbody>`;
+                    let h = `<table style="width:100%; font-size:13px;"><thead><tr><th>Type</th><th>Ref</th><th>Amount</th></tr></thead><tbody>`;
                     
                     txs.forEach(t => {
                         let typeLabel = t.type;
                         let refLabel = t.note || (t.invNum ? t.invNum : '-');
-                        let inAmt = 0, outAmt = 0;
+                        let amountDisplay = t.amount;
+                        if(t.type === 'sale') amountDisplay = t.paid; // Display paid for sales
+                        
+                        let color = 'black';
 
-                        if(t.type === 'sale') { typeLabel = 'Sale'; inAmt = t.paid; }
-                        else if(t.type === 'debt_payment') { typeLabel = 'Debt Pay'; inAmt = t.amount; }
-                        else if(t.type === 'revenue') { typeLabel = 'Revenue'; inAmt = t.amount; }
-                        else { typeLabel = t.type; outAmt = t.amount; }
+                        if(t.type === 'sale' || t.type === 'revenue') { color = 'green'; }
+                        else if(t.type === 'expense' || t.type === 'salary') { color = 'red'; amountDisplay = -amountDisplay; }
+                        else if(t.type === 'debt_payment') { color = 'blue'; } 
 
                         h += `<tr>
                             <td>${typeLabel}</td>
                             <td>${refLabel}<br><small>${new Date(t.createdAt).toLocaleTimeString()}</small></td>
-                            <td style="color:green">${inAmt ? inAmt : '-'}</td>
-                            <td style="color:red">${outAmt ? outAmt : '-'}</td>
+                            <td style="color:${color}; font-weight:bold">${amountDisplay.toLocaleString()}</td>
                         </tr>`;
                     });
                     h += '</tbody></table>';
+
+                    // Salary block visibility
+                    let salBlock = ``;
+                    if(period !== 'day') {
+                        salBlock = `<div style="text-align:center"><h4>الرواتب</h4><span style="color:red; font-weight:bold">-${totalSal.toLocaleString()}</span></div>`;
+                    }
 
                     container.innerHTML = `
                         <div class="card" style="background:#eef2ff; border:1px solid var(--primary);">
                             <h3 style="margin-top:0; text-align:center;">${this.t('rep_gen')}</h3>
                             <div class="grid-stats">
-                                <div style="text-align:center"><h4>Sales</h4><span style="color:green; font-weight:bold">${totalSales.toLocaleString()}</span></div>
-                                <div style="text-align:center"><h4>Expenses</h4><span style="color:red; font-weight:bold">${totalExp.toLocaleString()}</span></div>
-                                <div style="text-align:center"><h4>Net Profit</h4><span style="color:var(--primary); font-weight:bold">${netProfit.toLocaleString()}</span></div>
+                                <div style="text-align:center"><h4>المبيعات (المدفوعة)</h4><span style="color:green; font-weight:bold">${totalSales.toLocaleString()}</span></div>
+                                <div style="text-align:center"><h4>الإيرادات</h4><span style="color:green; font-weight:bold">${totalRev.toLocaleString()}</span></div>
+                                <div style="text-align:center"><h4>تكلفة البضاعة</h4><span style="color:orange; font-weight:bold">-${totalCOGS.toLocaleString()}</span></div>
+                                <div style="text-align:center"><h4>المصروفات</h4><span style="color:red; font-weight:bold">-${totalExp.toLocaleString()}</span></div>
+                                ${salBlock}
+                            </div>
+                            <hr>
+                            <div style="text-align:center">
+                                <h3>الربح العام (الصافي)</h3>
+                                <h1 style="color:${netProfit>=0?'green':'red'}">${netProfit.toLocaleString()}</h1>
                             </div>
                         </div>
                         <div class="card">
