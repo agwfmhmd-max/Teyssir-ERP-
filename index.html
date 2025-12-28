@@ -10,11 +10,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="icon" type="image/png" href="logo.png">
+    
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root { --primary: #1a4585; --accent: #dcb14a; --bg: #f8f9fa; --white: #ffffff; --text-dark: #374151; --text-light: #6b7280; --border: #e5e7eb; --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --lang-green: #006935; --header-h: 65px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -98,12 +105,11 @@
         .expiry-warning { background: #fffbeb; color: #92400e; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; border-bottom: 1px solid #fcd34d; display: none; position: fixed; top: 0; width: 100%; z-index: 1050; }
         .print-box { display: none; }
         
-        /* New Home Button Style */
         .home-float-btn { position: fixed; bottom: 20px; left: 20px; z-index: 19000; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: transform 0.2s; }
         .home-float-btn:active { transform: scale(0.95); }
         html[dir="ltr"] .home-float-btn { left: auto; right: 20px; }
 
-        @media print { .app-container, .auth-wrap, .lang-btn-style, .conn-status, #expiryWarning, #mainLoader, .home-float-btn { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
+        @media print { .app-container, .auth-wrap, .lang-btn-style, .conn-status, #expiryWarning, #mainLoader, .home-float-btn, .modal-overlay { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
     </style>
 </head>
 <body>
@@ -194,7 +200,6 @@
         </aside>
         <main id="workspace" class="main-content"></main>
         
-        <!-- Home Button Added Here -->
         <button id="homeBtn" class="home-float-btn" onclick="app.nav('home')"><i class="fa-solid fa-house"></i></button>
     </div>
     <div id="printArea" class="print-box"></div>
@@ -260,6 +265,7 @@
                 adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف",
                 pay_supp: "سداد مورد", supp_bal: "ديون الموردين", purchase: "شراء مخزون",
                 th_supp: "المورد", new_supp: "مورد جديد", supp_type: "نوع الشراء", supp_direct: "شراء مباشر (مصروف)", supp_credit: "شراء من مورد (آجل/جزئي)", toggle_new: "مورد جديد",
+                down_pdf: "تحميل كشف PDF", btn_save: "حفظ", op_bal: "رصيد افتتاحي"
             },
             fr: {
                 title: "Teyssir ERP", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
@@ -291,6 +297,7 @@
                 adm_stop: "Stop", adm_start: "Start", adm_del: "Del",
                 pay_supp: "Payer Fournisseur", supp_bal: "Dettes Fournisseurs", purchase: "Achat Stock",
                 th_supp: "Fournisseur", new_supp: "Nouveau Fourn.", supp_type: "Type Achat", supp_direct: "Achat Direct (Dépense)", supp_credit: "Achat Fournisseur (Crédit)", toggle_new: "Nouveau Fournisseur",
+                down_pdf: "Télécharger PDF", btn_save: "Enregistrer", op_bal: "Solde Initial"
             }
         };
 
@@ -302,6 +309,9 @@
                 this.showLoader(); updateStatus();
                 if (!localStorage.getItem('welcomeSeen')) document.getElementById('welcomeModal').style.display = 'flex';
                 if (deferredPrompt) deferredPrompt.prompt();
+                
+                this.loadArabicFont();
+
                 const session = localStorage.getItem('mda_session');
                 if (session) {
                     const s = JSON.parse(session);
@@ -312,6 +322,28 @@
                     }
                 } else { this.switchScreen('authScreen'); }
             },
+            
+            loadArabicFont: function() {
+                fetch('https://raw.githubusercontent.com/google/fonts/main/ofl/tajawal/Tajawal-Regular.ttf')
+                .then(response => {
+                    if (!response.ok) throw new Error("Font fetch failed");
+                    return response.arrayBuffer();
+                })
+                .then(buffer => {
+                    let binary = '';
+                    const bytes = new Uint8Array(buffer);
+                    const len = bytes.byteLength;
+                    for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
+                    const base64Font = window.btoa(binary);
+                    
+                    window.pdfMake.vfs = { "Tajawal-Regular.ttf": base64Font };
+                    window.pdfMake.fonts = {
+                        Tajawal: { normal: 'Tajawal-Regular.ttf', bold: 'Tajawal-Regular.ttf', italics: 'Tajawal-Regular.ttf', bolditalics: 'Tajawal-Regular.ttf' }
+                    };
+                })
+                .catch(err => console.error("Error loading PDF font:", err));
+            },
+
             showLoader: function() { document.getElementById('mainLoader').style.display = 'flex'; },
             hideLoader: function() { document.getElementById('mainLoader').style.display = 'none'; },
             switchScreen: function(name) {
@@ -412,15 +444,12 @@
             nav: function(page) {
                 if(page === 'admin' && !this.state.admin) return;
                 this.state.currentView = page;
-                
-                // Show/Hide Home Button
                 const hb = document.getElementById('homeBtn');
                 if(hb) hb.style.display = (page === 'home') ? 'none' : 'flex';
-
                 document.getElementById('sidebar').classList.remove('open'); document.querySelector('.sidebar-overlay').classList.remove('show');
                 document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
                 const activeEl = document.querySelector(`.nav-item[onclick="app.nav('${page}')"]`); if(activeEl) activeEl.classList.add('active');
-                const ws = document.getElementById('workspace'); ws.innerHTML = '<div style="padding:50px;text-align:center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
+                const ws = document.getElementById('workspace'); ws.innerHTML = '<div style="padding:50px;text-align:center;"><i class="fa-solid fa-spinner fa-2x fa-spin"></i></div>';
                 setTimeout(async () => {
                     switch(page) {
                         case 'home': this.home(ws); break;
@@ -448,7 +477,6 @@
                 let q = db.collection(collection).where('companyId','==',this.state.cid);
                 if (orderBy) q = q.orderBy('createdAt', 'desc').limit(100);
                 const snaps = await q.get(); const data = snaps.docs.map(d=>({id:d.id, ...d.data()}));
-                // ترتيب تلقائي لكافة البيانات من الأحدث إلى الأقدم حسب التاريخ والوقت
                 data.sort((a,b)=>new Date(b.createdAt || 0)-new Date(a.createdAt || 0));
                 this.cache[collection] = data; return data;
             },
@@ -505,29 +533,67 @@
                         transaction.set(tRef, { companyId: this.state.cid, type: 'sale', refId: invRef.id, invNum: invNum, amount: total, paid: paid, debt: total-paid, cogs: totalCost, method: isBank?'bank':'cash', bankId: bankId, customerId: custId, createdAt: now, note: `Invoice ${invNum}` });
                         this.printData = { id: invNum, c: custName, t: total, items: this.cart, p: paid, d: total-paid, pm: isBank?'Bank':'Cash', bn: bankName };
                     });
-                    this.clearCache('products'); this.clearCache('invoices'); this.clearCache('customers'); this.clearCache('transactions');
+                    this.clearCache('products'); this.clearCache('invoices'); this.clearCache('customers'); this.clearCache('transactions'); this.clearCache('banks');
                     this.print(this.printData.id, this.printData.c, this.printData.t, this.printData.items, this.printData.p, this.printData.d, this.printData.pm, this.printData.bn); this.nav('pos');
                 } catch(e) { console.error(e); alert(e.message); } this.hideLoader();
             },
             listCustomers: async function(div) {
-                div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('cust')}</h3><button onclick="app.addCustomerModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="custTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('customers'); let h=''; s.forEach(c => { h += `<tr><td>${c.name}</td><td>${c.phone||'-'}</td><td style="color:${c.balance>0?'red':'green'}">${c.balance.toLocaleString()}</td><td><button onclick="app.payDebtModal('${c.id}','${c.name}')" class="btn btn-sec" style="padding:5px 10px; font-size:12px;">${this.t('pay_debt')}</button> <button onclick="app.viewStatement('${c.id}','customer')" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">${this.t('stmt')}</button></td></tr>`; }); document.querySelector('#custTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>';
+                div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('cust')}</h3><button onclick="app.addCustomerModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="custTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('customers'); let h=''; s.forEach(c => { h += `<tr><td>${c.name}</td><td>${c.phone||'-'}</td><td style="color:${c.balance>0?'red':'green'}">${c.balance.toLocaleString()}</td><td><button onclick="app.payDebtModal('${c.id}','${c.name}')" class="btn btn-sec" style="padding:5px 10px; font-size:12px;">${this.t('pay_debt')}</button> <button onclick="app.viewStatement('${c.id}','customer', '${c.name}')" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">${this.t('stmt')}</button></td></tr>`; }); document.querySelector('#custTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>';
             },
             addCustomerModal: function() { this.showModal(this.t('new_cust'), `<input id="ncName" class="inp" placeholder="${this.t('prompt_name')}"><input id="ncPhone" class="inp" placeholder="${this.t('adm_phone')}">`, async () => { const n=document.getElementById('ncName').value, p=document.getElementById('ncPhone').value; if(n && p) { if(!this.isValidPhone(p)) return alert(this.t('err_phone_len')); await db.collection('customers').add({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}); this.clearCache('customers'); this.nav('customers'); } }); },
             payDebtModal: async function(cid, cname) {
                 const banks = await this.getData('banks'); let bOpts = `<option value="">-- Select Bank --</option>`; banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
-                this.showModal(this.t('pay_debt'), `<p>Customer: <b>${cname}</b></p><input type="number" id="pdAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="pdMethod" class="select-box" onchange="document.getElementById('pdBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="pdBankDiv" style="display:none;"><select id="pdBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('pdAmount').value); const method = document.getElementById('pdMethod').value; const bid = document.getElementById('pdBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); const tRef = db.collection('transactions').doc(); batch.set(tRef, { companyId: this.state.cid, type: 'debt_payment', customerId: cid, amount: amt, method, bankId: bid, createdAt: now }); batch.update(db.collection('customers').doc(cid), { balance: firebase.firestore.FieldValue.increment(-amt) }); if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(amt) }); await batch.commit(); this.clearCache('customers'); this.clearCache('transactions'); this.nav('customers'); });
+                this.showModal(this.t('pay_debt'), `<p>Customer: <b>${cname}</b></p><input type="number" id="pdAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="pdMethod" class="select-box" onchange="document.getElementById('pdBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="pdBankDiv" style="display:none;"><select id="pdBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('pdAmount').value); const method = document.getElementById('pdMethod').value; const bid = document.getElementById('pdBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); const tRef = db.collection('transactions').doc(); batch.set(tRef, { companyId: this.state.cid, type: 'debt_payment', customerId: cid, amount: amt, method, bankId: bid, createdAt: now }); batch.update(db.collection('customers').doc(cid), { balance: firebase.firestore.FieldValue.increment(-amt) }); if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(amt) }); await batch.commit(); this.clearCache('customers'); this.clearCache('transactions'); this.clearCache('banks');
+                this.nav('customers'); });
             },
-            listBanks: async function(div) { div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('banks')}</h3><button onclick="app.addBankModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="bnkTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('banks'); let h=''; s.forEach(b => { h += `<tr><td>${b.name}</td><td>${b.balance.toLocaleString()}</td><td><button onclick="app.viewStatement('${b.id}','bank')" class="btn btn-prim" style="padding:5px;">${this.t('stmt')}</button></td></tr>`; }); document.querySelector('#bnkTbl tbody').innerHTML = h || '<tr><td colspan="3">-</td></tr>'; },
-            addBankModal: function() { this.showModal(this.t('banks'), `<input id="nbName" class="inp" placeholder="${this.t('th_name')}"><input type="number" id="nbBal" class="inp" placeholder="${this.t('balance')}">`, async () => { const n=document.getElementById('nbName').value, b=Number(document.getElementById('nbBal').value); if(n) { await db.collection('banks').add({companyId:this.state.cid, name:n, balance:b||0, createdAt:new Date().toISOString()}); this.clearCache('banks'); this.nav('banks'); } }); },
-            listSuppliers: async function(div) { div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('supp')}</h3><button onclick="app.addSuppModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="supTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('supp_bal')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('suppliers'); let h=''; s.forEach(b => { h += `<tr><td>${b.name}</td><td>${b.phone||'-'}</td><td style="color:${b.balance>0?'red':'green'}">${b.balance?.toLocaleString()||0}</td><td><button onclick="app.paySupplierDebt('${b.id}','${b.name}')" class="btn btn-sec" style="padding:5px; font-size:12px;">${this.t('pay_supp')}</button></td></tr>`; }); document.querySelector('#supTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>'; },
+            listBanks: async function(div) { div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('banks')}</h3><button onclick="app.addBankModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="bnkTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('banks'); let h=''; s.forEach(b => { h += `<tr><td>${b.name}</td><td>${b.balance.toLocaleString()}</td><td><button onclick="app.viewStatement('${b.id}','bank','${b.name}')" class="btn btn-prim" style="padding:5px;">${this.t('stmt')}</button></td></tr>`; }); document.querySelector('#bnkTbl tbody').innerHTML = h || '<tr><td colspan="3">-</td></tr>'; },
+            
+            // Fixed Add Bank Modal with Opening Balance Transaction
+            addBankModal: function() { 
+                this.showModal(this.t('banks'), `<input id="nbName" class="inp" placeholder="${this.t('th_name')}"><input type="number" id="nbBal" class="inp" placeholder="${this.t('balance')}">`, async () => { 
+                    const n = document.getElementById('nbName').value;
+                    const b = Number(document.getElementById('nbBal').value); 
+                    if(n) { 
+                        const batch = db.batch();
+                        const now = new Date().toISOString();
+                        
+                        // 1. Create Bank Document
+                        const bankRef = db.collection('banks').doc();
+                        batch.set(bankRef, {companyId:this.state.cid, name:n, balance:b||0, createdAt:now});
+                        
+                        // 2. Create Transaction for Opening Balance
+                        if(b > 0) {
+                            const transRef = db.collection('transactions').doc();
+                            batch.set(transRef, {
+                                companyId: this.state.cid,
+                                type: 'opening_balance',
+                                bankId: bankRef.id,
+                                amount: b,
+                                method: 'bank',
+                                note: 'Opening Balance',
+                                createdAt: now
+                            });
+                        }
+
+                        await batch.commit(); 
+                        this.clearCache('banks'); 
+                        this.clearCache('transactions');
+                        this.nav('banks'); 
+                    } 
+                }); 
+            },
+            
+            listSuppliers: async function(div) { div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('supp')}</h3><button onclick="app.addSuppModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="supTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('supp_bal')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('suppliers'); let h=''; s.forEach(b => { h += `<tr><td>${b.name}</td><td>${b.phone||'-'}</td><td style="color:${b.balance>0?'red':'green'}">${b.balance?.toLocaleString()||0}</td><td><button onclick="app.paySupplierDebt('${b.id}','${b.name}')" class="btn btn-sec" style="padding:5px; font-size:12px;">${this.t('pay_supp')}</button> <button onclick="app.viewStatement('${b.id}','supplier','${b.name}')" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">${this.t('stmt')}</button></td></tr>`; }); document.querySelector('#supTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>'; },
             addSuppModal: function() { this.showModal(this.t('new_supp'), `<input id="nsName" class="inp" placeholder="${this.t('th_name')}"><input id="nsPhone" class="inp" placeholder="${this.t('adm_phone')}">`, async () => { const n=document.getElementById('nsName').value, p=document.getElementById('nsPhone').value; if(n) { await db.collection('suppliers').add({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}); this.clearCache('suppliers'); this.nav('suppliers'); } }); },
             paySupplierDebt: async function(sid, sname) {
                 const banks = await this.getData('banks'); let bOpts = `<option value="">-- Select Bank --</option>`; banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
-                this.showModal(this.t('pay_supp'), `<p>Supplier: <b>${sname}</b></p><input type="number" id="psAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="psMethod" class="select-box" onchange="document.getElementById('psBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="psBankDiv" style="display:none;"><select id="psBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('psAmount').value); const method = document.getElementById('psMethod').value; const bid = document.getElementById('psBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'supplier_payment', supplierId: sid, amount: amt, method, bankId: bid, createdAt: now }); batch.update(db.collection('suppliers').doc(sid), { balance: firebase.firestore.FieldValue.increment(-amt) }); if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(-amt) }); await batch.commit(); this.clearCache('suppliers'); this.clearCache('transactions'); this.nav('suppliers'); });
+                this.showModal(this.t('pay_supp'), `<p>Supplier: <b>${sname}</b></p><input type="number" id="psAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="psMethod" class="select-box" onchange="document.getElementById('psBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="psBankDiv" style="display:none;"><select id="psBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('psAmount').value); const method = document.getElementById('psMethod').value; const bid = document.getElementById('psBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'supplier_payment', supplierId: sid, amount: amt, method, bankId: bid, createdAt: now }); batch.update(db.collection('suppliers').doc(sid), { balance: firebase.firestore.FieldValue.increment(-amt) }); if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(-amt) }); await batch.commit(); this.clearCache('suppliers'); this.clearCache('transactions'); this.clearCache('banks');
+                this.nav('suppliers'); });
             },
             addTransactionModal: async function(type) {
                 const banks = await this.getData('banks'); let bOpts = `<option value="">-- Select Bank --</option>`; banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
-                this.showModal(this.t(type), `<input id="trName" class="inp" placeholder="${this.t('prompt_name')}"><input id="trNote" class="inp" placeholder="${this.t('prompt_note')}"><input type="number" id="trAmount" class="inp" placeholder="${this.t('prompt_amount')}"><label>${this.t('pay_method')}</label><select id="trMethod" class="select-box" onchange="document.getElementById('trBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="trBankDiv" style="display:none;"><select id="trBank" class="select-box">${bOpts}</select></div>`, async () => { const val1 = document.getElementById('trName').value; const val2 = document.getElementById('trNote').value; const amt = Number(document.getElementById('trAmount').value); const method = document.getElementById('trMethod').value; const bid = document.getElementById('trBank').value; if(!val1 || !amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); const ref = db.collection(type).doc(); batch.set(ref, { companyId:this.state.cid, val1, val2, val3:amt, method, bankId:bid, createdAt:now }); const tRef = db.collection('transactions').doc(); let tType = type === 'revenues' ? 'revenue' : (type === 'salaries' ? 'salary' : 'expense'); batch.set(tRef, { companyId: this.state.cid, type: tType, refId: ref.id, amount: amt, method, bankId: bid, note: val1, createdAt: now }); if(method==='bank' && bid) { const increment = type === 'revenues' ? amt : -amt; batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(increment) }); } await batch.commit(); this.clearCache(type); this.clearCache('transactions'); this.nav(type); });
+                this.showModal(this.t(type), `<input id="trName" class="inp" placeholder="${this.t('prompt_name')}"><input id="trNote" class="inp" placeholder="${this.t('prompt_note')}"><input type="number" id="trAmount" class="inp" placeholder="${this.t('prompt_amount')}"><label>${this.t('pay_method')}</label><select id="trMethod" class="select-box" onchange="document.getElementById('trBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="trBankDiv" style="display:none;"><select id="trBank" class="select-box">${bOpts}</select></div>`, async () => { const val1 = document.getElementById('trName').value; const val2 = document.getElementById('trNote').value; const amt = Number(document.getElementById('trAmount').value); const method = document.getElementById('trMethod').value; const bid = document.getElementById('trBank').value; if(!val1 || !amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); const ref = db.collection(type).doc(); batch.set(ref, { companyId:this.state.cid, val1, val2, val3:amt, method, bankId:bid, createdAt:now }); const tRef = db.collection('transactions').doc(); let tType = type === 'revenues' ? 'revenue' : (type === 'salaries' ? 'salary' : 'expense'); batch.set(tRef, { companyId: this.state.cid, type: tType, refId: ref.id, amount: amt, method, bankId: bid, note: val1, createdAt: now }); if(method==='bank' && bid) { const increment = type === 'revenues' ? amt : -amt; batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(increment) }); } await batch.commit(); this.clearCache(type); this.clearCache('transactions'); this.clearCache('banks');
+                this.nav(type); });
             },
             list: async function(div, type) { 
                 const titleKey = type==='invoices'?'inv':(type==='products'?'stock':(type==='revenues'?'rev':(type==='salaries'?'sal':(type==='suppliers'?'supp':'exp')))); const addBtn = type!=='invoices' ? `<button onclick="${type==='products'?'app.addProductModal()':'app.addTransactionModal(\''+type+'\')'}" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>` : ''; div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody><tr><td>Loading...</td></tr></tbody></table></div></div>`; const docs = await this.getData(type); let h='', th='';
@@ -542,7 +608,7 @@
                 let bOpts = `<option value="">-- Bank --</option>`; banks.forEach(b=> bOpts += `<option value="${b.id}">${b.name}</option>`);
                 const h = `<input id="npName" class="inp" placeholder="${this.t('th_name')}"><div style="display:flex; gap:10px;"><input id="npBuy" type="number" class="inp" placeholder="${this.t('th_buy')}"><input id="npSell" type="number" class="inp" placeholder="${this.t('th_sell')}"></div><input id="npQty" type="number" class="inp" placeholder="${this.t('tbl_qty')}"><hr><label>${this.t('supp_type')}</label><div style="display:flex; gap:5px;"><select id="npSupp" class="select-box" onchange="app.togglePurchaseType(this.value)">${sOpts}</select><button onclick="app.quickAddSupplier()" class="btn btn-sec" style="width:auto; height:45px;" title="${this.t('toggle_new')}">+</button></div><div id="directPayDiv" style="display:block;"><p style="font-size:12px;color:gray">Direct Expense.</p></div><div id="suppPayDiv" style="display:none;"><div style="display:flex; gap:10px;"><input id="npPaid" type="number" class="inp" placeholder="${this.t('paid')}" value="0"><input id="npDebt" class="inp" placeholder="${this.t('remain')}" readonly style="background:#eee;"></div></div><div style="display:flex; gap:10px; margin-top:10px;"><select id="npMethod" class="select-box"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><select id="npBank" class="select-box" style="display:none;">${bOpts}</select></div>`;
                 this.showModal(this.t('p_add'), h, async () => {
-                    const n = document.getElementById('npName').value.trim(); // Added trim for better matching
+                    const n = document.getElementById('npName').value.trim();
                     const b = Number(document.getElementById('npBuy').value); 
                     const s = Number(document.getElementById('npSell').value); 
                     const q = Number(document.getElementById('npQty').value); 
@@ -557,40 +623,17 @@
                     const now = new Date().toISOString(); 
                     const totalCost = b * q;
                     
-                    // Duplicate Logic Check
-                    const existingSnap = await db.collection('products')
-                        .where('companyId','==',this.state.cid)
-                        .where('name','==',n)
-                        .get();
-                    
-                    let targetId = null; 
-                    let isMerge = false; 
-                    
-                    existingSnap.forEach(doc => { 
-                        if(doc.data().sellPrice === s) { 
-                            targetId = doc.id; 
-                            isMerge = true; 
-                        } 
-                    });
+                    const existingSnap = await db.collection('products').where('companyId','==',this.state.cid).where('name','==',n).get();
+                    let targetId = null; let isMerge = false; 
+                    existingSnap.forEach(doc => { if(doc.data().sellPrice === s) { targetId = doc.id; isMerge = true; } });
 
                     if(isMerge && targetId) { 
-                        batch.update(db.collection('products').doc(targetId), { 
-                            stock: firebase.firestore.FieldValue.increment(q), 
-                            buyPrice: b 
-                        }); 
+                        batch.update(db.collection('products').doc(targetId), { stock: firebase.firestore.FieldValue.increment(q), buyPrice: b }); 
                     } else { 
                         const pRef = db.collection('products').doc(); 
-                        batch.set(pRef, { 
-                            companyId:this.state.cid, 
-                            name:n, 
-                            buyPrice:b, 
-                            sellPrice:s, 
-                            stock:q, 
-                            createdAt:now 
-                        }); 
+                        batch.set(pRef, { companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:now }); 
                     }
 
-                    // Expense / Transaction Logic
                     if(suppId === 'none') { 
                         batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'expense', amount: totalCost, paid: totalCost, method: method, bankId: bankId, note: `Direct Purchase: ${n}`, createdAt: now }); 
                         if(method === 'bank' && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-totalCost) }); } 
@@ -601,7 +644,8 @@
                         batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'purchase_stock', supplierId: suppId, amount: totalCost, paid: paid, debt: debt, method: method, bankId: bankId, note: `Stock from Supplier: ${n}`, createdAt: now }); 
                         if(paid > 0 && method === 'bank' && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-paid) }); } 
                     }
-                    await batch.commit(); this.clearCache('products'); this.clearCache('transactions'); if(suppId !== 'none') this.clearCache('suppliers'); this.nav('inventory');
+                    await batch.commit(); this.clearCache('products'); this.clearCache('transactions'); if(suppId !== 'none') this.clearCache('suppliers'); this.clearCache('banks');
+                    this.nav('inventory');
                 });
                 setTimeout(() => { document.getElementById('npMethod').addEventListener('change', (e) => { document.getElementById('npBank').style.display = e.target.value === 'bank' ? 'block' : 'none'; }); const inputs = ['npBuy', 'npQty', 'npPaid']; inputs.forEach(id => { document.getElementById(id).addEventListener('input', () => { const buy = Number(document.getElementById('npBuy').value); const qty = Number(document.getElementById('npQty').value); const pd = Number(document.getElementById('npPaid').value); const tot = buy * qty; const dbt = tot - pd; if(document.getElementById('npDebt')) document.getElementById('npDebt').value = dbt > 0 ? dbt : 0; }); }); }, 100);
             },
@@ -609,14 +653,148 @@
             togglePurchaseType: function(val) { document.getElementById('directPayDiv').style.display = val === 'none' ? 'block' : 'none'; document.getElementById('suppPayDiv').style.display = val === 'none' ? 'none' : 'block'; },
             editProd: async function(id, b, os) { let ns = prompt(this.t('prompt_new_price'), os); if(!ns) return; ns=Number(ns); if(ns<=b) return alert(this.t('err_price_logic')); await db.collection('products').doc(id).update({sellPrice:ns}); this.clearCache('products'); this.nav('inventory'); },
             del: async function(id, col) { if(confirm(this.t('confirm_del'))) { await db.collection(col).doc(id).delete(); this.clearCache(col); this.nav(col==='products'?'inventory':col); } },
-            showModal: function(title, contentHtml, actionFn) { document.getElementById('modalTitle').innerText = title; document.getElementById('modalContent').innerHTML = contentHtml; document.getElementById('genericModal').style.display = 'flex'; const btn = document.getElementById('modalActionBtn'); btn.onclick = async () => { this.showLoader(); try { await actionFn(); document.getElementById('genericModal').style.display = 'none'; } catch(e) { alert(e.message); } this.hideLoader(); }; },
-            viewStatement: async function(id, type) {
-                const modal = document.getElementById('genericModal'); document.getElementById('modalTitle').innerText = this.t('stmt'); document.getElementById('modalContent').innerHTML = '<div class="spinner"></div>'; document.getElementById('modalActionBtn').style.display = 'none'; modal.style.display = 'flex';
-                let q = db.collection('transactions').where('companyId','==',this.state.cid); if(type === 'customer') q = q.where('customerId','==',id); else if(type === 'bank') q = q.where('bankId','==',id);
-                const snaps = await q.get(); let txs = snaps.docs.map(d=>d.data()); txs.sort((a,b)=>new Date(b.createdAt) - new Date(a.createdAt)); 
-                let h = `<table style="width:100%; font-size:12px;"><thead><tr><th>Date</th><th>Type</th><th>In</th><th>Out</th></tr></thead><tbody>`;
-                txs.forEach(t => { let dStr = new Date(t.createdAt).toLocaleDateString(); let desc = t.type; let inAmt = 0, outAmt = 0; if(type === 'customer') { if(t.type === 'sale') { desc=`Inv ${t.invNum||''}`; outAmt = t.debt; } if(t.type === 'debt_payment') { desc=`Pay`; inAmt = t.amount; } } else { if(t.type === 'revenue' || t.type === 'debt_payment') inAmt = t.amount; if(t.type === 'sale') inAmt = t.paid; if(t.type === 'expense' || t.type === 'salary' || t.type === 'supplier_payment') outAmt = t.amount; if(t.type === 'purchase_stock') outAmt = t.paid; if(t.type === 'expense' && t.note.includes('Direct')) outAmt = t.amount; } h += `<tr><td>${dStr}</td><td>${desc}</td><td style="color:green">${inAmt||'-'}</td><td style="color:red">${outAmt||'-'}</td></tr>`; }); h += '</tbody></table>'; document.getElementById('modalContent').innerHTML = h; const closeBtn = document.querySelector('#genericModal .btn-sec'); const oldClose = closeBtn.onclick; closeBtn.onclick = () => { oldClose(); document.getElementById('modalActionBtn').style.display = 'block'; };
+            
+            showModal: function(title, contentHtml, actionFn) { 
+                document.getElementById('modalTitle').innerText = title; 
+                document.getElementById('modalContent').innerHTML = contentHtml; 
+                document.getElementById('genericModal').style.display = 'flex'; 
+                const btn = document.getElementById('modalActionBtn');
+                btn.style.display = 'inline-block';
+                btn.innerText = this.t('btn_save'); 
+                
+                btn.onclick = async () => { 
+                    this.showLoader(); 
+                    try { await actionFn(); document.getElementById('genericModal').style.display = 'none'; } 
+                    catch(e) { alert(e.message); } 
+                    this.hideLoader(); 
+                }; 
             },
+            
+            viewStatement: async function(id, type, name) {
+                const modal = document.getElementById('genericModal'); 
+                document.getElementById('modalTitle').innerText = this.t('stmt') + ": " + name; 
+                document.getElementById('modalContent').innerHTML = '<div class="spinner"></div>'; 
+                document.getElementById('modalActionBtn').style.display = 'none'; 
+                modal.style.display = 'flex';
+
+                let q = db.collection('transactions').where('companyId','==',this.state.cid); 
+                if(type === 'customer') q = q.where('customerId','==',id); 
+                else if(type === 'bank') q = q.where('bankId','==',id);
+                else if(type === 'supplier') q = q.where('supplierId','==',id);
+
+                const snaps = await q.get(); 
+                let txs = snaps.docs.map(d=>d.data()); 
+                txs.sort((a,b)=>new Date(a.createdAt) - new Date(b.createdAt)); 
+
+                let runningBal = 0;
+                const pdfData = [];
+
+                let h = `<table style="width:100%; font-size:12px;"><thead><tr><th>Date</th><th>Desc</th><th>In</th><th>Out</th><th>Bal</th></tr></thead><tbody>`;
+                
+                txs.forEach(t => { 
+                    let dStr = new Date(t.createdAt).toLocaleDateString(); 
+                    let desc = t.type; 
+                    let inAmt = 0, outAmt = 0; 
+
+                    if(type === 'customer') { 
+                        if(t.type === 'sale') { desc=`Inv ${t.invNum||''}`; outAmt = t.debt; } 
+                        if(t.type === 'debt_payment') { desc=`Pay`; inAmt = t.amount; } 
+                        runningBal = runningBal - outAmt + inAmt; 
+                    } else if (type === 'supplier') {
+                        if(t.type === 'purchase_stock') { desc=`Purch`; inAmt = t.debt; }
+                        if(t.type === 'supplier_payment') { desc=`Pay`; outAmt = t.amount; }
+                        runningBal = runningBal + inAmt - outAmt; 
+                    } else { 
+                        if(t.type === 'revenue' || t.type === 'debt_payment') inAmt = t.amount; 
+                        if(t.type === 'sale') inAmt = t.paid; 
+                        if(t.type === 'expense' || t.type === 'salary' || t.type === 'supplier_payment') outAmt = t.amount; 
+                        if(t.type === 'purchase_stock') outAmt = t.paid; 
+                        if(t.type === 'expense' && t.note.includes('Direct')) outAmt = t.amount;
+                        // Added handling for opening_balance
+                        if(t.type === 'opening_balance') inAmt = t.amount;
+
+                        runningBal = runningBal + inAmt - outAmt;
+                    } 
+                    
+                    if (t.type === 'opening_balance') desc = this.t('op_bal');
+
+                    const inDisplay = inAmt > 0 ? inAmt.toLocaleString() : '-';
+                    const outDisplay = outAmt > 0 ? outAmt.toLocaleString() : '-';
+                    
+                    h += `<tr><td>${dStr}</td><td>${desc}</td><td style="color:green">${inDisplay}</td><td style="color:red">${outDisplay}</td><td style="font-weight:bold">${runningBal.toLocaleString()}</td></tr>`; 
+                    
+                    pdfData.push({
+                        date: dStr,
+                        desc: desc,
+                        in: inAmt > 0 ? inAmt : '',
+                        out: outAmt > 0 ? outAmt : '',
+                        bal: runningBal
+                    });
+                }); 
+                
+                h += '</tbody></table>'; 
+                h = `<button onclick='app.createPdfStatement(${JSON.stringify(pdfData)}, "${type}", "${name}")' class="btn btn-sec" style="margin-bottom:15px; background:var(--primary)"><i class="fa-solid fa-file-pdf"></i> ${this.t('down_pdf')}</button>` + h;
+
+                document.getElementById('modalContent').innerHTML = h; 
+                const closeBtn = document.querySelector('#genericModal .btn-sec'); 
+                const oldClose = closeBtn.onclick; 
+                closeBtn.onclick = () => { oldClose(); document.getElementById('modalActionBtn').style.display = 'block'; };
+            },
+
+            createPdfStatement: function(data, type, name) {
+                if(!window.pdfMake.vfs || !window.pdfMake.vfs['Tajawal-Regular.ttf']) {
+                    alert("Font loading... please try again in a few seconds.");
+                    this.loadArabicFont();
+                    return;
+                }
+
+                const docDefinition = {
+                    pageSize: 'A4',
+                    pageMargins: [20, 20, 20, 20],
+                    defaultStyle: { font: 'Tajawal', fontSize: 10, direction: 'rtl' },
+                    content: [
+                        {
+                            columns: [
+                                { text: this.state.name, fontSize: 16, bold: true, alignment: 'right', width: '*' },
+                                { text: 'Statement of Account', fontSize: 14, bold: true, alignment: 'center', width: '*' },
+                                { text: new Date().toLocaleDateString(), alignment: 'left', width: '*' }
+                            ],
+                            margin: [0, 0, 0, 20]
+                        },
+                        {
+                            text: `${type === 'bank' ? 'Bank' : (type === 'customer' ? 'Customer' : 'Supplier')}: ${name}`,
+                            fontSize: 12, bold: true, margin: [0, 0, 0, 10], alignment: 'right'
+                        },
+                        {
+                            table: {
+                                headerRows: 1,
+                                widths: ['auto', '*', 'auto', 'auto', 'auto'],
+                                body: [
+                                    [
+                                        { text: 'Date', bold: true, fillColor: '#eeeeee' },
+                                        { text: 'Description', bold: true, fillColor: '#eeeeee', alignment:'right' },
+                                        { text: 'In (+)', bold: true, fillColor: '#eeeeee' },
+                                        { text: 'Out (-)', bold: true, fillColor: '#eeeeee' },
+                                        { text: 'Balance', bold: true, fillColor: '#eeeeee' }
+                                    ],
+                                    ...data.map(item => [
+                                        item.date,
+                                        { text: item.desc, alignment: 'right' },
+                                        { text: item.in.toString(), color: 'green' },
+                                        { text: item.out.toString(), color: 'red' },
+                                        { text: item.bal.toLocaleString(), bold: true }
+                                    ])
+                                ]
+                            },
+                            layout: 'lightHorizontalLines'
+                        },
+                        { text: `Generated by Teyssir ERP`, fontSize: 8, color: 'gray', margin: [0, 20, 0, 0], alignment: 'center' }
+                    ]
+                };
+
+                pdfMake.createPdf(docDefinition).download(`Statement_${name}.pdf`);
+            },
+
             reprint: function(id, c, t, itemsStr, paid, debt, pm, bn) { const items = JSON.parse(decodeURIComponent(itemsStr)); this.print(id,c,t,items, paid, debt, pm, bn); },
             print: function(id, c, t, items, paid, debt, pm, bn) { 
                 const dir = this.state.lang==='ar'?'rtl':'ltr'; const formattedDate = this.formatDate(new Date().toISOString()); const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); let bankInfo = pm === 'Bank' && bn ? `(${bn})` : '';
