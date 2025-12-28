@@ -448,7 +448,8 @@
                 let q = db.collection(collection).where('companyId','==',this.state.cid);
                 if (orderBy) q = q.orderBy('createdAt', 'desc').limit(100);
                 const snaps = await q.get(); const data = snaps.docs.map(d=>({id:d.id, ...d.data()}));
-                if(collection === 'invoices') data.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                // ترتيب تلقائي لكافة البيانات من الأحدث إلى الأقدم حسب التاريخ والوقت
+                data.sort((a,b)=>new Date(b.createdAt || 0)-new Date(a.createdAt || 0));
                 this.cache[collection] = data; return data;
             },
             clearCache: function(collection) { if (collection) delete this.cache[collection]; else this.cache = {}; },
@@ -541,15 +542,65 @@
                 let bOpts = `<option value="">-- Bank --</option>`; banks.forEach(b=> bOpts += `<option value="${b.id}">${b.name}</option>`);
                 const h = `<input id="npName" class="inp" placeholder="${this.t('th_name')}"><div style="display:flex; gap:10px;"><input id="npBuy" type="number" class="inp" placeholder="${this.t('th_buy')}"><input id="npSell" type="number" class="inp" placeholder="${this.t('th_sell')}"></div><input id="npQty" type="number" class="inp" placeholder="${this.t('tbl_qty')}"><hr><label>${this.t('supp_type')}</label><div style="display:flex; gap:5px;"><select id="npSupp" class="select-box" onchange="app.togglePurchaseType(this.value)">${sOpts}</select><button onclick="app.quickAddSupplier()" class="btn btn-sec" style="width:auto; height:45px;" title="${this.t('toggle_new')}">+</button></div><div id="directPayDiv" style="display:block;"><p style="font-size:12px;color:gray">Direct Expense.</p></div><div id="suppPayDiv" style="display:none;"><div style="display:flex; gap:10px;"><input id="npPaid" type="number" class="inp" placeholder="${this.t('paid')}" value="0"><input id="npDebt" class="inp" placeholder="${this.t('remain')}" readonly style="background:#eee;"></div></div><div style="display:flex; gap:10px; margin-top:10px;"><select id="npMethod" class="select-box"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><select id="npBank" class="select-box" style="display:none;">${bOpts}</select></div>`;
                 this.showModal(this.t('p_add'), h, async () => {
-                    const n = document.getElementById('npName').value; const b = Number(document.getElementById('npBuy').value); const s = Number(document.getElementById('npSell').value); const q = Number(document.getElementById('npQty').value); const suppId = document.getElementById('npSupp').value; const method = document.getElementById('npMethod').value; const bankId = document.getElementById('npBank').value;
-                    if(!n || !b || !s || !q) return alert("Fill all fields"); if(s <= b) return alert(this.t('err_price_logic'));
-                    const batch = db.batch(); const now = new Date().toISOString(); const totalCost = b * q;
-                    const existingSnap = await db.collection('products').where('companyId','==',this.state.cid).where('name','==',n).get();
-                    let targetId = null; let isMerge = false; existingSnap.forEach(doc => { if(doc.data().sellPrice === s) { targetId = doc.id; isMerge = true; } });
-                    if(isMerge && targetId) { batch.update(db.collection('products').doc(targetId), { stock: firebase.firestore.FieldValue.increment(q), buyPrice: b }); } 
-                    else { const pRef = db.collection('products').doc(); batch.set(pRef, { companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:now }); }
-                    if(suppId === 'none') { batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'expense', amount: totalCost, paid: totalCost, method: method, bankId: bankId, note: `Direct Purchase: ${n}`, createdAt: now }); if(method === 'bank' && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-totalCost) }); } } 
-                    else { const paid = Number(document.getElementById('npPaid').value); const debt = totalCost - paid; batch.update(db.collection('suppliers').doc(suppId), { balance: firebase.firestore.FieldValue.increment(debt) }); batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'purchase_stock', supplierId: suppId, amount: totalCost, paid: paid, debt: debt, method: method, bankId: bankId, note: `Stock from Supplier: ${n}`, createdAt: now }); if(paid > 0 && method === 'bank' && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-paid) }); } }
+                    const n = document.getElementById('npName').value.trim(); // Added trim for better matching
+                    const b = Number(document.getElementById('npBuy').value); 
+                    const s = Number(document.getElementById('npSell').value); 
+                    const q = Number(document.getElementById('npQty').value); 
+                    const suppId = document.getElementById('npSupp').value; 
+                    const method = document.getElementById('npMethod').value; 
+                    const bankId = document.getElementById('npBank').value;
+                    
+                    if(!n || !b || !s || !q) return alert("Fill all fields"); 
+                    if(s <= b) return alert(this.t('err_price_logic'));
+                    
+                    const batch = db.batch(); 
+                    const now = new Date().toISOString(); 
+                    const totalCost = b * q;
+                    
+                    // Duplicate Logic Check
+                    const existingSnap = await db.collection('products')
+                        .where('companyId','==',this.state.cid)
+                        .where('name','==',n)
+                        .get();
+                    
+                    let targetId = null; 
+                    let isMerge = false; 
+                    
+                    existingSnap.forEach(doc => { 
+                        if(doc.data().sellPrice === s) { 
+                            targetId = doc.id; 
+                            isMerge = true; 
+                        } 
+                    });
+
+                    if(isMerge && targetId) { 
+                        batch.update(db.collection('products').doc(targetId), { 
+                            stock: firebase.firestore.FieldValue.increment(q), 
+                            buyPrice: b 
+                        }); 
+                    } else { 
+                        const pRef = db.collection('products').doc(); 
+                        batch.set(pRef, { 
+                            companyId:this.state.cid, 
+                            name:n, 
+                            buyPrice:b, 
+                            sellPrice:s, 
+                            stock:q, 
+                            createdAt:now 
+                        }); 
+                    }
+
+                    // Expense / Transaction Logic
+                    if(suppId === 'none') { 
+                        batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'expense', amount: totalCost, paid: totalCost, method: method, bankId: bankId, note: `Direct Purchase: ${n}`, createdAt: now }); 
+                        if(method === 'bank' && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-totalCost) }); } 
+                    } else { 
+                        const paid = Number(document.getElementById('npPaid').value); 
+                        const debt = totalCost - paid; 
+                        batch.update(db.collection('suppliers').doc(suppId), { balance: firebase.firestore.FieldValue.increment(debt) }); 
+                        batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'purchase_stock', supplierId: suppId, amount: totalCost, paid: paid, debt: debt, method: method, bankId: bankId, note: `Stock from Supplier: ${n}`, createdAt: now }); 
+                        if(paid > 0 && method === 'bank' && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-paid) }); } 
+                    }
                     await batch.commit(); this.clearCache('products'); this.clearCache('transactions'); if(suppId !== 'none') this.clearCache('suppliers'); this.nav('inventory');
                 });
                 setTimeout(() => { document.getElementById('npMethod').addEventListener('change', (e) => { document.getElementById('npBank').style.display = e.target.value === 'bank' ? 'block' : 'none'; }); const inputs = ['npBuy', 'npQty', 'npPaid']; inputs.forEach(id => { document.getElementById(id).addEventListener('input', () => { const buy = Number(document.getElementById('npBuy').value); const qty = Number(document.getElementById('npQty').value); const pd = Number(document.getElementById('npPaid').value); const tot = buy * qty; const dbt = tot - pd; if(document.getElementById('npDebt')) document.getElementById('npDebt').value = dbt > 0 ? dbt : 0; }); }); }, 100);
