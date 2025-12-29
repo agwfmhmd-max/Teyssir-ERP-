@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Teyssir ERP - Ultimate</title>
+    <title>Teyssir ERP</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a4585">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="style.css">
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -21,102 +22,20 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root { --primary: #1a4585; --accent: #dcb14a; --bg: #f8f9fa; --white: #ffffff; --text-dark: #374151; --text-light: #6b7280; --border: #e5e7eb; --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --lang-green: #006935; --header-h: 65px; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--text-dark); overflow-x: hidden; }
-        #mainLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff; z-index: 999999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
-        .btn-prim { background: var(--primary); color: var(--white); }
-        .btn-sec { background: var(--accent); color: var(--white); }
-        .btn-dan { background: var(--danger); color: var(--white); }
-        .btn-warn { background: var(--warning); color: var(--white); }
-        .btn-success { background: var(--success); color: var(--white); }
-        .inp, .select-box { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 15px; margin-bottom: 12px; outline: none; background: #f9fafb; color: var(--text-dark); }
-        .inp:focus, .select-box:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 3px rgba(26, 69, 133, 0.1); }
-        .lang-btn-style { position: fixed; top: 15px; z-index: 20000; width: 40px; height: 40px; background-color: var(--lang-green); color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s; }
-        html[dir="rtl"] .lang-btn-style { left: 15px; } html[dir="ltr"] .lang-btn-style { right: 15px; }
-        .conn-status { position: fixed; top: 15px; z-index: 20000; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 5px; }
-        .conn-online { background-color: var(--success); }
-        .conn-offline { background-color: var(--danger); }
-        html[dir="rtl"] .conn-status { left: 65px; } html[dir="ltr"] .conn-status { right: 65px; }
-        .block-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #ffffff; z-index: 50000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; }
-        .block-icon { font-size: 80px; margin-bottom: 20px; color: var(--danger); }
-        .wa-link { display: flex; align-items: center; justify-content: center; gap: 10px; background: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 50px; font-weight: bold; margin-top: 15px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); }
-        .welcome-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 60000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .welcome-content { background: white; width: 90%; max-width: 450px; padding: 30px; border-radius: 20px; text-align: center; border-top: 5px solid var(--primary); animation: zoomIn 0.3s ease; position: relative; }
-        @keyframes zoomIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
-        .auth-wrap { display: none; min-height: 100vh; justify-content: center; align-items: center; background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%); padding: 20px; }
-        .auth-card { background: var(--white); width: 100%; max-width: 420px; padding: 40px 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(26, 69, 133, 0.08); border: 1px solid var(--border); }
-        #installBtn { display: none; width: 100%; background: var(--primary); color: white; margin-bottom: 20px; padding: 12px; border-radius: 12px; text-align: center; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(26, 69, 133, 0.3); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-        .app-container { display: none; flex-direction: column; min-height: 100vh; position: relative; }
-        .top-header { height: var(--header-h); background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: center; padding: 0 20px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .menu-btn { font-size: 24px; cursor: pointer; color: var(--primary); padding: 5px; position: absolute; right: 20px; }
-        html[dir="ltr"] .menu-btn { left: 20px; right: auto; }
-        .header-title { font-weight:800; color:var(--primary); font-size:1.3em; text-align: center; width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sidebar { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--white); z-index: 1500; padding-top: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.05); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-inline-end: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
-        html[dir="rtl"] .sidebar { right: 0; transform: translateX(100%); } html[dir="rtl"] .sidebar.open { transform: translateX(0); }
-        html[dir="ltr"] .sidebar { left: 0; transform: translateX(-100%); } html[dir="ltr"] .sidebar.open { transform: translateX(0); }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(26, 69, 133, 0.2); backdrop-filter: blur(2px); z-index: 1400; display: none; }
-        .sidebar-overlay.show { display: block; }
-        .nav-item { padding: 14px 25px; display: flex; align-items: center; gap: 15px; color: var(--text-light); font-weight: 500; cursor: pointer; border-left: 4px solid transparent; border-right: 4px solid transparent; transition: 0.2s; font-size: 15px; }
-        .nav-item:hover { background: #f3f4f6; color: var(--primary); }
-        .nav-item.active { background: #eef2ff; color: var(--primary); }
-        html[dir="rtl"] .nav-item.active { border-right-color: var(--primary); } html[dir="ltr"] .nav-item.active { border-left-color: var(--primary); }
-        .main-content { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 80px; }
-        .card { background: var(--white); padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 20px; border: 1px solid var(--border); }
-        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
-        .filters-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: #f0f4ff; padding: 15px; border-radius: 12px; align-items: center; justify-content: center; }
-        .filter-inp { padding: 8px; border:1px solid #ddd; border-radius:8px; }
-        .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { padding: 12px 16px; text-align: start; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-dark); }
-        th { background: #f9fafb; white-space: nowrap; font-weight: bold; color: var(--primary); }
-        .pos-layout { display: flex; flex-direction: column; gap: 15px; height: auto; }
-        .search-container { position: relative; }
-        .search-results { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid var(--border); border-radius: 10px; max-height: 250px; overflow-y: auto; z-index: 20; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; }
-        .search-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; }
-        .search-item:hover { background: #f0f4ff; }
-        .pos-left { display: flex; flex-direction: column; gap: 10px; }
-        .pos-right { background: white; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: visible; }
-        .cart-list { max-height: 250px; overflow-y: auto; padding: 5px; background: #fff; border: 1px solid var(--border); border-radius: 10px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; background: #fff; }
-        .checkout-area { background: #f9fafb; padding: 15px; border-top: 1px solid var(--border); border-radius: 0 0 16px 16px; }
-        @media(min-width: 768px) { 
-            .main-content { padding: 25px; }
-            .pos-layout { flex-direction: row; height: calc(100vh - 120px); } 
-            .pos-left { flex: 1.5; height: 100%; }
-            .pos-right { flex: 1; height: 100%; overflow: hidden; }
-            .cart-list { flex: 1; max-height: none; border: none; }
-            .sidebar { position: fixed; top: var(--header-h); bottom: 0; width: 250px; transform: none !important; box-shadow: none; border-inline-end: 1px solid var(--border); z-index: 900; } 
-            html[dir="rtl"] .main-content { margin-right: 250px; } html[dir="ltr"] .main-content { margin-left: 250px; } 
-            .menu-btn, .sidebar-overlay { display: none !important; } 
-        }
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9000; display:none; justify-content:center; align-items:center; }
-        .modal-box { background:white; width:90%; max-width:450px; padding:25px; border-radius:15px; box-shadow:0 10px 40px rgba(0,0,0,0.2); animation:slideUp 0.2s ease; max-height: 90vh; overflow-y: auto; }
-        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-        #adminLink { display: none; }
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
-        .expiry-warning { background: #fffbeb; color: #92400e; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; border-bottom: 1px solid #fcd34d; display: none; position: fixed; top: 0; width: 100%; z-index: 1050; }
-        .print-box { display: none; }
-        
-        .home-float-btn { position: fixed; bottom: 20px; left: 20px; z-index: 19000; width: 50px; height: 50px; background: var(--primary); color: white; border: none; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: transform 0.2s; }
-        .home-float-btn:active { transform: scale(0.95); }
-        html[dir="ltr"] .home-float-btn { left: auto; right: 20px; }
-
-        @media print { .app-container, .auth-wrap, .lang-btn-style, .conn-status, #expiryWarning, #mainLoader, .home-float-btn, .modal-overlay { display: none !important; } .print-box { display: block !important; position: absolute; top:0; left:0; width:100%; background:white; color: black; } .print-box table th, .print-box table td { border: 1px solid #000; color: black; } }
-    </style>
 </head>
 <body>
-    <div id="mainLoader"><div class="spinner"></div><p style="color:var(--primary);font-weight:bold;">Loading Teyssir ERP...</p></div>
+    <div id="mainLoader"><div class="spinner"></div><p style="color:var(--primary);font-weight:bold;">Loading...</p></div>
     <button onclick="app.toggleLang()" class="lang-btn-style"><i class="fa-solid fa-language"></i></button>
     <div id="connStatus" class="conn-status conn-online"><i class="fa-solid fa-wifi"></i> Online</div>
-    <div id="expiryWarning" class="expiry-warning"></div>
+    
+    <!-- Subscription Alert -->
+    <div id="subAlertBox" class="sub-alert-box">
+        <i class="fa-solid fa-triangle-exclamation" style="color:#b91c1c"></i>
+        <div class="sub-alert-text" data-key="msg_warn">اشتراكك ينتهي قريباً!</div>
+        <a href="https://wa.me/22220479962?text=السلام عليكم، أريد تجديد اشتراك Teyssir ERP" class="sub-wa-btn" target="_blank">
+            <i class="fa-brands fa-whatsapp"></i>
+        </a>
+    </div>
 
     <div id="genericModal" class="modal-overlay">
         <div class="modal-box">
@@ -141,9 +60,9 @@
 
     <div id="blockScreen" class="block-screen">
         <i class="fa-solid fa-triangle-exclamation block-icon"></i>
-        <h2 id="blockTitle" class="block-title">الحساب معلق</h2>
-        <p id="blockMsg" class="block-msg">انتهت فترة الاشتراك.</p>
-        <a href="https://wa.me/22220479962" class="wa-link" style="width:auto; padding:12px 40px; font-size: 16px;"><i class="fa-brands fa-whatsapp"></i> <span data-key="pay_now">تواصل للدفع</span></a>
+        <h2 id="blockTitle" class="block-title">انتهى الاشتراك</h2>
+        <p id="blockMsg" class="block-msg">يرجى التواصل مع المشرف لتجديد الاشتراك.</p>
+        <a href="https://wa.me/22220479962" class="wa-link" style="width:auto; padding:12px 40px; font-size: 16px;"><i class="fa-brands fa-whatsapp"></i> <span data-key="pay_now">تواصل للتجديد</span></a>
         <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px; width:auto;"><i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">خروج</span></button>
     </div>
 
@@ -158,7 +77,7 @@
                 <input id="logCode" type="password" class="inp" data-ph="code" placeholder="رمز التفعيل" required>
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
                      <button type="submit" id="logBtn" class="btn btn-prim" style="flex:1" data-key="btn">دخول</button>
-                     <button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (24 ساعة)</button>
+                     <button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (3 أيام)</button>
                 </div>
             </form>
             <div style="margin-top:30px; border-top:1px solid var(--border); padding-top:20px;">
@@ -199,12 +118,11 @@
             </div>
         </aside>
         <main id="workspace" class="main-content"></main>
-        
         <button id="homeBtn" class="home-float-btn" onclick="app.nav('home')"><i class="fa-solid fa-house"></i></button>
     </div>
     <div id="printArea" class="print-box"></div>
 
- <script>
+    <script>
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn=document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; });
         const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
@@ -235,7 +153,7 @@
         const dict = {
             ar: {
                 title: "Teyssir ERP", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
-                btn:"دخول", btn_trial: "تجربة (24 ساعة)", wait:"جاري...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور",
+                btn:"دخول", btn_trial: "تجربة (3 أيام)", wait:"جاري...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور",
                 home:"الرئيسية", pos:"نقطة البيع", inv:"أرشيف الفواتير", stock:"المخزون",
                 exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"خروج",
                 cust:"الزبناء", banks:"البنوك", supp:"الموردين", rev:"الإيرادات",
@@ -250,26 +168,28 @@
                 prompt_name:"الاسم", prompt_buy:"سعر الشراء", prompt_sell:"سعر البيع", prompt_qty:"الكمية",
                 prompt_note:"ملاحظة", prompt_amount:"المبلغ", confirm_del:"هل أنت متأكد؟",
                 err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
-                prompt_new_price: "أدخل السعر الجديد", pay_now: "تواصل للدفع",
+                prompt_new_price: "أدخل السعر الجديد", pay_now: "تواصل للتجديد",
                 w_title: "أهلاً بك في Teyssir ERP", w_text: "نظام متكامل.", w_btn: "ابدأ الآن",
                 trial_used: "عذراً، لقد استخدمت التجربة المجانية من قبل.",
-                new_cust: "زبون جديد", pay_method: "طريقة الدفع", cash: "كاش", bank: "بنك",
+                new_cust: "زبون جديد", pay_method: "طريقة الدفع", cash: "كاش", bank: "بنك", mixed: "مختلط (كاش + بنك)",
                 select_bank: "اختر البنك", paid: "المدفوع", remain: "المتبقي (دين)",
                 balance: "الرصيد", pay_debt: "تسديد دين", stmt: "كشف حساب",
                 rep_daily: "التقرير المالي", rep_filter: "عرض التقرير", rep_det_all: "سجل العمليات التفصيلي",
                 total_in: "الداخل (إيراد)", total_out: "الخارج (مصروف)", net_cash: "الصافي",
                 th_inv_no: "رقم الفاتورة", adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
                 adm_gen: "توليد رمز جديد", adm_renew: "تجديد ($)", adm_pay_hist: "سجل الدفعات",
-                msg_sus: "تم تعطيل الحساب من الإدارة.", msg_exp: "انتهت فترة الاشتراك.", msg_warn: "تحذير: اشتراكك ينتهي قريباً.",
+                msg_sus: "تم تعطيل الحساب من الإدارة.", msg_exp: "انتهى الاشتراك. يرجى التجديد.", msg_warn: "تحذير: اشتراكك ينتهي قريباً.",
                 sub_day: "يومي", sub_week: "أسبوعي", sub_month: "شهري", sub_year: "سنوي",
                 adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف",
                 pay_supp: "سداد مورد", supp_bal: "ديون الموردين", purchase: "شراء مخزون",
                 th_supp: "المورد", new_supp: "مورد جديد", supp_type: "نوع الشراء", supp_direct: "شراء مباشر (مصروف)", supp_credit: "شراء من مورد (آجل/جزئي)", toggle_new: "مورد جديد",
-                down_pdf: "تحميل كشف PDF", btn_save: "حفظ", op_bal: "رصيد افتتاحي"
+                down_pdf: "تحميل كشف PDF", btn_save: "حفظ", op_bal: "رصيد افتتاحي",
+                pay_now_opt: "دفع الراتب الآن", pay_later_opt: "تراكم الراتب (دين)", pay_sal: "دفع راتب",
+                pay_cash: "كاش", pay_bank: "بنك", rep_cash: "كاش فقط", rep_bank: "بنك فقط", rep_all: "الكل"
             },
             fr: {
                 title: "Teyssir ERP", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
-                btn:"Entrer", btn_trial: "Essai Gratuit (24h)", wait:"Vérification...", get:"Pour le code:", cont:"Contacter Développeur",
+                btn:"Entrer", btn_trial: "Essai Gratuit (3 jours)", wait:"Vérification...", get:"Pour le code:", cont:"Contacter Développeur",
                 home:"Accueil", pos:"Point de Vente", inv:"Factures", stock:"Stock",
                 exp:"Dépenses", sal:"Salaires", rep:"Rapports", logout:"Déconnexion",
                 cust:"Clients", banks:"Banques", supp:"Fournisseurs", rev:"Revenus",
@@ -283,9 +203,9 @@
                 empty:"Panier vide", max_qty:"Max disponible: ",
                 prompt_name:"Nom", prompt_buy:"Prix Achat", prompt_sell:"Prix Vente", prompt_qty:"Quantité",
                 prompt_note:"Note", prompt_amount:"Montant", confirm_del:"Confirmer ?",
-                err_price_logic: "Erreur: Prix de vente < Prix d'achat", prompt_new_price: "Nouveau prix", pay_now: "Payer maintenant",
+                err_price_logic: "Erreur: Prix de vente < Prix d'achat", prompt_new_price: "Nouveau prix", pay_now: "Renouveler",
                 w_title: "Bienvenue", w_text: "Teyssir ERP - Système complet.", w_btn: "Commencer", trial_used: "Désolé, essai gratuit déjà utilisé.",
-                new_cust: "Nouveau Client", pay_method: "Mode Paiement", cash: "Espèces", bank: "Banque",
+                new_cust: "Nouveau Client", pay_method: "Mode Paiement", cash: "Espèces", bank: "Banque", mixed: "Mixte (Esp+Bq)",
                 select_bank: "Choisir Banque", paid: "Payé", remain: "Reste (Dette)",
                 balance: "Solde", pay_debt: "Payer Dette", stmt: "Relevé",
                 rep_daily: "Rapport Financier", rep_filter: "Afficher", rep_det_all: "Détails Transactions",
@@ -297,7 +217,9 @@
                 adm_stop: "Stop", adm_start: "Start", adm_del: "Del",
                 pay_supp: "Payer Fournisseur", supp_bal: "Dettes Fournisseurs", purchase: "Achat Stock",
                 th_supp: "Fournisseur", new_supp: "Nouveau Fourn.", supp_type: "Type Achat", supp_direct: "Achat Direct (Dépense)", supp_credit: "Achat Fournisseur (Crédit)", toggle_new: "Nouveau Fournisseur",
-                down_pdf: "Télécharger PDF", btn_save: "Enregistrer", op_bal: "Solde Initial"
+                down_pdf: "Télécharger PDF", btn_save: "Enregistrer", op_bal: "Solde Initial",
+                pay_now_opt: "Payer maintenant", pay_later_opt: "Ne pas payer (Dette)", pay_sal: "Payer Salaire",
+                pay_cash: "Espèces", pay_bank: "Banque", rep_cash: "Espèces", rep_bank: "Banque", rep_all: "Tout"
             }
         };
 
@@ -309,9 +231,7 @@
                 this.showLoader(); updateStatus();
                 if (!localStorage.getItem('welcomeSeen')) document.getElementById('welcomeModal').style.display = 'flex';
                 if (deferredPrompt) deferredPrompt.prompt();
-                
                 this.loadArabicFont();
-
                 const session = localStorage.getItem('mda_session');
                 if (session) {
                     const s = JSON.parse(session);
@@ -325,31 +245,18 @@
             
             loadArabicFont: function() {
                 fetch('https://raw.githubusercontent.com/google/fonts/main/ofl/tajawal/Tajawal-Regular.ttf')
-                .then(response => {
-                    if (!response.ok) throw new Error("Font fetch failed");
-                    return response.arrayBuffer();
-                })
+                .then(response => { if (!response.ok) throw new Error("Font fetch failed"); return response.arrayBuffer(); })
                 .then(buffer => {
-                    let binary = '';
-                    const bytes = new Uint8Array(buffer);
-                    const len = bytes.byteLength;
+                    let binary = ''; const bytes = new Uint8Array(buffer); const len = bytes.byteLength;
                     for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
-                    const base64Font = window.btoa(binary);
-                    
-                    window.pdfMake.vfs = { "Tajawal-Regular.ttf": base64Font };
-                    window.pdfMake.fonts = {
-                        Tajawal: { normal: 'Tajawal-Regular.ttf', bold: 'Tajawal-Regular.ttf', italics: 'Tajawal-Regular.ttf', bolditalics: 'Tajawal-Regular.ttf' }
-                    };
-                })
-                .catch(err => console.error("Error loading PDF font:", err));
+                    window.pdfMake.vfs = { "Tajawal-Regular.ttf": window.btoa(binary) };
+                    window.pdfMake.fonts = { Tajawal: { normal: 'Tajawal-Regular.ttf', bold: 'Tajawal-Regular.ttf', italics: 'Tajawal-Regular.ttf', bolditalics: 'Tajawal-Regular.ttf' } };
+                }).catch(err => console.error("Error loading PDF font:", err));
             },
 
             showLoader: function() { document.getElementById('mainLoader').style.display = 'flex'; },
             hideLoader: function() { document.getElementById('mainLoader').style.display = 'none'; },
-            switchScreen: function(name) {
-                document.getElementById('authScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'none'; document.getElementById('blockScreen').style.display = 'none';
-                document.getElementById(name).style.display = 'flex'; this.hideLoader();
-            },
+            switchScreen: function(name) { document.getElementById('authScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'none'; document.getElementById('blockScreen').style.display = 'none'; document.getElementById(name).style.display = 'flex'; this.hideLoader(); },
             closeWelcome: function() { document.getElementById('welcomeModal').style.display = 'none'; localStorage.setItem('welcomeSeen', 'true'); },
             installPWA: async function() { if (!deferredPrompt) return; deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') { document.getElementById('installBtn').style.display = 'none'; } deferredPrompt = null; },
             isValidPhone: function(p) { return /^\d{8}$/.test(p); },
@@ -361,7 +268,8 @@
                 if(!n || !p) { this.hideLoader(); return alert("Name & Phone required"); }
                 if(!this.isValidPhone(p)) { this.hideLoader(); return alert(this.t('err_phone_len')); }
                 try {
-                    const tCode = 'TRIAL-' + this.randomStr(8); const now = new Date(); const expiry = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+                    const tCode = 'TRIAL-' + this.randomStr(8); const now = new Date(); 
+                    const expiry = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
                     const codeRef = await db.collection('activation_codes').add({ code: tCode, targetCompanyName: n, targetPhone: p, status: 'active', used: true, usedAt: now.toISOString(), expiryDate: expiry.toISOString(), subscriptionType: 'trial', isTrial: true });
                     const compRef = await db.collection('companies').add({ name: n, phone: p, code: tCode, createdAt: now.toISOString() });
                     await codeRef.update({ companyId: compRef.id, actualName: n, actualPhone: p });
@@ -372,9 +280,7 @@
             },
             
             monitorSession: function(docId, s) {
-                if(!docId) return;
-                if (this.sessionUnsub) { this.sessionUnsub(); }
-                if (this.checkInterval) { clearInterval(this.checkInterval); }
+                if(!docId) return; if (this.sessionUnsub) { this.sessionUnsub(); } if (this.checkInterval) { clearInterval(this.checkInterval); }
                 this.sessionUnsub = db.collection('activation_codes').doc(docId).onSnapshot((doc) => {
                     if (!doc.exists) { this.showBlockScreen('suspended'); return; }
                     const data = doc.data(); this.state.expiryDate = data.expiryDate;
@@ -387,13 +293,15 @@
             },
             checkTimeBasedStatus: function() {
                 if (!this.state.expiryDate) return;
-                const now = new Date(); const expiry = new Date(this.state.expiryDate); const warningEl = document.getElementById('expiryWarning');
-                if (now >= expiry) { this.showBlockScreen('expired'); if(warningEl) warningEl.style.display = 'none'; } 
-                else {
-                    if (document.getElementById('blockScreen').style.display === 'flex' && document.getElementById('blockMsg').innerText.length > 0) { this.switchScreen('appScreen'); }
-                    const diff = expiry - now;
-                    if (diff < 86400000 && diff > 0) { warningEl.style.display = 'block'; warningEl.innerText = this.t('msg_warn'); } 
-                    else { warningEl.style.display = 'none'; }
+                const now = new Date(); const expiry = new Date(this.state.expiryDate); 
+                const diff = expiry - now;
+                const daysLeft = diff / (1000 * 60 * 60 * 24);
+                
+                if (now >= expiry) { this.showBlockScreen('expired'); } 
+                else if (daysLeft <= 3 && daysLeft > 0) {
+                    document.getElementById('subAlertBox').style.display = 'flex';
+                } else {
+                    document.getElementById('subAlertBox').style.display = 'none';
                 }
             },
             showBlockScreen: function(reason) {
@@ -401,7 +309,7 @@
                 const title = document.getElementById('blockTitle'); const msg = document.getElementById('blockMsg');
                 if (reason === 'suspended') { title.innerText = this.t('msg_sus'); msg.innerText = ""; } else { title.innerText = this.t('msg_exp'); msg.innerText = this.t('msg_exp'); }
             },
-            addDuration: function(date, type) { const d = new Date(date); if(type === 'day') d.setDate(d.getDate() + 1); if(type === 'week') d.setDate(d.getDate() + 7); if(type === 'month') d.setMonth(d.getMonth() + 1); if(type === 'year') d.setFullYear(d.getFullYear() + 1); return d.toISOString(); },
+            addDuration: function(date, type) { const d = new Date(date); if(type === 'day') d.setDate(d.getDate() + 1); if(type === 'week') d.setDate(d.getDate() + 7); if(type === 'month') d.setMonth(d.getMonth() + 1); if(type === 'year') d.setFullYear(d.getFullYear() + 1); if(type === 'trial') d.setDate(d.getDate() + 3); return d.toISOString(); },
             formatDate: function(isoString) { if (!isoString) return '-'; const d = new Date(isoString); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`; },
             randomStr: function(l) { const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'; let r=''; for(let i=0;i<l;i++) r+=c.charAt(Math.floor(Math.random()*c.length)); return r; },
             t: function(k) { return dict[this.state.lang][k] || k; },
@@ -475,8 +383,10 @@
             getData: async function(collection, orderBy = null) {
                 if (this.cache[collection]) return this.cache[collection];
                 let q = db.collection(collection).where('companyId','==',this.state.cid);
-                if (orderBy) q = q.orderBy('createdAt', 'desc').limit(100);
-                const snaps = await q.get(); const data = snaps.docs.map(d=>({id:d.id, ...d.data()}));
+                // Removed orderBy from DB query to avoid index requirement errors
+                const snaps = await q.get(); 
+                const data = snaps.docs.map(d=>({id:d.id, ...d.data()}));
+                // Sort in memory
                 data.sort((a,b)=>new Date(b.createdAt || 0)-new Date(a.createdAt || 0));
                 this.cache[collection] = data; return data;
             },
@@ -484,7 +394,67 @@
 
             pos: async function(div) {
                 this.cart = []; this.cachedProducts = await this.getData('products'); const customers = await this.getData('customers'); const banks = await this.getData('banks');
-                div.innerHTML = `<div class="pos-layout"><div class="pos-left"><div class="card" style="padding:15px; margin:0;"><div class="search-container"><input type="text" id="prodSearch" class="inp" placeholder="${this.t('p_sel')}" oninput="app.searchProduct(this.value)" autocomplete="off" style="margin:0;"><div id="searchResults" class="search-results"></div></div></div><div class="cart-list" id="cartContainer"><p style="text-align:center; color:#999; margin-top:20px;">${this.t('empty')}</p></div></div><div class="pos-right"><div class="checkout-area"><div style="display:flex; gap:5px; margin-bottom:10px;"><select id="posCust" class="select-box" style="margin:0;"><option value="">-- ${this.t('p_cl')} --</option>${customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select><button onclick="app.quickAddCustomer()" class="btn btn-sec" style="width:auto;"><i class="fa-solid fa-plus"></i></button></div><label style="font-size:12px; font-weight:bold;">${this.t('pay_method')}</label><div style="display:flex; gap:10px; margin-bottom:10px;"><label style="flex:1; background:#eee; padding:10px; border-radius:8px; text-align:center; cursor:pointer;"><input type="radio" name="payMethod" value="cash" checked onchange="app.toggleBankSelect(false)"> ${this.t('cash')}</label><label style="flex:1; background:#eee; padding:10px; border-radius:8px; text-align:center; cursor:pointer;"><input type="radio" name="payMethod" value="bank" onchange="app.toggleBankSelect(true)"> ${this.t('bank')}</label></div><div id="bankSelectDiv" style="display:none; margin-bottom:10px;"><select id="posBank" class="select-box" style="margin:0;"><option value="">-- ${this.t('select_bank')} --</option>${banks.map(b=>`<option value="${b.id}">${b.name}</option>`).join('')}</select></div><div style="display:flex; justify-content:space-between; font-weight:bold; margin:15px 0; font-size:18px;"><span>${this.t('p_tot')}</span><span id="cartTotal">0</span></div><div style="display:flex; gap:10px;"><input type="number" id="payAmount" class="inp" placeholder="${this.t('paid')}" oninput="app.calcDebt()"><input type="text" id="debtAmount" class="inp" placeholder="${this.t('remain')}" readonly style="background:#eee; color:red;"></div><button onclick="app.finalizeInvoice()" class="btn btn-prim" style="margin-top:10px;"><i class="fa-solid fa-print"></i> ${this.t('p_save')}</button></div></div></div>`;
+                div.innerHTML = `
+                <div class="pos-layout">
+                    <div class="pos-left">
+                        <div class="card" style="padding:15px; margin:0;">
+                            <div class="search-container">
+                                <input type="text" id="prodSearch" class="inp" placeholder="${this.t('p_sel')}" oninput="app.searchProduct(this.value)" autocomplete="off" style="margin:0;">
+                                <div id="searchResults" class="search-results"></div>
+                            </div>
+                        </div>
+                        <div class="cart-list" id="cartContainer"><p style="text-align:center; color:#999; margin-top:20px;">${this.t('empty')}</p></div>
+                    </div>
+                    <div class="pos-right">
+                        <div class="checkout-area">
+                            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                                <select id="posCust" class="select-box" style="margin:0;"><option value="">-- ${this.t('p_cl')} --</option>${customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select>
+                                <button onclick="app.quickAddCustomer()" class="btn btn-sec" style="width:auto;"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                            <label style="font-size:12px; font-weight:bold;">${this.t('pay_method')}</label>
+                            
+                            <select id="posPayMethod" class="select-box" onchange="app.togglePosInputs()">
+                                <option value="cash">${this.t('cash')}</option>
+                                <option value="bank">${this.t('bank')}</option>
+                                <option value="mixed">${this.t('mixed')}</option>
+                            </select>
+
+                            <div style="display:flex; gap:10px; margin-bottom:5px;">
+                                <input type="number" id="payCash" class="inp" placeholder="${this.t('pay_cash')}" value="0">
+                                <input type="number" id="payBank" class="inp" placeholder="${this.t('pay_bank')}" value="0" style="display:none;">
+                            </div>
+                            <div id="bankSelectDiv" style="display:none; margin-bottom:10px;">
+                                <select id="posBank" class="select-box" style="margin:0;"><option value="">-- ${this.t('select_bank')} --</option>${banks.map(b=>`<option value="${b.id}">${b.name}</option>`).join('')}</select>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; font-weight:bold; margin:15px 0; font-size:18px;">
+                                <span>${this.t('p_tot')}</span><span id="cartTotal">0</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; color:red; font-weight:bold; font-size:14px; margin-bottom:10px;">
+                                <span>${this.t('remain')}</span><span id="debtAmount">0</span>
+                            </div>
+                            
+                            <button onclick="app.finalizeInvoice()" class="btn btn-prim" style="margin-top:10px;"><i class="fa-solid fa-print"></i> ${this.t('p_save')}</button>
+                        </div>
+                    </div>
+                </div>`;
+                app.togglePosInputs(); // Init state
+                setTimeout(() => {
+                    const calc = () => app.calcDebt();
+                    document.getElementById('payCash').addEventListener('input', calc);
+                    document.getElementById('payBank').addEventListener('input', calc);
+                }, 100);
+            },
+            togglePosInputs: function() {
+                const m = document.getElementById('posPayMethod').value;
+                const cInp = document.getElementById('payCash');
+                const bInp = document.getElementById('payBank');
+                const bDiv = document.getElementById('bankSelectDiv');
+                
+                if(m === 'cash') { cInp.style.display='block'; bInp.style.display='none'; bDiv.style.display='none'; bInp.value=0; }
+                else if (m === 'bank') { cInp.style.display='none'; bInp.style.display='block'; bDiv.style.display='block'; cInp.value=0; }
+                else { cInp.style.display='block'; bInp.style.display='block'; bDiv.style.display='block'; }
+                this.calcDebt();
             },
             searchProduct: function(q) {
                 const res = document.getElementById('searchResults'); if(!q || q.length < 1) { res.style.display='none'; return; }
@@ -502,11 +472,24 @@
             renderCart: function() {
                 const c = document.getElementById('cartContainer'); let h=''; let t=0;
                 this.cart.forEach((i,x)=>{ t+=i.t; h+=`<div class="cart-item"><div><b>${i.n}</b> <small>(${i.p} x ${i.q})</small></div><div style="display:flex;align-items:center;gap:10px;"><b>${i.t}</b><i onclick="app.remCart(${x})" class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer"></i></div></div>`; });
-                c.innerHTML=h||`<p style="text-align:center; color:#999; margin-top:20px;">${this.t('empty')}</p>`; document.getElementById('cartTotal').innerText=t; document.getElementById('payAmount').value = t; this.calcDebt();
+                c.innerHTML=h||`<p style="text-align:center; color:#999; margin-top:20px;">${this.t('empty')}</p>`; 
+                document.getElementById('cartTotal').innerText=t; 
+                
+                // Auto fill total based on method if single method selected
+                const m = document.getElementById('posPayMethod').value;
+                if(m === 'cash') document.getElementById('payCash').value = t;
+                if(m === 'bank') document.getElementById('payBank').value = t;
+                
+                this.calcDebt();
             },
             remCart: function(x){ this.cart.splice(x,1); this.renderCart(); },
-            toggleBankSelect: function(show) { document.getElementById('bankSelectDiv').style.display = show?'block':'none'; },
-            calcDebt: function() { const tot = Number(document.getElementById('cartTotal').innerText); const paid = Number(document.getElementById('payAmount').value); const debt = tot - paid; document.getElementById('debtAmount').value = debt > 0 ? debt : 0; },
+            calcDebt: function() { 
+                const tot = Number(document.getElementById('cartTotal').innerText); 
+                const cash = Number(document.getElementById('payCash').value);
+                const bank = Number(document.getElementById('payBank').value);
+                const debt = tot - (cash + bank); 
+                document.getElementById('debtAmount').innerText = debt > 0 ? debt : 0; 
+            },
             quickAddCustomer: async function() {
                 const n = prompt(this.t('prompt_name')); const ph = prompt(this.t('adm_phone'));
                 if(n && ph) { if(!this.isValidPhone(ph)) return alert(this.t('err_phone_len')); const r = await db.collection('customers').add({companyId:this.state.cid, name:n, phone:ph||'', balance:0, createdAt:new Date().toISOString()}); this.clearCache('customers'); const sel = document.getElementById('posCust'); const opt = document.createElement('option'); opt.value=r.id; opt.innerText=n; opt.selected=true; sel.appendChild(opt); }
@@ -518,20 +501,37 @@
                 if(!this.cart.length) return alert(this.t('empty'));
                 const custId = document.getElementById('posCust').value; const custName = document.getElementById('posCust').options[document.getElementById('posCust').selectedIndex]?.text || 'Walk-in';
                 if(!custId) return alert(this.t('p_cl') + " Required");
-                const total = Number(document.getElementById('cartTotal').innerText); const paid = Number(document.getElementById('payAmount').value); const isBank = document.querySelector('input[name="payMethod"]:checked').value === 'bank'; const bankId = isBank ? document.getElementById('posBank').value : null; const bankName = bankId ? document.getElementById('posBank').options[document.getElementById('posBank').selectedIndex].text : null;
-                if(isBank && !bankId) return alert(this.t('select_bank'));
+                
+                const total = Number(document.getElementById('cartTotal').innerText);
+                const cash = Number(document.getElementById('payCash').value);
+                const bank = Number(document.getElementById('payBank').value);
+                const bankId = document.getElementById('posBank').value;
+                const bankName = bankId ? document.getElementById('posBank').options[document.getElementById('posBank').selectedIndex].text : null;
+                const payMethod = document.getElementById('posPayMethod').value;
+
+                if(payMethod !== 'cash' && !bankId) return alert(this.t('select_bank'));
+                if((cash + bank) > total) return alert("Total paid cannot exceed invoice amount");
+
+                const totalPaid = cash + bank;
+                const debt = total - totalPaid;
+
                 this.showLoader();
                 try {
                     await db.runTransaction(async (transaction) => {
                         const now = new Date().toISOString(); const invNum = await this.getNextInvoiceNumber(transaction); const invRef = db.collection('invoices').doc();
-                        transaction.set(invRef, { companyId: this.state.cid, invNum: invNum, customer: custName, customerId: custId, items: this.cart, total, paid, debt: total-paid, paymentMethod: isBank?'bank':'cash', bankId: bankId, bankName: bankName, createdAt: now });
+                        
+                        transaction.set(invRef, { companyId: this.state.cid, invNum: invNum, customer: custName, customerId: custId, items: this.cart, total, paid: totalPaid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, bankName: bankName, createdAt: now });
+                        
                         let totalCost = 0;
                         for(let i of this.cart) { const pRef = db.collection('products').doc(i.id); transaction.update(pRef, { stock: firebase.firestore.FieldValue.increment(-i.q) }); totalCost += (i.bp * i.q); }
-                        if(total > paid) { const cRef = db.collection('customers').doc(custId); transaction.update(cRef, { balance: firebase.firestore.FieldValue.increment(total-paid) }); }
-                        if(isBank && bankId) { const bRef = db.collection('banks').doc(bankId); transaction.update(bRef, { balance: firebase.firestore.FieldValue.increment(paid) }); }
+                        
+                        if(debt > 0) { const cRef = db.collection('customers').doc(custId); transaction.update(cRef, { balance: firebase.firestore.FieldValue.increment(debt) }); }
+                        if(bank > 0 && bankId) { const bRef = db.collection('banks').doc(bankId); transaction.update(bRef, { balance: firebase.firestore.FieldValue.increment(bank) }); }
+                        
                         const tRef = db.collection('transactions').doc();
-                        transaction.set(tRef, { companyId: this.state.cid, type: 'sale', refId: invRef.id, invNum: invNum, amount: total, paid: paid, debt: total-paid, cogs: totalCost, method: isBank?'bank':'cash', bankId: bankId, customerId: custId, createdAt: now, note: `Invoice ${invNum}` });
-                        this.printData = { id: invNum, c: custName, t: total, items: this.cart, p: paid, d: total-paid, pm: isBank?'Bank':'Cash', bn: bankName };
+                        transaction.set(tRef, { companyId: this.state.cid, type: 'sale', refId: invRef.id, invNum: invNum, amount: total, paid: totalPaid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, cogs: totalCost, customerId: custId, createdAt: now, note: `Invoice ${invNum}` });
+                        
+                        this.printData = { id: invNum, c: custName, t: total, items: this.cart, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
                     });
                     this.clearCache('products'); this.clearCache('invoices'); this.clearCache('customers'); this.clearCache('transactions'); this.clearCache('banks');
                     this.print(this.printData.id, this.printData.c, this.printData.t, this.printData.items, this.printData.p, this.printData.d, this.printData.pm, this.printData.bn); this.nav('pos');
@@ -543,12 +543,16 @@
             addCustomerModal: function() { this.showModal(this.t('new_cust'), `<input id="ncName" class="inp" placeholder="${this.t('prompt_name')}"><input id="ncPhone" class="inp" placeholder="${this.t('adm_phone')}">`, async () => { const n=document.getElementById('ncName').value, p=document.getElementById('ncPhone').value; if(n && p) { if(!this.isValidPhone(p)) return alert(this.t('err_phone_len')); await db.collection('customers').add({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}); this.clearCache('customers'); this.nav('customers'); } }); },
             payDebtModal: async function(cid, cname) {
                 const banks = await this.getData('banks'); let bOpts = `<option value="">-- Select Bank --</option>`; banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
-                this.showModal(this.t('pay_debt'), `<p>Customer: <b>${cname}</b></p><input type="number" id="pdAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="pdMethod" class="select-box" onchange="document.getElementById('pdBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="pdBankDiv" style="display:none;"><select id="pdBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('pdAmount').value); const method = document.getElementById('pdMethod').value; const bid = document.getElementById('pdBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); const tRef = db.collection('transactions').doc(); batch.set(tRef, { companyId: this.state.cid, type: 'debt_payment', customerId: cid, amount: amt, method, bankId: bid, createdAt: now }); batch.update(db.collection('customers').doc(cid), { balance: firebase.firestore.FieldValue.increment(-amt) }); if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(amt) }); await batch.commit(); this.clearCache('customers'); this.clearCache('transactions'); this.clearCache('banks');
+                this.showModal(this.t('pay_debt'), `<p>Customer: <b>${cname}</b></p><input type="number" id="pdAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="pdMethod" class="select-box" onchange="document.getElementById('pdBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="pdBankDiv" style="display:none;"><select id="pdBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('pdAmount').value); const method = document.getElementById('pdMethod').value; const bid = document.getElementById('pdBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); const tRef = db.collection('transactions').doc(); 
+                let cAmt = method === 'cash' ? amt : 0; let bAmt = method === 'bank' ? amt : 0;
+                batch.set(tRef, { companyId: this.state.cid, type: 'debt_payment', customerId: cid, amount: amt, cashAmount: cAmt, bankAmount: bAmt, method, bankId: bid, createdAt: now }); 
+                batch.update(db.collection('customers').doc(cid), { balance: firebase.firestore.FieldValue.increment(-amt) }); 
+                if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(amt) }); 
+                await batch.commit(); this.clearCache('customers'); this.clearCache('transactions'); this.clearCache('banks');
                 this.nav('customers'); });
             },
             listBanks: async function(div) { div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('banks')}</h3><button onclick="app.addBankModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="bnkTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('banks'); let h=''; s.forEach(b => { h += `<tr><td>${b.name}</td><td>${b.balance.toLocaleString()}</td><td><button onclick="app.viewStatement('${b.id}','bank','${b.name}')" class="btn btn-prim" style="padding:5px;">${this.t('stmt')}</button></td></tr>`; }); document.querySelector('#bnkTbl tbody').innerHTML = h || '<tr><td colspan="3">-</td></tr>'; },
             
-            // Fixed Add Bank Modal with Opening Balance Transaction
             addBankModal: function() { 
                 this.showModal(this.t('banks'), `<input id="nbName" class="inp" placeholder="${this.t('th_name')}"><input type="number" id="nbBal" class="inp" placeholder="${this.t('balance')}">`, async () => { 
                     const n = document.getElementById('nbName').value;
@@ -556,25 +560,13 @@
                     if(n) { 
                         const batch = db.batch();
                         const now = new Date().toISOString();
-                        
-                        // 1. Create Bank Document
                         const bankRef = db.collection('banks').doc();
                         batch.set(bankRef, {companyId:this.state.cid, name:n, balance:b||0, createdAt:now});
-                        
-                        // 2. Create Transaction for Opening Balance
                         if(b > 0) {
                             const transRef = db.collection('transactions').doc();
-                            batch.set(transRef, {
-                                companyId: this.state.cid,
-                                type: 'opening_balance',
-                                bankId: bankRef.id,
-                                amount: b,
-                                method: 'bank',
-                                note: 'Opening Balance',
-                                createdAt: now
-                            });
+                            // Opening balance: purely bank
+                            batch.set(transRef, { companyId: this.state.cid, type: 'opening_balance', bankId: bankRef.id, amount: b, bankAmount: b, cashAmount: 0, method: 'bank', note: 'Opening Balance', createdAt: now });
                         }
-
                         await batch.commit(); 
                         this.clearCache('banks'); 
                         this.clearCache('transactions');
@@ -582,239 +574,577 @@
                     } 
                 }); 
             },
-            
             listSuppliers: async function(div) { div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('supp')}</h3><button onclick="app.addSuppModal()" class="btn btn-prim" style="width:auto;">+</button></div><div class="card"><div class="table-scroll"><table id="supTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('supp_bal')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('suppliers'); let h=''; s.forEach(b => { h += `<tr><td>${b.name}</td><td>${b.phone||'-'}</td><td style="color:${b.balance>0?'red':'green'}">${b.balance?.toLocaleString()||0}</td><td><button onclick="app.paySupplierDebt('${b.id}','${b.name}')" class="btn btn-sec" style="padding:5px; font-size:12px;">${this.t('pay_supp')}</button> <button onclick="app.viewStatement('${b.id}','supplier','${b.name}')" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">${this.t('stmt')}</button></td></tr>`; }); document.querySelector('#supTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>'; },
             addSuppModal: function() { this.showModal(this.t('new_supp'), `<input id="nsName" class="inp" placeholder="${this.t('th_name')}"><input id="nsPhone" class="inp" placeholder="${this.t('adm_phone')}">`, async () => { const n=document.getElementById('nsName').value, p=document.getElementById('nsPhone').value; if(n) { await db.collection('suppliers').add({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}); this.clearCache('suppliers'); this.nav('suppliers'); } }); },
             paySupplierDebt: async function(sid, sname) {
                 const banks = await this.getData('banks'); let bOpts = `<option value="">-- Select Bank --</option>`; banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
-                this.showModal(this.t('pay_supp'), `<p>Supplier: <b>${sname}</b></p><input type="number" id="psAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="psMethod" class="select-box" onchange="document.getElementById('psBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="psBankDiv" style="display:none;"><select id="psBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('psAmount').value); const method = document.getElementById('psMethod').value; const bid = document.getElementById('psBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'supplier_payment', supplierId: sid, amount: amt, method, bankId: bid, createdAt: now }); batch.update(db.collection('suppliers').doc(sid), { balance: firebase.firestore.FieldValue.increment(-amt) }); if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(-amt) }); await batch.commit(); this.clearCache('suppliers'); this.clearCache('transactions'); this.clearCache('banks');
+                this.showModal(this.t('pay_supp'), `<p>Supplier: <b>${sname}</b></p><input type="number" id="psAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="psMethod" class="select-box" onchange="document.getElementById('psBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="psBankDiv" style="display:none;"><select id="psBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('psAmount').value); const method = document.getElementById('psMethod').value; const bid = document.getElementById('psBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); 
+                let cAmt = method === 'cash' ? amt : 0; let bAmt = method === 'bank' ? amt : 0;
+                batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'supplier_payment', supplierId: sid, amount: amt, cashAmount: cAmt, bankAmount: bAmt, method, bankId: bid, createdAt: now }); 
+                batch.update(db.collection('suppliers').doc(sid), { balance: firebase.firestore.FieldValue.increment(-amt) }); if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(-amt) }); await batch.commit(); this.clearCache('suppliers'); this.clearCache('transactions'); this.clearCache('banks');
                 this.nav('suppliers'); });
             },
             addTransactionModal: async function(type) {
                 const banks = await this.getData('banks'); let bOpts = `<option value="">-- Select Bank --</option>`; banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
-                this.showModal(this.t(type), `<input id="trName" class="inp" placeholder="${this.t('prompt_name')}"><input id="trNote" class="inp" placeholder="${this.t('prompt_note')}"><input type="number" id="trAmount" class="inp" placeholder="${this.t('prompt_amount')}"><label>${this.t('pay_method')}</label><select id="trMethod" class="select-box" onchange="document.getElementById('trBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="trBankDiv" style="display:none;"><select id="trBank" class="select-box">${bOpts}</select></div>`, async () => { const val1 = document.getElementById('trName').value; const val2 = document.getElementById('trNote').value; const amt = Number(document.getElementById('trAmount').value); const method = document.getElementById('trMethod').value; const bid = document.getElementById('trBank').value; if(!val1 || !amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); const ref = db.collection(type).doc(); batch.set(ref, { companyId:this.state.cid, val1, val2, val3:amt, method, bankId:bid, createdAt:now }); const tRef = db.collection('transactions').doc(); let tType = type === 'revenues' ? 'revenue' : (type === 'salaries' ? 'salary' : 'expense'); batch.set(tRef, { companyId: this.state.cid, type: tType, refId: ref.id, amount: amt, method, bankId: bid, note: val1, createdAt: now }); if(method==='bank' && bid) { const increment = type === 'revenues' ? amt : -amt; batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(increment) }); } await batch.commit(); this.clearCache(type); this.clearCache('transactions'); this.clearCache('banks');
+                this.showModal(this.t(type), `<input id="trName" class="inp" placeholder="${this.t('prompt_name')}"><input id="trNote" class="inp" placeholder="${this.t('prompt_note')}"><input type="number" id="trAmount" class="inp" placeholder="${this.t('prompt_amount')}"><label>${this.t('pay_method')}</label><select id="trMethod" class="select-box" onchange="document.getElementById('trBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="trBankDiv" style="display:none;"><select id="trBank" class="select-box">${bOpts}</select></div>`, async () => { const val1 = document.getElementById('trName').value; const val2 = document.getElementById('trNote').value; const amt = Number(document.getElementById('trAmount').value); const method = document.getElementById('trMethod').value; const bid = document.getElementById('trBank').value; if(!val1 || !amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); const ref = db.collection(type).doc(); batch.set(ref, { companyId:this.state.cid, val1, val2, val3:amt, method, bankId:bid, createdAt:now }); const tRef = db.collection('transactions').doc(); let tType = type === 'revenues' ? 'revenue' : 'expense'; 
+                let cAmt = method === 'cash' ? amt : 0; let bAmt = method === 'bank' ? amt : 0;
+                batch.set(tRef, { companyId: this.state.cid, type: tType, refId: ref.id, amount: amt, cashAmount: cAmt, bankAmount: bAmt, method, bankId: bid, note: val1, createdAt: now }); if(method==='bank' && bid) { const increment = type === 'revenues' ? amt : -amt; batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(increment) }); } await batch.commit(); this.clearCache(type); this.clearCache('transactions'); this.clearCache('banks');
                 this.nav(type); });
             },
-            list: async function(div, type) { 
-                const titleKey = type==='invoices'?'inv':(type==='products'?'stock':(type==='revenues'?'rev':(type==='salaries'?'sal':(type==='suppliers'?'supp':'exp')))); const addBtn = type!=='invoices' ? `<button onclick="${type==='products'?'app.addProductModal()':'app.addTransactionModal(\''+type+'\')'}" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>` : ''; div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody><tr><td>Loading...</td></tr></tbody></table></div></div>`; const docs = await this.getData(type); let h='', th='';
-                if(type==='invoices') { th=`<tr><th>${this.t('th_inv_no')}</th><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('paid')}</th><th>${this.t('th_print')}</th></tr>`; docs.forEach(d=>{ const str=encodeURIComponent(JSON.stringify(d.items)); const displayNum = d.invNum || d.id.substring(0,6); const pm = d.paymentMethod === 'bank' ? 'Bank' : 'Cash'; const bn = d.bankName || ''; h+=`<tr><td style="font-weight:bold">${displayNum}</td><td>${this.formatDate(d.createdAt)}</td><td>${d.customer}</td><td>${d.total}</td><td>${d.paid}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${displayNum}','${d.customer}',${d.total},'${str}',${d.paid},${d.debt},'${pm}','${bn}')">${this.t('th_print')}</button></td></tr>`; }); } 
-                else if(type==='products') { th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`; docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td><button onclick="app.editProd('${d.id}',${d.buyPrice},${d.sellPrice})" style="border:none;cursor:pointer;color:var(--primary)">✎</button></td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`); } 
-                else { th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_del')}</th></tr>`; docs.forEach(d=>{ h+=`<tr><td>${d.val1}</td><td>${d.val2}</td><td>${d.val3}</td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`; }); } 
-                document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="5">-</td></tr>'; 
-            },
-            addProductModal: async function() {
-                const supps = await this.getData('suppliers'); const banks = await this.getData('banks');
-                let sOpts = `<option value="none">-- ${this.t('supp_direct')} --</option>`; supps.forEach(s=> sOpts += `<option value="${s.id}">${s.name}</option>`);
-                let bOpts = `<option value="">-- Bank --</option>`; banks.forEach(b=> bOpts += `<option value="${b.id}">${b.name}</option>`);
-                const h = `<input id="npName" class="inp" placeholder="${this.t('th_name')}"><div style="display:flex; gap:10px;"><input id="npBuy" type="number" class="inp" placeholder="${this.t('th_buy')}"><input id="npSell" type="number" class="inp" placeholder="${this.t('th_sell')}"></div><input id="npQty" type="number" class="inp" placeholder="${this.t('tbl_qty')}"><hr><label>${this.t('supp_type')}</label><div style="display:flex; gap:5px;"><select id="npSupp" class="select-box" onchange="app.togglePurchaseType(this.value)">${sOpts}</select><button onclick="app.quickAddSupplier()" class="btn btn-sec" style="width:auto; height:45px;" title="${this.t('toggle_new')}">+</button></div><div id="directPayDiv" style="display:block;"><p style="font-size:12px;color:gray">Direct Expense.</p></div><div id="suppPayDiv" style="display:none;"><div style="display:flex; gap:10px;"><input id="npPaid" type="number" class="inp" placeholder="${this.t('paid')}" value="0"><input id="npDebt" class="inp" placeholder="${this.t('remain')}" readonly style="background:#eee;"></div></div><div style="display:flex; gap:10px; margin-top:10px;"><select id="npMethod" class="select-box"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><select id="npBank" class="select-box" style="display:none;">${bOpts}</select></div>`;
-                this.showModal(this.t('p_add'), h, async () => {
-                    const n = document.getElementById('npName').value.trim();
-                    const b = Number(document.getElementById('npBuy').value); 
-                    const s = Number(document.getElementById('npSell').value); 
-                    const q = Number(document.getElementById('npQty').value); 
-                    const suppId = document.getElementById('npSupp').value; 
-                    const method = document.getElementById('npMethod').value; 
-                    const bankId = document.getElementById('npBank').value;
-                    
-                    if(!n || !b || !s || !q) return alert("Fill all fields"); 
-                    if(s <= b) return alert(this.t('err_price_logic'));
-                    
-                    const batch = db.batch(); 
-                    const now = new Date().toISOString(); 
-                    const totalCost = b * q;
-                    
-                    const existingSnap = await db.collection('products').where('companyId','==',this.state.cid).where('name','==',n).get();
-                    let targetId = null; let isMerge = false; 
-                    existingSnap.forEach(doc => { if(doc.data().sellPrice === s) { targetId = doc.id; isMerge = true; } });
-
-                    if(isMerge && targetId) { 
-                        batch.update(db.collection('products').doc(targetId), { stock: firebase.firestore.FieldValue.increment(q), buyPrice: b }); 
-                    } else { 
-                        const pRef = db.collection('products').doc(); 
-                        batch.set(pRef, { companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:now }); 
-                    }
-
-                    if(suppId === 'none') { 
-                        batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'expense', amount: totalCost, paid: totalCost, method: method, bankId: bankId, note: `Direct Purchase: ${n}`, createdAt: now }); 
-                        if(method === 'bank' && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-totalCost) }); } 
-                    } else { 
-                        const paid = Number(document.getElementById('npPaid').value); 
-                        const debt = totalCost - paid; 
-                        batch.update(db.collection('suppliers').doc(suppId), { balance: firebase.firestore.FieldValue.increment(debt) }); 
-                        batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'purchase_stock', supplierId: suppId, amount: totalCost, paid: paid, debt: debt, method: method, bankId: bankId, note: `Stock from Supplier: ${n}`, createdAt: now }); 
-                        if(paid > 0 && method === 'bank' && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-paid) }); } 
-                    }
-                    await batch.commit(); this.clearCache('products'); this.clearCache('transactions'); if(suppId !== 'none') this.clearCache('suppliers'); this.clearCache('banks');
-                    this.nav('inventory');
-                });
-                setTimeout(() => { document.getElementById('npMethod').addEventListener('change', (e) => { document.getElementById('npBank').style.display = e.target.value === 'bank' ? 'block' : 'none'; }); const inputs = ['npBuy', 'npQty', 'npPaid']; inputs.forEach(id => { document.getElementById(id).addEventListener('input', () => { const buy = Number(document.getElementById('npBuy').value); const qty = Number(document.getElementById('npQty').value); const pd = Number(document.getElementById('npPaid').value); const tot = buy * qty; const dbt = tot - pd; if(document.getElementById('npDebt')) document.getElementById('npDebt').value = dbt > 0 ? dbt : 0; }); }); }, 100);
-            },
-            quickAddSupplier: async function() { const n = prompt(this.t('prompt_name')); const p = prompt(this.t('adm_phone')); if(n) { try { const ref = await db.collection('suppliers').add({ companyId: this.state.cid, name: n, phone: p||'', balance: 0, createdAt: new Date().toISOString() }); this.clearCache('suppliers'); const sel = document.getElementById('npSupp'); const opt = document.createElement('option'); opt.value = ref.id; opt.text = n; opt.selected = true; sel.appendChild(opt); app.togglePurchaseType(ref.id); } catch(e) { alert(e.message); } } },
-            togglePurchaseType: function(val) { document.getElementById('directPayDiv').style.display = val === 'none' ? 'block' : 'none'; document.getElementById('suppPayDiv').style.display = val === 'none' ? 'none' : 'block'; },
-            editProd: async function(id, b, os) { let ns = prompt(this.t('prompt_new_price'), os); if(!ns) return; ns=Number(ns); if(ns<=b) return alert(this.t('err_price_logic')); await db.collection('products').doc(id).update({sellPrice:ns}); this.clearCache('products'); this.nav('inventory'); },
-            del: async function(id, col) { if(confirm(this.t('confirm_del'))) { await db.collection(col).doc(id).delete(); this.clearCache(col); this.nav(col==='products'?'inventory':col); } },
             
-            showModal: function(title, contentHtml, actionFn) { 
-                document.getElementById('modalTitle').innerText = title; 
-                document.getElementById('modalContent').innerHTML = contentHtml; 
-                document.getElementById('genericModal').style.display = 'flex'; 
-                const btn = document.getElementById('modalActionBtn');
-                btn.style.display = 'inline-block';
-                btn.innerText = this.t('btn_save'); 
-                
-                btn.onclick = async () => { 
-                    this.showLoader(); 
-                    try { await actionFn(); document.getElementById('genericModal').style.display = 'none'; } 
-                    catch(e) { alert(e.message); } 
-                    this.hideLoader(); 
-                }; 
-            },
-            
-            viewStatement: async function(id, type, name) {
-                const modal = document.getElementById('genericModal'); 
-                document.getElementById('modalTitle').innerText = this.t('stmt') + ": " + name; 
-                document.getElementById('modalContent').innerHTML = '<div class="spinner"></div>'; 
-                document.getElementById('modalActionBtn').style.display = 'none'; 
-                modal.style.display = 'flex';
-
-                let q = db.collection('transactions').where('companyId','==',this.state.cid); 
-                if(type === 'customer') q = q.where('customerId','==',id); 
-                else if(type === 'bank') q = q.where('bankId','==',id);
-                else if(type === 'supplier') q = q.where('supplierId','==',id);
-
-                const snaps = await q.get(); 
-                let txs = snaps.docs.map(d=>d.data()); 
-                txs.sort((a,b)=>new Date(a.createdAt) - new Date(b.createdAt)); 
-
-                let runningBal = 0;
-                const pdfData = [];
-
-                let h = `<table style="width:100%; font-size:12px;"><thead><tr><th>Date</th><th>Desc</th><th>In</th><th>Out</th><th>Bal</th></tr></thead><tbody>`;
-                
-                txs.forEach(t => { 
-                    let dStr = new Date(t.createdAt).toLocaleDateString(); 
-                    let desc = t.type; 
-                    let inAmt = 0, outAmt = 0; 
-
-                    if(type === 'customer') { 
-                        if(t.type === 'sale') { desc=`Inv ${t.invNum||''}`; outAmt = t.debt; } 
-                        if(t.type === 'debt_payment') { desc=`Pay`; inAmt = t.amount; } 
-                        runningBal = runningBal - outAmt + inAmt; 
-                    } else if (type === 'supplier') {
-                        if(t.type === 'purchase_stock') { desc=`Purch`; inAmt = t.debt; }
-                        if(t.type === 'supplier_payment') { desc=`Pay`; outAmt = t.amount; }
-                        runningBal = runningBal + inAmt - outAmt; 
-                    } else { 
-                        if(t.type === 'revenue' || t.type === 'debt_payment') inAmt = t.amount; 
-                        if(t.type === 'sale') inAmt = t.paid; 
-                        if(t.type === 'expense' || t.type === 'salary' || t.type === 'supplier_payment') outAmt = t.amount; 
-                        if(t.type === 'purchase_stock') outAmt = t.paid; 
-                        if(t.type === 'expense' && t.note.includes('Direct')) outAmt = t.amount;
-                        // Added handling for opening_balance
-                        if(t.type === 'opening_balance') inAmt = t.amount;
-
-                        runningBal = runningBal + inAmt - outAmt;
-                    } 
+            // --- 1. إدارة الموظفين (إضافة ملف موظف) ---
+            addSalaryModal: async function() {
+                this.showModal("إضافة موظف جديد", `
+                    <input id="empName" class="inp" placeholder="اسم الموظف">
+                    <input type="number" id="empSalary" class="inp" placeholder="الراتب الشهري الثابت">
+                    <label style="font-size:12px;font-weight:bold;">طريقة الدفع الافتراضية</label>
+                    <select id="empMethod" class="select-box">
+                        <option value="cash">كاش (نقدي)</option>
+                        <option value="bank">تحويل بنكي</option>
+                    </select>
+                `, async () => {
+                    const name = document.getElementById('empName').value;
+                    const salary = Number(document.getElementById('empSalary').value);
+                    const method = document.getElementById('empMethod').value;
                     
-                    if (t.type === 'opening_balance') desc = this.t('op_bal');
-
-                    const inDisplay = inAmt > 0 ? inAmt.toLocaleString() : '-';
-                    const outDisplay = outAmt > 0 ? outAmt.toLocaleString() : '-';
+                    if(!name || !salary) return alert("يرجى إدخال الاسم والراتب");
                     
-                    h += `<tr><td>${dStr}</td><td>${desc}</td><td style="color:green">${inDisplay}</td><td style="color:red">${outDisplay}</td><td style="font-weight:bold">${runningBal.toLocaleString()}</td></tr>`; 
+                    const batch = db.batch();
+                    const now = new Date().toISOString();
+                    const empRef = db.collection('salaries').doc(); 
                     
-                    pdfData.push({
-                        date: dStr,
-                        desc: desc,
-                        in: inAmt > 0 ? inAmt : '',
-                        out: outAmt > 0 ? outAmt : '',
-                        bal: runningBal
+                    batch.set(empRef, { 
+                        companyId: this.state.cid, 
+                        name: name, 
+                        baseSalary: salary, 
+                        defaultMethod: method,
+                        totalPaid: 0, 
+                        createdAt: now 
                     });
-                }); 
-                
-                h += '</tbody></table>'; 
-                h = `<button onclick='app.createPdfStatement(${JSON.stringify(pdfData)}, "${type}", "${name}")' class="btn btn-sec" style="margin-bottom:15px; background:var(--primary)"><i class="fa-solid fa-file-pdf"></i> ${this.t('down_pdf')}</button>` + h;
-
-                document.getElementById('modalContent').innerHTML = h; 
-                const closeBtn = document.querySelector('#genericModal .btn-sec'); 
-                const oldClose = closeBtn.onclick; 
-                closeBtn.onclick = () => { oldClose(); document.getElementById('modalActionBtn').style.display = 'block'; };
+                    
+                    await batch.commit(); 
+                    this.clearCache('salaries'); 
+                    this.nav('salaries');
+                });
             },
 
-            createPdfStatement: function(data, type, name) {
-                if(!window.pdfMake.vfs || !window.pdfMake.vfs['Tajawal-Regular.ttf']) {
-                    alert("Font loading... please try again in a few seconds.");
-                    this.loadArabicFont();
-                    return;
+            // --- 2. عرض ملف الموظف (الجدول، الدفع، PDF) ---
+            viewEmployeeFile: async function(empId, empName, baseSalary) {
+                const ws = document.getElementById('workspace');
+                ws.innerHTML = '<div class="spinner"></div>';
+                
+                try {
+                    const snaps = await db.collection('transactions')
+                                          .where('companyId', '==', this.state.cid)
+                                          .where('type', '==', 'salary_payment')
+                                          .where('refId', '==', empId)
+                                          .get(); // Removing orderBy here to fix index issues
+                                          
+                    let history = snaps.docs.map(d => d.data());
+                    // Sorting in memory
+                    history.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                    let totalPaid = 0;
+                    
+                    let rows = '';
+                    history.forEach(h => {
+                        totalPaid += h.amount;
+                        let date = new Date(h.createdAt).toLocaleDateString('ar-EG');
+                        let methodTxt = h.method === 'cash' ? 'كاش' : (h.method === 'bank' ? 'بنك' : 'مختلط');
+                        rows += `<tr>
+                            <td>${date}</td>
+                            <td>${h.amount.toLocaleString()}</td>
+                            <td>${methodTxt}</td>
+                            <td style="font-size:11px; color:#666;">${h.note || '-'}</td>
+                        </tr>`;
+                    });
+
+                    const html = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <div>
+                            <button onclick="app.nav('salaries')" class="btn btn-sec" style="width:auto; padding:5px 15px; font-size:12px; margin-bottom:5px;">&larr; عودة</button>
+                            <h2 style="margin:0; color:var(--primary);">${empName}</h2>
+                            <small style="color:#666;">الراتب الثابت: ${baseSalary.toLocaleString()}</small>
+                        </div>
+                        <div style="text-align:left;">
+                            <span style="display:block; font-size:12px;">إجمالي المدفوع</span>
+                            <span style="font-weight:bold; font-size:18px; color:green;">${totalPaid.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-bottom:20px;">
+                        <button onclick="app.payEmployeeModal('${empId}', '${empName}', ${baseSalary})" class="btn btn-prim"><i class="fa-solid fa-hand-holding-dollar"></i> دفع راتب</button>
+                        <button onclick="app.downloadEmpPdf('${empName}', ${baseSalary}, '${encodeURIComponent(JSON.stringify(history))}')" class="btn btn-sec" style="background:#dc2626;"><i class="fa-solid fa-file-pdf"></i> كشف PDF</button>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">سجل الرواتب</h3>
+                        <div class="table-scroll">
+                            <table style="width:100%;">
+                                <thead>
+                                    <tr style="background:#f9f9f9;">
+                                        <th>التاريخ</th>
+                                        <th>المبلغ</th>
+                                        <th>الطريقة</th>
+                                        <th>ملاحظات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows || '<tr><td colspan="4" style="text-align:center;">لا يوجد سجل رواتب</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    `;
+                    
+                    ws.innerHTML = html;
+                } catch(e) {
+                    console.error(e);
+                    ws.innerHTML = `<p style="color:red; text-align:center;">حدث خطأ في تحميل البيانات.</p><button onclick="app.nav('salaries')" class="btn btn-sec">عودة</button>`;
                 }
+            },
+
+            // --- 3. نافذة دفع الراتب ---
+            payEmployeeModal: async function(empId, empName, baseSalary) {
+                const banks = await this.getData('banks');
+                let bOpts = `<option value="">-- اختر البنك --</option>`;
+                banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
+
+                this.showModal(`دفع راتب: ${empName}`, `
+                    <label>المبلغ (الراتب الثابت)</label>
+                    <input type="number" id="payAmount" class="inp" value="${baseSalary}">
+                    
+                    <label>طريقة الدفع</label>
+                    <select id="payMethod" class="select-box" onchange="app.toggleSalaryInputs()">
+                        <option value="cash">كاش</option>
+                        <option value="bank">بنك</option>
+                        <option value="mixed">مختلط</option>
+                    </select>
+
+                    <div id="payDetails">
+                        <div id="cashDiv"><input id="pCash" type="number" class="inp" placeholder="مبلغ الكاش" value="${baseSalary}"></div>
+                        <div id="bankDiv" style="display:none;">
+                            <input id="pBank" type="number" class="inp" placeholder="مبلغ البنك" value="0">
+                            <select id="pBankId" class="select-box">${bOpts}</select>
+                        </div>
+                    </div>
+                    
+                    <input id="payNote" class="inp" placeholder="ملاحظة (مثال: راتب شهر ...)">
+                `, async () => {
+                    const total = Number(document.getElementById('payAmount').value);
+                    const method = document.getElementById('payMethod').value;
+                    const note = document.getElementById('payNote').value;
+                    
+                    let cashAmt = 0, bankAmt = 0, bankId = null;
+
+                    if (method === 'cash') {
+                        cashAmt = total;
+                    } else if (method === 'bank') {
+                        bankAmt = total;
+                        bankId = document.getElementById('pBankId').value;
+                        if(!bankId) return alert("اختر البنك");
+                    } else {
+                        cashAmt = Number(document.getElementById('pCash').value);
+                        bankAmt = Number(document.getElementById('pBank').value);
+                        bankId = document.getElementById('pBankId').value;
+                        if(cashAmt + bankAmt !== total) return alert("مجموع الكاش والبنك لا يساوي المبلغ الكلي");
+                        if(!bankId && bankAmt > 0) return alert("اختر البنك");
+                    }
+
+                    const batch = db.batch();
+                    const now = new Date().toISOString();
+                    const tRef = db.collection('transactions').doc();
+
+                    batch.set(tRef, {
+                        companyId: this.state.cid,
+                        type: 'salary_payment',
+                        refId: empId, 
+                        employeeName: empName,
+                        amount: total,
+                        cashAmount: cashAmt,
+                        bankAmount: bankAmt,
+                        bankId: bankId,
+                        method: method,
+                        note: note,
+                        createdAt: now
+                    });
+
+                    if (bankAmt > 0 && bankId) {
+                        batch.update(db.collection('banks').doc(bankId), {
+                            balance: firebase.firestore.FieldValue.increment(-bankAmt)
+                        });
+                    }
+                    
+                    batch.update(db.collection('salaries').doc(empId), {
+                        totalPaid: firebase.firestore.FieldValue.increment(total)
+                    });
+
+                    await batch.commit();
+                    this.clearCache('transactions');
+                    this.clearCache('banks');
+                    this.clearCache('salaries');
+                    
+                    this.viewEmployeeFile(empId, empName, baseSalary);
+                });
+            },
+
+            toggleSalaryInputs: function() {
+                const m = document.getElementById('payMethod').value;
+                const c = document.getElementById('cashDiv');
+                const b = document.getElementById('bankDiv');
+                
+                if(m === 'cash') {
+                    c.style.display = 'block';
+                    b.style.display = 'none';
+                } else if(m === 'bank') {
+                    c.style.display = 'none';
+                    b.style.display = 'block';
+                } else {
+                    c.style.display = 'block';
+                    b.style.display = 'block';
+                }
+            },
+
+            // --- 4. تحميل كشف حساب PDF ---
+            downloadEmpPdf: function(name, salary, historyStr) {
+                const history = JSON.parse(decodeURIComponent(historyStr));
+                
+                const bodyData = [
+                    [{text:'التاريخ', bold:true, fillColor:'#eee'}, {text:'المبلغ', bold:true, fillColor:'#eee'}, {text:'الطريقة', bold:true, fillColor:'#eee'}, {text:'ملاحظات', bold:true, fillColor:'#eee'}]
+                ];
+                
+                let total = 0;
+                history.forEach(h => {
+                    total += h.amount;
+                    bodyData.push([
+                        new Date(h.createdAt).toLocaleDateString('ar-EG'),
+                        h.amount.toLocaleString(),
+                        h.method === 'cash' ? 'كاش' : 'بنك',
+                        h.note || '-'
+                    ]);
+                });
+                
+                bodyData.push([
+                    {text:'المجموع الكلي', colSpan:3, bold:true, alignment:'left'}, {}, {},
+                    {text: total.toLocaleString(), bold:true, color:'green'}
+                ]);
 
                 const docDefinition = {
                     pageSize: 'A4',
                     pageMargins: [20, 20, 20, 20],
                     defaultStyle: { font: 'Tajawal', fontSize: 10, direction: 'rtl' },
                     content: [
+                        { text: this.state.name, fontSize: 14, bold: true, alignment: 'center', margin:[0,0,0,5] },
+                        { text: 'كشف رواتب موظف', fontSize: 12, alignment: 'center', margin:[0,0,0,20] },
                         {
                             columns: [
-                                { text: this.state.name, fontSize: 16, bold: true, alignment: 'right', width: '*' },
-                                { text: 'Statement of Account', fontSize: 14, bold: true, alignment: 'center', width: '*' },
-                                { text: new Date().toLocaleDateString(), alignment: 'left', width: '*' }
+                                { text: `الموظف: ${name}`, bold:true, alignment:'right' },
+                                { text: `الراتب الأساسي: ${salary}`, alignment:'left' }
                             ],
-                            margin: [0, 0, 0, 20]
-                        },
-                        {
-                            text: `${type === 'bank' ? 'Bank' : (type === 'customer' ? 'Customer' : 'Supplier')}: ${name}`,
-                            fontSize: 12, bold: true, margin: [0, 0, 0, 10], alignment: 'right'
+                            margin: [0, 0, 0, 10]
                         },
                         {
                             table: {
                                 headerRows: 1,
-                                widths: ['auto', '*', 'auto', 'auto', 'auto'],
-                                body: [
-                                    [
-                                        { text: 'Date', bold: true, fillColor: '#eeeeee' },
-                                        { text: 'Description', bold: true, fillColor: '#eeeeee', alignment:'right' },
-                                        { text: 'In (+)', bold: true, fillColor: '#eeeeee' },
-                                        { text: 'Out (-)', bold: true, fillColor: '#eeeeee' },
-                                        { text: 'Balance', bold: true, fillColor: '#eeeeee' }
-                                    ],
-                                    ...data.map(item => [
-                                        item.date,
-                                        { text: item.desc, alignment: 'right' },
-                                        { text: item.in.toString(), color: 'green' },
-                                        { text: item.out.toString(), color: 'red' },
-                                        { text: item.bal.toLocaleString(), bold: true }
-                                    ])
-                                ]
+                                widths: ['auto', 'auto', 'auto', '*'],
+                                body: bodyData
                             },
                             layout: 'lightHorizontalLines'
-                        },
-                        { text: `Generated by Teyssir ERP`, fontSize: 8, color: 'gray', margin: [0, 20, 0, 0], alignment: 'center' }
+                        }
                     ]
                 };
-
-                pdfMake.createPdf(docDefinition).download(`Statement_${name}.pdf`);
+                pdfMake.createPdf(docDefinition).download(`راتب_${name}.pdf`);
             },
 
+            filterEmployees: function() {
+                const input = document.getElementById('empSearch');
+                const filter = input.value.toLowerCase();
+                const table = document.getElementById('lst');
+                const tr = table.getElementsByTagName('tr');
+
+                for (let i = 1; i < tr.length; i++) {
+                    const td = tr[i].getElementsByTagName('td')[0];
+                    if (td) {
+                        const txtValue = td.textContent || td.innerText;
+                        if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                        } else {
+                            tr[i].style.display = "none";
+                        }
+                    }
+                }
+            },
+
+            list: async function(div, type) { 
+                const titleKey = type==='invoices'?'inv':(type==='products'?'stock':(type==='revenues'?'rev':(type==='salaries'?'sal':(type==='suppliers'?'supp':'exp')))); 
+                const addBtn = type!=='invoices' && type!=='salaries' ? `<button onclick="${type==='products'?'app.addProductModal()': 'app.addTransactionModal(\''+type+'\')'}" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>` : ''; 
+                
+                div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div><div class="card"><div class="table-scroll"><table id="lst"><thead></thead><tbody><tr><td>Loading...</td></tr></tbody></table></div></div>`; 
+                let docs = await this.getData(type); let h='', th='';
+                
+                if(type==='invoices') { 
+                    th=`<tr><th>${this.t('th_inv_no')}</th><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('paid')}</th><th>${this.t('th_print')}</th></tr>`; 
+                    docs.forEach(d=>{ const str=encodeURIComponent(JSON.stringify(d.items)); const displayNum = d.invNum || d.id.substring(0,6); const pm = (d.bankAmount>0 && d.cashAmount>0) ? "Mixed" : (d.bankAmount>0?"Bank":"Cash"); const bn = d.bankName || ''; h+=`<tr><td style="font-weight:bold">${displayNum}</td><td>${this.formatDate(d.createdAt)}</td><td>${d.customer}</td><td>${d.total}</td><td>${d.paid}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${displayNum}','${d.customer}',${d.total},'${str}',${d.paid},${d.debt},'${pm}','${bn}')">${this.t('th_print')}</button></td></tr>`; }); 
+                    document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="5">-</td></tr>'; 
+                } else if(type==='products') { 
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`; docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td><button onclick="app.editProd('${d.id}',${d.buyPrice},${d.sellPrice})" style="border:none;cursor:pointer;color:var(--primary)">✎</button></td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`); 
+                    document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="5">-</td></tr>'; 
+                } else if(type==='salaries') {
+                    // عرض قائمة الموظفين
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3>إدارة الرواتب</h3>
+                            <button onclick="app.addSalaryModal()" class="btn btn-prim" style="width:auto; padding:8px 15px;">+ موظف جديد</button>
+                        </div>
+                        <input type="text" id="empSearch" class="inp" placeholder="بحث عن موظف..." onkeyup="app.filterEmployees()" style="margin-bottom:10px;">
+                        <div class="card">
+                            <div class="table-scroll">
+                                <table id="lst">
+                                    <thead>
+                                        <tr>
+                                            <th>الموظف</th>
+                                            <th>الراتب الثابت</th>
+                                            <th>إجمالي المدفوع</th>
+                                            <th>تحكم</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="empListBody">
+                                        ${docs.length ? '' : '<tr><td colspan="4">لا يوجد موظفين</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>`;
+                    
+                    const tbody = document.getElementById('empListBody');
+                    if(docs.length) {
+                        docs.forEach(d => {
+                            // Escape single quotes for the onclick function
+                            const safeName = (d.name || '').replace(/'/g, "\\'");
+                            const row = `
+                            <tr>
+                                <td style="font-weight:bold;">${d.name}</td>
+                                <td>${d.baseSalary.toLocaleString()}</td>
+                                <td style="color:green;">${(d.totalPaid||0).toLocaleString()}</td>
+                                <td>
+                                    <button onclick="app.viewEmployeeFile('${d.id}', '${safeName}', ${d.baseSalary})" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">ملف الرواتب</button>
+                                </td>
+                            </tr>`;
+                            tbody.innerHTML += row;
+                        });
+                    }
+                } else { 
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_del')}</th></tr>`; docs.forEach(d=>{ h+=`<tr><td>${d.val1}</td><td>${d.val2}</td><td>${d.val3}</td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer">X</td></tr>`; }); 
+                    document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="5">-</td></tr>'; 
+                } 
+            },
+            
+            addProductModal: async function() {
+                const supps = await this.getData('suppliers'); const banks = await this.getData('banks');
+                let sOpts = `<option value="none">-- ${this.t('supp_direct')} --</option>`; supps.forEach(s=> sOpts += `<option value="${s.id}">${s.name}</option>`);
+                let bOpts = `<option value="">-- Bank --</option>`; banks.forEach(b=> bOpts += `<option value="${b.id}">${b.name}</option>`);
+                const h = `
+                <input id="npName" class="inp" placeholder="${this.t('th_name')}">
+                <div style="display:flex; gap:10px;">
+                    <input id="npBuy" type="number" class="inp" placeholder="${this.t('th_buy')}">
+                    <input id="npSell" type="number" class="inp" placeholder="${this.t('th_sell')}">
+                </div>
+                <input id="npQty" type="number" class="inp" placeholder="${this.t('tbl_qty')}">
+                <hr>
+                <label>${this.t('supp_type')}</label>
+                <div style="display:flex; gap:5px;">
+                    <select id="npSupp" class="select-box" onchange="app.togglePurchaseType(this.value)">${sOpts}</select>
+                    <button onclick="app.quickAddSupplier()" class="btn btn-sec" style="width:auto; height:45px;" title="${this.t('toggle_new')}">+</button>
+                </div>
+                <div id="directPayDiv" style="display:block;">
+                    <label style="font-size:12px;font-weight:bold;">طريقة الدفع (شراء مباشر)</label>
+                    <select id="npDirectMethod" class="select-box" onchange="document.getElementById('npDirectBankDiv').style.display = this.value==='bank'?'block':'none'">
+                        <option value="cash">كاش (نقدي)</option>
+                        <option value="bank">بنك</option>
+                    </select>
+                    <div id="npDirectBankDiv" style="display:none;">
+                        <select id="npDirectBankSelect" class="select-box">${bOpts}</select>
+                    </div>
+                </div>
+                <div id="suppPayDiv" style="display:none;">
+                    <select id="npMethod" class="select-box" onchange="app.toggleSuppInputs()"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option><option value="mixed">${this.t('mixed')}</option></select><div style="display:flex; gap:10px;"><input type="number" id="npCash" class="inp" placeholder="${this.t('pay_cash')}" value="0"><input type="number" id="npBank" class="inp" placeholder="${this.t('pay_bank')}" value="0" style="display:none;"></div><div id="npBankDiv" style="display:none;"><select id="npBankSelect" class="select-box">${bOpts}</select></div><input id="npDebt" class="inp" placeholder="${this.t('remain')}" readonly style="background:#eee;"></div>`;
+                
+                this.showModal(this.t('p_add'), h, async () => {
+                    const n = document.getElementById('npName').value.trim(); const b = Number(document.getElementById('npBuy').value); const s = Number(document.getElementById('npSell').value); const q = Number(document.getElementById('npQty').value); 
+                    const suppId = document.getElementById('npSupp').value;
+                    if(!n || !b || !s || !q) return alert("Fill all fields"); if(s <= b) return alert(this.t('err_price_logic'));
+                    const batch = db.batch(); const now = new Date().toISOString(); const totalCost = b * q;
+                    
+                    const existingSnap = await db.collection('products').where('companyId','==',this.state.cid).where('name','==',n).get();
+                    let targetId = null; let isMerge = false; existingSnap.forEach(doc => { if(doc.data().sellPrice === s) { targetId = doc.id; isMerge = true; } });
+                    if(isMerge && targetId) { batch.update(db.collection('products').doc(targetId), { stock: firebase.firestore.FieldValue.increment(q), buyPrice: b }); } 
+                    else { const pRef = db.collection('products').doc(); batch.set(pRef, { companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:now }); }
+                    
+                    if(suppId === 'none') { 
+                        // شراء مباشر مع اختيار طريقة الدفع
+                        const method = document.getElementById('npDirectMethod').value;
+                        const bankId = document.getElementById('npDirectBankSelect').value;
+                        
+                        if(method === 'bank' && !bankId) return alert("اختر البنك");
+                        
+                        let cashAmt = method === 'cash' ? totalCost : 0;
+                        let bankAmt = method === 'bank' ? totalCost : 0;
+                        
+                        batch.set(db.collection('transactions').doc(), { 
+                            companyId: this.state.cid, 
+                            type: 'expense', 
+                            amount: totalCost, 
+                            paid: totalCost, 
+                            cashAmount: cashAmt, 
+                            bankAmount: bankAmt, 
+                            bankId: bankId, 
+                            method: method, 
+                            note: `Direct Purchase: ${n}`, 
+                            createdAt: now 
+                        });
+                        
+                        if(method === 'bank' && bankId) {
+                            batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-totalCost) });
+                        }
+                    } else { 
+                        // شراء آجل من مورد
+                        const cash = Number(document.getElementById('npCash').value); const bank = Number(document.getElementById('npBank').value); const bankId = document.getElementById('npBankSelect').value; const method = document.getElementById('npMethod').value; const paid = cash + bank;
+                        if(paid > totalCost) return alert("Paid > Cost"); if(method !== 'cash' && !bankId) return alert(this.t('select_bank'));
+                        const debt = totalCost - paid; 
+                        batch.update(db.collection('suppliers').doc(suppId), { balance: firebase.firestore.FieldValue.increment(debt) }); 
+                        batch.set(db.collection('transactions').doc(), { companyId: this.state.cid, type: 'purchase_stock', supplierId: suppId, amount: totalCost, paid: paid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, note: `Stock from Supplier: ${n}`, createdAt: now }); 
+                        if(bank > 0 && bankId) { batch.update(db.collection('banks').doc(bankId), { balance: firebase.firestore.FieldValue.increment(-bank) }); } 
+                    }
+                    await batch.commit(); this.clearCache('products'); this.clearCache('transactions'); if(suppId !== 'none') this.clearCache('suppliers'); this.clearCache('banks'); this.nav('inventory');
+                });
+                
+                setTimeout(() => { 
+                    app.toggleSuppInputs();
+                    const calc = () => {
+                        const b = Number(document.getElementById('npBuy').value); const q = Number(document.getElementById('npQty').value);
+                        const c = Number(document.getElementById('npCash').value); const k = Number(document.getElementById('npBank').value);
+                        const d = (b*q) - (c+k); document.getElementById('npDebt').value = d > 0 ? d : 0;
+                    };
+                    ['npBuy','npQty','npCash','npBank'].forEach(i => document.getElementById(i).addEventListener('input', calc));
+                }, 100);
+            },
+            toggleSuppInputs: function() {
+                const m = document.getElementById('npMethod').value;
+                const c = document.getElementById('npCash');
+                const b = document.getElementById('npBank');
+                const bd = document.getElementById('npBankDiv');
+                if(m === 'cash') { c.style.display='block'; b.style.display='none'; bd.style.display='none'; b.value=0; }
+                else if (m === 'bank') { c.style.display='none'; b.style.display='block'; bd.style.display='block'; c.value=0; }
+                else { c.style.display='block'; b.style.display='block'; bd.style.display='block'; }
+            },
+            quickAddSupplier: async function() { const n = prompt(this.t('prompt_name')); const p = prompt(this.t('adm_phone')); if(n) { try { const ref = await db.collection('suppliers').add({ companyId: this.state.cid, name: n, phone: p||'', balance: 0, createdAt: new Date().toISOString() }); this.clearCache('suppliers'); const sel = document.getElementById('npSupp'); const opt = document.createElement('option'); opt.value = ref.id; opt.text = n; opt.selected = true; sel.appendChild(opt); app.togglePurchaseType(ref.id); } catch(e) { alert(e.message); } } },
+            togglePurchaseType: function(val) { document.getElementById('directPayDiv').style.display = val === 'none' ? 'block' : 'none'; document.getElementById('suppPayDiv').style.display = val === 'none' ? 'none' : 'block'; },
+            editProd: async function(id, b, os) { let ns = prompt(this.t('prompt_new_price'), os); if(!ns) return; ns=Number(ns); if(ns<=b) return alert(this.t('err_price_logic')); await db.collection('products').doc(id).update({sellPrice:ns}); this.clearCache('products'); this.nav('inventory'); },
+            del: async function(id, col) { if(confirm(this.t('confirm_del'))) { await db.collection(col).doc(id).delete(); this.clearCache(col); this.nav(col==='products'?'inventory':col); } },
+            showModal: function(title, contentHtml, actionFn) { document.getElementById('modalTitle').innerText = title; document.getElementById('modalContent').innerHTML = contentHtml; document.getElementById('genericModal').style.display = 'flex'; const btn = document.getElementById('modalActionBtn'); btn.style.display = 'inline-block'; btn.innerText = this.t('btn_save'); btn.onclick = async () => { this.showLoader(); try { await actionFn(); document.getElementById('genericModal').style.display = 'none'; } catch(e) { alert(e.message); } this.hideLoader(); }; },
+            
+            viewStatement: async function(id, type, name) {
+                const modal = document.getElementById('genericModal'); document.getElementById('modalTitle').innerText = this.t('stmt') + ": " + name; document.getElementById('modalContent').innerHTML = '<div class="spinner"></div>'; document.getElementById('modalActionBtn').style.display = 'none'; modal.style.display = 'flex';
+                let q = db.collection('transactions').where('companyId','==',this.state.cid); 
+                if(type === 'customer') q = q.where('customerId','==',id); else if(type === 'bank') q = q.where('bankId','==',id); else if(type === 'supplier') q = q.where('supplierId','==',id); else if(type === 'salary') q = q.where('refId','==',id);
+                const snaps = await q.get(); let txs = snaps.docs.map(d=>d.data()); txs.sort((a,b)=>new Date(a.createdAt) - new Date(b.createdAt)); 
+                let runningBal = 0; const pdfData = [];
+                let h = `<table style="width:100%; font-size:12px;"><thead><tr><th>Date</th><th>Desc</th><th>In</th><th>Out</th><th>Bal</th></tr></thead><tbody>`;
+                
+                txs.forEach(t => { 
+                    let dStr = new Date(t.createdAt).toLocaleDateString(); 
+                    let desc = t.type;
+                    
+                    let methodStr = "";
+                    if(t.cashAmount > 0 && t.bankAmount > 0) methodStr = "(Mix)";
+                    else if(t.cashAmount > 0) methodStr = "(Cash)";
+                    else if(t.bankAmount > 0) methodStr = "(Bank)";
+                    
+                    let inAmt = 0, outAmt = 0; 
+                    
+                    if(type === 'customer') { 
+                        if(t.type === 'sale') { desc=`Inv ${t.invNum||''}`; outAmt = t.debt; } 
+                        if(t.type === 'debt_payment') { desc=`Pay ${methodStr}`; inAmt = t.amount; } 
+                        runningBal = runningBal - outAmt + inAmt; 
+                    } 
+                    else if (type === 'supplier') { 
+                        if(t.type === 'purchase_stock') { desc=`Purch`; inAmt = t.debt; } 
+                        if(t.type === 'supplier_payment') { desc=`Pay ${methodStr}`; outAmt = t.amount; } 
+                        runningBal = runningBal + inAmt - outAmt; 
+                    } 
+                    else if (type === 'salary') { 
+                        if(t.type === 'salary_issue') { desc=`Due`; inAmt = t.amount; } 
+                        if(t.type === 'salary_payment') { desc=`Pay ${methodStr}`; outAmt = t.amount; } 
+                        runningBal = runningBal + inAmt - outAmt; 
+                    }
+                    else if (type === 'bank') {
+                         if(t.bankAmount > 0) {
+                             let bVal = t.bankAmount;
+                             if(t.type === 'sale' || t.type === 'revenue' || t.type === 'debt_payment' || t.type === 'opening_balance') inAmt = bVal;
+                             else outAmt = bVal;
+                             desc = `${t.type} ${t.note || ''}`;
+                             runningBal = runningBal + inAmt - outAmt;
+                         } else {
+                             return;
+                         }
+                    }
+                    else { 
+                        // Generic
+                    } 
+                    
+                    h += `<tr><td>${dStr}</td><td>${desc}</td><td style="color:green">${inAmt>0?inAmt.toLocaleString():'-'}</td><td style="color:red">${outAmt>0?outAmt.toLocaleString():'-'}</td><td style="font-weight:bold">${runningBal.toLocaleString()}</td></tr>`; 
+                    pdfData.push({ date: dStr, desc: desc, in: inAmt > 0 ? inAmt : '', out: outAmt > 0 ? outAmt : '', bal: runningBal });
+                }); 
+                h += '</tbody></table>'; h = `<button onclick='app.createPdfStatement(${JSON.stringify(pdfData)}, "${type}", "${name}")' class="btn btn-sec" style="margin-bottom:15px; background:var(--primary)"><i class="fa-solid fa-file-pdf"></i> ${this.t('down_pdf')}</button>` + h;
+                document.getElementById('modalContent').innerHTML = h; const closeBtn = document.querySelector('#genericModal .btn-sec'); const oldClose = closeBtn.onclick; closeBtn.onclick = () => { oldClose(); document.getElementById('modalActionBtn').style.display = 'block'; };
+            },
+            createPdfStatement: function(data, type, name) {
+                if(!window.pdfMake.vfs || !window.pdfMake.vfs['Tajawal-Regular.ttf']) { alert("Font loading... please try again in a few seconds."); this.loadArabicFont(); return; }
+                const docDefinition = { pageSize: 'A4', pageMargins: [20, 20, 20, 20], defaultStyle: { font: 'Tajawal', fontSize: 10, direction: 'rtl' }, content: [ { columns: [ { text: this.state.name, fontSize: 16, bold: true, alignment: 'right', width: '*' }, { text: 'Statement of Account', fontSize: 14, bold: true, alignment: 'center', width: '*' }, { text: new Date().toLocaleDateString(), alignment: 'left', width: '*' } ], margin: [0, 0, 0, 20] }, { text: `${type}: ${name}`, fontSize: 12, bold: true, margin: [0, 0, 0, 10], alignment: 'right' }, { table: { headerRows: 1, widths: ['auto', '*', 'auto', 'auto', 'auto'], body: [ [ { text: 'Date', bold: true, fillColor: '#eeeeee' }, { text: 'Description', bold: true, fillColor: '#eeeeee', alignment:'right' }, { text: 'In (+)', bold: true, fillColor: '#eeeeee' }, { text: 'Out (-)', bold: true, fillColor: '#eeeeee' }, { text: 'Balance', bold: true, fillColor: '#eeeeee' } ], ...data.map(item => [ item.date, { text: item.desc, alignment: 'right' }, { text: item.in.toString(), color: 'green' }, { text: item.out.toString(), color: 'red' }, { text: item.bal.toLocaleString(), bold: true } ]) ] }, layout: 'lightHorizontalLines' }, { text: `Generated by Teyssir ERP`, fontSize: 8, color: 'gray', margin: [0, 20, 0, 0], alignment: 'center' } ] }; pdfMake.createPdf(docDefinition).download(`Statement_${name}.pdf`);
+            },
             reprint: function(id, c, t, itemsStr, paid, debt, pm, bn) { const items = JSON.parse(decodeURIComponent(itemsStr)); this.print(id,c,t,items, paid, debt, pm, bn); },
-            print: function(id, c, t, items, paid, debt, pm, bn) { 
-                const dir = this.state.lang==='ar'?'rtl':'ltr'; const formattedDate = this.formatDate(new Date().toISOString()); const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); let bankInfo = pm === 'Bank' && bn ? `(${bn})` : '';
-                document.getElementById('printArea').innerHTML = `<div style="padding:20px; direction:${dir}; font-family:'Tajawal'"><center><h2>${this.state.name}</h2><p>${this.state.phone}</p></center><hr><p>INV: ${id} | ${formattedDate} <br> ${this.t('th_client')}: ${c}</p><table style="width:100%; border-collapse:collapse; text-align:center;">${headers}${rows}</table><hr><div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${this.t('p_tot')}:</span> <span>${t}</span></div><div style="display:flex; justify-content:space-between;"><span>${this.t('paid')}:</span> <span>${paid}</span></div><div style="display:flex; justify-content:space-between;"><span>${this.t('remain')}:</span> <span>${debt}</span></div><br><div style="text-align:center; font-size:12px;">Method: ${pm} ${bankInfo}</div><center><small>Teyssir ERP</small></center></div>`; window.print(); 
-            },
-            reports: async function(div) { div.innerHTML = `<h2>${this.t('rep')}</h2><div class="filters-bar"><input type="date" id="repDate" class="filter-inp"><input type="month" id="repMonth" class="filter-inp"><button onclick="app.generateReport()" class="btn btn-prim" style="width:auto; margin:0 5px;">${this.t('rep_filter')}</button></div><div id="reportContent"></div>`; },
+            print: function(id, c, t, items, paid, debt, pm, bn) { const dir = this.state.lang==='ar'?'rtl':'ltr'; const formattedDate = this.formatDate(new Date().toISOString()); const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); let bankInfo = pm.includes('Bank') && bn ? `(${bn})` : ''; document.getElementById('printArea').innerHTML = `<div style="padding:20px; direction:${dir}; font-family:'Tajawal'"><center><h2>${this.state.name}</h2><p>${this.state.phone}</p></center><hr><p>INV: ${id} | ${formattedDate} <br> ${this.t('th_client')}: ${c}</p><table style="width:100%; border-collapse:collapse; text-align:center;">${headers}${rows}</table><hr><div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${this.t('p_tot')}:</span> <span>${t}</span></div><div style="display:flex; justify-content:space-between;"><span>${this.t('paid')}:</span> <span>${paid}</span></div><div style="display:flex; justify-content:space-between;"><span>${this.t('remain')}:</span> <span>${debt}</span></div><br><div style="text-align:center; font-size:12px;">Method: ${pm} ${bankInfo}</div><center><small>Teyssir ERP</small></center></div>`; window.print(); },
+            reports: async function(div) { div.innerHTML = `<h2>${this.t('rep')}</h2><div class="filters-bar"><select id="repType" class="select-box" style="width:120px;"><option value="all">${this.t('rep_all')}</option><option value="cash">${this.t('rep_cash')}</option><option value="bank">${this.t('rep_bank')}</option></select><input type="date" id="repDate" class="filter-inp"><input type="month" id="repMonth" class="filter-inp"><button onclick="app.generateReport()" class="btn btn-prim" style="width:auto; margin:0 5px;">${this.t('rep_filter')}</button></div><div id="reportContent"></div>`; },
             generateReport: async function() {
-                const dateVal = document.getElementById('repDate').value; const monthVal = document.getElementById('repMonth').value; const container = document.getElementById('reportContent'); container.innerHTML = '<div class="spinner"></div>';
+                const dateVal = document.getElementById('repDate').value; const monthVal = document.getElementById('repMonth').value; const filter = document.getElementById('repType').value; const container = document.getElementById('reportContent'); container.innerHTML = '<div class="spinner"></div>';
                 try {
                     let start = new Date(); let end = new Date(); let label = "";
-                    if(dateVal) { start = new Date(dateVal); start.setHours(0,0,0,0); end = new Date(dateVal); end.setHours(23,59,59,999); label = `Report: ${dateVal}`; } 
-                    else if (monthVal) { const [y, m] = monthVal.split('-'); start = new Date(y, m-1, 1); start.setHours(0,0,0,0); end = new Date(y, m, 0); end.setHours(23,59,59,999); label = `Report: ${monthVal}`; } 
-                    else { start.setHours(0,0,0,0); end.setHours(23,59,59,999); label = "Today"; }
+                    if(dateVal) { start = new Date(dateVal); start.setHours(0,0,0,0); end = new Date(dateVal); end.setHours(23,59,59,999); label = `Report: ${dateVal}`; } else if (monthVal) { const [y, m] = monthVal.split('-'); start = new Date(y, m-1, 1); start.setHours(0,0,0,0); end = new Date(y, m, 0); end.setHours(23,59,59,999); label = `Report: ${monthVal}`; } else { start.setHours(0,0,0,0); end.setHours(23,59,59,999); label = "Today"; }
                     const snap = await db.collection('transactions').where('companyId','==',this.state.cid).get(); 
                     let totalIn = 0; let totalOut = 0; let txs = [];
-                    snap.forEach(d => { const t = d.data(); const tDate = new Date(t.createdAt); if(tDate >= start && tDate <= end) { txs.push(t); if(t.type === 'sale') totalIn += t.paid; if(t.type === 'revenue') totalIn += t.amount; if(t.type === 'debt_payment') totalIn += t.amount; if(t.type === 'expense') totalOut += t.amount; if(t.type === 'salary') totalOut += t.amount; if(t.type === 'supplier_payment') totalOut += t.amount; if(t.type === 'purchase_stock') totalOut += t.paid; } });
+                    snap.forEach(d => { 
+                        const t = d.data(); const tDate = new Date(t.createdAt); 
+                        if(tDate >= start && tDate <= end) { 
+                            let amountIn = 0; let amountOut = 0;
+                            if(filter === 'all') {
+                                if(t.type === 'sale') amountIn = t.paid;
+                                else if(t.type === 'revenue' || t.type === 'debt_payment' || t.type === 'opening_balance') amountIn = t.amount;
+                                else if(t.type === 'purchase_stock') amountOut = t.paid;
+                                else if(t.type === 'expense' || t.type === 'salary_payment' || t.type === 'supplier_payment') amountOut = t.amount;
+                            } else if (filter === 'cash') {
+                                if(t.cashAmount > 0) {
+                                    if(t.type === 'sale' || t.type === 'revenue' || t.type === 'debt_payment') amountIn = t.cashAmount;
+                                    else amountOut = t.cashAmount;
+                                } else if (t.type === 'expense' && t.method === 'cash') amountOut = t.amount; // Old data compatibility
+                            } else if (filter === 'bank') {
+                                if(t.bankAmount > 0) {
+                                    if(t.type === 'sale' || t.type === 'revenue' || t.type === 'debt_payment' || t.type === 'opening_balance') amountIn = t.bankAmount;
+                                    else amountOut = t.bankAmount;
+                                }
+                            }
+                            if(amountIn > 0 || amountOut > 0) {
+                                txs.push({ ...t, fIn: amountIn, fOut: amountOut });
+                                totalIn += amountIn; totalOut += amountOut;
+                            }
+                        } 
+                    });
                     txs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); const net = totalIn - totalOut;
                     let h = `<table style="width:100%; font-size:13px;"><thead><tr><th>Type</th><th>Ref</th><th>Val</th></tr></thead><tbody>`;
-                    txs.forEach(t => { let typeLabel = t.type; let refLabel = t.note || (t.invNum ? t.invNum : '-'); let val = 0; let color = 'black'; if(['sale','revenue','debt_payment'].includes(t.type)) { val = t.type==='sale'?t.paid:t.amount; color = 'green'; } else { val = t.type==='purchase_stock'?t.paid:t.amount; color = 'red'; } h += `<tr><td>${typeLabel}</td><td>${refLabel}</td><td style="color:${color}">${val.toLocaleString()}</td></tr>`; }); h += '</tbody></table>';
-                    container.innerHTML = `<div class="card" style="background:#eef2ff; border:1px solid var(--primary); text-align:center;"><h3>${label}</h3><div class="grid-stats"><div><h4>${this.t('total_in')}</h4><span style="color:green;font-weight:bold;font-size:1.2em">${totalIn.toLocaleString()}</span></div><div><h4>${this.t('total_out')}</h4><span style="color:red;font-weight:bold;font-size:1.2em">${totalOut.toLocaleString()}</span></div><div><h4>${this.t('net_cash')}</h4><h2 style="color:${net>=0?'green':'red'}">${net.toLocaleString()}</h2></div></div></div><div class="card"><h3>${this.t('rep_det_all')}</h3><div class="table-scroll" style="max-height:400px; overflow-y:auto">${h}</div></div>`;
+                    txs.forEach(t => { 
+                        let typeLabel = t.type; let refLabel = t.note || (t.invNum ? t.invNum : '-'); 
+                        let val = t.fIn > 0 ? t.fIn : t.fOut; let color = t.fIn > 0 ? 'green' : 'red';
+                        h += `<tr><td>${typeLabel}</td><td>${refLabel}</td><td style="color:${color}">${val.toLocaleString()}</td></tr>`; 
+                    }); h += '</tbody></table>';
+                    container.innerHTML = `<div class="card" style="background:#eef2ff; border:1px solid var(--primary); text-align:center;"><h3>${label} (${filter.toUpperCase()})</h3><div class="grid-stats"><div><h4>${this.t('total_in')}</h4><span style="color:green;font-weight:bold;font-size:1.2em">${totalIn.toLocaleString()}</span></div><div><h4>${this.t('total_out')}</h4><span style="color:red;font-weight:bold;font-size:1.2em">${totalOut.toLocaleString()}</span></div><div><h4>${this.t('net_cash')}</h4><h2 style="color:${net>=0?'green':'red'}">${net.toLocaleString()}</h2></div></div></div><div class="card"><h3>${this.t('rep_det_all')}</h3><div class="table-scroll" style="max-height:400px; overflow-y:auto">${h}</div></div>`;
                 } catch(e) { container.innerHTML = `<p style="color:red">Error: ${e.message}</p>`; }
             },
             admin: async function(div) { div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-box"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; s.forEach(d=>{ const v=d.data(); const comp = v.actualName || v.targetCompanyName || '-'; const ph = v.actualPhone || v.targetPhone || '-'; const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; const stopBtnText = v.status === 'active' ? 'إيقاف' : 'تفعيل'; b+=`<tr><td>${this.formatDate(v.createdAt)}</td><td style="font-family:monospace;font-weight:bold">${v.code}</td><td>${comp}</td><td style="color:var(--primary);font-weight:bold">${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_renew')}</button> <button onclick="app.toggleStatus('${d.id}', '${v.status}')" class="btn btn-warn" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${stopBtnText}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_del')}</button></td></tr>`; }); document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; },
