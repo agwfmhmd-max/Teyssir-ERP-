@@ -19,6 +19,9 @@
     <!-- PDF Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -36,6 +39,11 @@
         .ac-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
         .ac-item:hover { background: #f0f4ff; color: var(--primary); }
         .ac-item:last-child { border-bottom: none; }
+        
+        /* Charts Styles */
+        .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .chart-box { background: white; padding: 15px; border-radius: 15px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .chart-box h4 { margin-top: 0; color: var(--primary); text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -138,6 +146,13 @@
     <div id="printArea" class="print-box"></div>
 
     <script>
+        // --- Service Worker Registration for Offline Mode ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('SW failed', err));
+            });
+        }
+
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn=document.getElementById('installBtn'); if(btn) btn.style.display = 'block'; });
         const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
@@ -192,7 +207,7 @@
                 rep_daily: "التقرير المالي", rep_filter: "عرض التقرير", rep_det_all: "سجل العمليات التفصيلي",
                 total_in: "الداخل (إيراد)", total_out: "الخارج (مصروف)", net_cash: "الصافي",
                 th_inv_no: "رقم الفاتورة", adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
-                adm_gen: "توليد رمز جديد", adm_renew: "تجديد ($)", adm_pay_hist: "سجل الدفعات",
+                adm_gen: "توليد رمز جديد", adm_renew: "تجديد (MRU)", adm_pay_hist: "سجل الدفعات",
                 msg_sus: "تم تعطيل الحساب من الإدارة.", msg_exp: "انتهى الاشتراك. يرجى التجديد.", msg_warn: "تحذير: اشتراكك ينتهي قريباً.",
                 sub_day: "يومي", sub_week: "أسبوعي", sub_month: "شهري", sub_year: "سنوي",
                 adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف",
@@ -205,7 +220,8 @@
                 sal_fixed: "الراتب الثابت", sal_total: "إجمالي المدفوع", sal_file: "ملف الرواتب",
                 sal_rec: "سجل الرواتب", sal_date: "التاريخ", sal_amount: "المبلغ", sal_method: "الطريقة", sal_note: "ملاحظات",
                 sal_back: "عودة", sal_pay_btn: "دفع راتب", sal_pdf: "كشف PDF", sal_none: "لا يوجد سجل رواتب",
-                sal_total_all: "المجموع الكلي", sal_emp: "الموظف", search: "بحث..."
+                sal_total_all: "المجموع الكلي", sal_emp: "الموظف", search: "بحث...",
+                chart_fin: "الأداء المالي", chart_pay: "توزيع الدفع", chart_prod: "المنتجات الأكثر مبيعاً"
             },
             fr: {
                 title: "Teyssir ERP", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
@@ -231,7 +247,7 @@
                 rep_daily: "Rapport Financier", rep_filter: "Afficher", rep_det_all: "Détails Transactions",
                 total_in: "Entrées", total_out: "Sorties", net_cash: "Net",
                 th_inv_no: "N° Facture", adm_time: "Date", adm_comp: "Société", adm_phone: "Tél", adm_code: "Code", adm_stat: "Statut", adm_act: "Action",
-                adm_gen: "Générer", adm_renew: "Renouveler", adm_pay_hist: "Historique",
+                adm_gen: "Générer", adm_renew: "Renouveler (MRU)", adm_pay_hist: "Historique",
                 msg_sus: "Compte suspendu.", msg_exp: "Abonnement expiré.", msg_warn: "Attention: Expire bientôt.",
                 sub_day: "Jour", sub_week: "Hebdo", sub_month: "Mois", sub_year: "Année",
                 adm_stop: "Stop", adm_start: "Start", adm_del: "Del",
@@ -244,13 +260,15 @@
                 sal_fixed: "Salaire Fixe", sal_total: "Total Payé", sal_file: "Dossier",
                 sal_rec: "Historique", sal_date: "Date", sal_amount: "Montant", sal_method: "Méthode", sal_note: "Note",
                 sal_back: "Retour", sal_pay_btn: "Payer", sal_pdf: "PDF", sal_none: "Aucun historique",
-                sal_total_all: "Total Général", sal_emp: "Employé", search: "Chercher..."
+                sal_total_all: "Total Général", sal_emp: "Employé", search: "Chercher...",
+                chart_fin: "Performance Financière", chart_pay: "Répartition Paiements", chart_prod: "Produits Top"
             }
         };
 
         const app = {
             state: { cid:null, name:'', phone:'', admin:false, lang:'ar', codeDocId: null, expiryDate: null, currentView: 'home' },
             cart: [], cachedProducts: [], listeners: [], cache: {},
+            charts: {}, // Store charts instances
 
             init: function() {
                 this.showLoader(); updateStatus();
@@ -1280,42 +1298,129 @@
                 const docDefinition = { pageSize: 'A4', pageMargins: [20, 20, 20, 20], defaultStyle: { font: 'Tajawal', fontSize: 10, direction: 'rtl' }, content: [ { columns: [ { text: this.state.name, fontSize: 16, bold: true, alignment: 'right', width: '*' }, { text: 'Statement of Account', fontSize: 14, bold: true, alignment: 'center', width: '*' }, { text: new Date().toLocaleDateString(), alignment: 'left', width: '*' } ], margin: [0, 0, 0, 20] }, { text: `${type}: ${name}`, fontSize: 12, bold: true, margin: [0, 0, 0, 10], alignment: 'right' }, { table: { headerRows: 1, widths: ['auto', '*', 'auto', 'auto', 'auto'], body: [ [ { text: 'Date', bold: true, fillColor: '#eeeeee' }, { text: 'Description', bold: true, fillColor: '#eeeeee', alignment:'right' }, { text: 'In (+)', bold: true, fillColor: '#eeeeee' }, { text: 'Out (-)', bold: true, fillColor: '#eeeeee' }, { text: 'Balance', bold: true, fillColor: '#eeeeee' } ], ...data.map(item => [ item.date, { text: item.desc, alignment: 'right' }, { text: item.in.toString(), color: 'green' }, { text: item.out.toString(), color: 'red' }, { text: item.bal.toLocaleString(), bold: true } ]) ] }, layout: 'lightHorizontalLines' }, { text: `Generated by Teyssir ERP`, fontSize: 8, color: 'gray', margin: [0, 20, 0, 0], alignment: 'center' } ] }; pdfMake.createPdf(docDefinition).download(`Statement_${name}.pdf`);
             },
             reprint: function(id, c, t, itemsStr, paid, debt, pm, bn) { const items = JSON.parse(decodeURIComponent(itemsStr)); this.print(id,c,t,items, paid, debt, pm, bn); },
-            print: function(id, c, t, items, paid, debt, pm, bn) { const dir = this.state.lang==='ar'?'rtl':'ltr'; const formattedDate = this.formatDate(new Date().toISOString()); const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); let bankInfo = pm.includes('Bank') && bn ? `(${bn})` : ''; document.getElementById('printArea').innerHTML = `<div style="padding:20px; direction:${dir}; font-family:'Tajawal'"><center><h2>${this.state.name}</h2><p>${this.state.phone}</p></center><hr><p>INV: ${id} | ${formattedDate} <br> ${this.t('th_client')}: ${c}</p><table style="width:100%; border-collapse:collapse; text-align:center;">${headers}${rows}</table><hr><div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${this.t('p_tot')}:</span> <span>${t}</span></div><div style="display:flex; justify-content:space-between;"><span>${this.t('paid')}:</span> <span>${paid}</span></div><div style="display:flex; justify-content:space-between;"><span>${this.t('remain')}:</span> <span>${debt}</span></div><br><div style="text-align:center; font-size:12px;">Method: ${pm} ${bankInfo}</div><center><small>Teyssir ERP</small></center></div>`; window.print(); },
-            reports: async function(div) { div.innerHTML = `<h2>${this.t('rep')}</h2><div class="filters-bar"><select id="repType" class="select-box" style="width:120px;"><option value="all">${this.t('rep_all')}</option><option value="cash">${this.t('rep_cash')}</option><option value="bank">${this.t('rep_bank')}</option></select><input type="date" id="repDate" class="filter-inp"><input type="month" id="repMonth" class="filter-inp"><button onclick="app.generateReport()" class="btn btn-prim" style="width:auto; margin:0 5px;">${this.t('rep_filter')}</button></div><div id="reportContent"></div>`; },
+            print: function(id, c, t, items, paid, debt, pm, bn) { const dir = this.state.lang==='ar'?'rtl':'ltr'; const formattedDate = this.formatDate(new Date().toISOString()); const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); let bankInfo = pm.includes('Bank') && bn ? `(${bn})` : ''; document.getElementById('printArea').innerHTML = `<div style="padding:20px; direction:${dir}; font-family:'Tajawal'"><center><h2>${this.state.name}</h2><p>${this.state.phone}</p></center><hr><p>INV: ${id} | ${formattedDate} <br> ${this.t('th_client')}: ${c}</p><table style="width:100%; border-collapse:collapse; text-align:center;">${headers}${rows}</table><hr><div style="display:flex; justify-content:space-between; font-weight:bold;"><span>${this.t('p_tot')}:</span> <span>${t} MRU</span></div><div style="display:flex; justify-content:space-between;"><span>${this.t('paid')}:</span> <span>${paid} MRU</span></div><div style="display:flex; justify-content:space-between;"><span>${this.t('remain')}:</span> <span>${debt} MRU</span></div><br><div style="text-align:center; font-size:12px;">Method: ${pm} ${bankInfo}</div><center><small>Teyssir ERP</small></center></div>`; window.print(); },
+            reports: async function(div) { div.innerHTML = `<h2>${this.t('rep')}</h2><div class="filters-bar"><select id="repType" class="select-box" style="width:120px;"><option value="all">${this.t('rep_all')}</option><option value="cash">${this.t('rep_cash')}</option><option value="bank">${this.t('rep_bank')}</option></select><input type="date" id="repDate" class="filter-inp"><input type="month" id="repMonth" class="filter-inp"><button onclick="app.generateReport()" class="btn btn-prim" style="width:auto; margin:0 5px;">${this.t('rep_filter')}</button></div><div class="charts-container"><div class="chart-box"><h4>${this.t('chart_fin')}</h4><canvas id="finChart"></canvas></div><div class="chart-box"><h4>${this.t('chart_pay')}</h4><canvas id="payChart"></canvas></div><div class="chart-box"><h4>${this.t('chart_prod')}</h4><canvas id="prodChart"></canvas></div></div><div id="reportContent"></div>`; },
+            drawCharts: function(data) {
+                // Destroy old charts
+                ['finChart', 'payChart', 'prodChart'].forEach(id => {
+                    if (this.charts[id]) this.charts[id].destroy();
+                });
+
+                // Financial Chart
+                this.charts['finChart'] = new Chart(document.getElementById('finChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: [this.t('total_in'), this.t('total_out'), this.t('net_cash')],
+                        datasets: [{
+                            label: 'MRU',
+                            data: [data.totalIn, data.totalOut, data.net],
+                            backgroundColor: ['#10b981', '#ef4444', '#3b82f6']
+                        }]
+                    }
+                });
+
+                // Payment Method Chart (Sales + Revenues)
+                this.charts['payChart'] = new Chart(document.getElementById('payChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: [this.t('pay_cash'), this.t('pay_bank')],
+                        datasets: [{
+                            data: [data.cashIn, data.bankIn],
+                            backgroundColor: ['#f59e0b', '#8b5cf6']
+                        }]
+                    }
+                });
+
+                // Top Products Chart
+                this.charts['prodChart'] = new Chart(document.getElementById('prodChart'), {
+                    type: 'bar',
+                    indexAxis: 'y',
+                    data: {
+                        labels: data.topProducts.map(p => p.name),
+                        datasets: [{
+                            label: 'Qty Sold',
+                            data: data.topProducts.map(p => p.qty),
+                            backgroundColor: '#ec4899'
+                        }]
+                    }
+                });
+            },
             generateReport: async function() {
                 const dateVal = document.getElementById('repDate').value; const monthVal = document.getElementById('repMonth').value; const filter = document.getElementById('repType').value; const container = document.getElementById('reportContent'); container.innerHTML = '<div class="spinner"></div>';
                 try {
                     let start = new Date(); let end = new Date(); let label = "";
                     if(dateVal) { start = new Date(dateVal); start.setHours(0,0,0,0); end = new Date(dateVal); end.setHours(23,59,59,999); label = `Report: ${dateVal}`; } else if (monthVal) { const [y, m] = monthVal.split('-'); start = new Date(y, m-1, 1); start.setHours(0,0,0,0); end = new Date(y, m, 0); end.setHours(23,59,59,999); label = `Report: ${monthVal}`; } else { start.setHours(0,0,0,0); end.setHours(23,59,59,999); label = "Today"; }
+                    
+                    // Fetch Transactions
                     const snap = await db.collection('transactions').where('companyId','==',this.state.cid).get(); 
+                    
+                    // Fetch Invoices for Product Analysis
+                    const invSnap = await db.collection('invoices').where('companyId','==',this.state.cid).get();
+
                     let totalIn = 0; let totalOut = 0; let txs = [];
+                    let cashIn = 0; let bankIn = 0;
+                    
+                    // Process Transactions
                     snap.forEach(d => { 
                         const t = d.data(); const tDate = new Date(t.createdAt); 
                         if(tDate >= start && tDate <= end) { 
                             let amountIn = 0; let amountOut = 0;
+                            
+                            // Base amounts
+                            if(['sale', 'revenue', 'debt_payment', 'opening_balance'].includes(t.type)) {
+                                amountIn = (t.type === 'sale' ? t.paid : t.amount);
+                            } else {
+                                amountOut = (t.type === 'purchase_stock' ? t.paid : t.amount);
+                            }
+
+                            // Filter Logic
                             if(filter === 'all') {
-                                if(t.type === 'sale') amountIn = t.paid;
-                                else if(t.type === 'revenue' || t.type === 'debt_payment' || t.type === 'opening_balance') amountIn = t.amount;
-                                else if(t.type === 'purchase_stock') amountOut = t.paid;
-                                else if(t.type === 'expense' || t.type === 'salary_payment' || t.type === 'supplier_payment') amountOut = t.amount;
+                                totalIn += amountIn; totalOut += amountOut;
+                                if(amountIn > 0) { cashIn += (t.cashAmount||0); bankIn += (t.bankAmount||0); }
                             } else if (filter === 'cash') {
                                 if(t.cashAmount > 0) {
-                                    if(t.type === 'sale' || t.type === 'revenue' || t.type === 'debt_payment') amountIn = t.cashAmount;
-                                    else amountOut = t.cashAmount;
-                                } else if (t.type === 'expense' && t.method === 'cash') amountOut = t.amount; // Old data compatibility
+                                    amountIn = (amountIn > 0 ? t.cashAmount : 0);
+                                    amountOut = (amountOut > 0 ? t.cashAmount : 0);
+                                    totalIn += amountIn; totalOut += amountOut;
+                                }
                             } else if (filter === 'bank') {
                                 if(t.bankAmount > 0) {
-                                    if(t.type === 'sale' || t.type === 'revenue' || t.type === 'debt_payment' || t.type === 'opening_balance') amountIn = t.bankAmount;
-                                    else amountOut = t.bankAmount;
+                                    amountIn = (amountIn > 0 ? t.bankAmount : 0);
+                                    amountOut = (amountOut > 0 ? t.bankAmount : 0);
+                                    totalIn += amountIn; totalOut += amountOut;
                                 }
                             }
+                            
                             if(amountIn > 0 || amountOut > 0) {
                                 txs.push({ ...t, fIn: amountIn, fOut: amountOut });
-                                totalIn += amountIn; totalOut += amountOut;
                             }
                         } 
                     });
+
+                    // Process Products (from Invoices)
+                    let productStats = {};
+                    invSnap.forEach(d => {
+                        const inv = d.data(); const iDate = new Date(inv.createdAt);
+                        if(iDate >= start && iDate <= end) {
+                            if(inv.items) {
+                                inv.items.forEach(item => {
+                                    if(!productStats[item.n]) productStats[item.n] = 0;
+                                    productStats[item.n] += item.q;
+                                });
+                            }
+                        }
+                    });
+
+                    // Sort Top Products
+                    let topProducts = Object.keys(productStats).map(key => ({name: key, qty: productStats[key]}));
+                    topProducts.sort((a,b) => b.qty - a.qty);
+                    topProducts = topProducts.slice(0, 5);
+
                     txs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); const net = totalIn - totalOut;
+                    
+                    // Draw Charts
+                    app.drawCharts({ totalIn, totalOut, net, cashIn, bankIn, topProducts });
+
                     let h = `<table style="width:100%; font-size:13px;"><thead><tr><th>Type</th><th>Ref</th><th>Val</th></tr></thead><tbody>`;
                     txs.forEach(t => { 
                         let typeLabel = t.type; let refLabel = t.note || (t.invNum ? t.invNum : '-'); 
@@ -1323,7 +1428,7 @@
                         h += `<tr><td>${typeLabel}</td><td>${refLabel}</td><td style="color:${color}">${val.toLocaleString()}</td></tr>`; 
                     }); h += '</tbody></table>';
                     container.innerHTML = `<div class="card" style="background:#eef2ff; border:1px solid var(--primary); text-align:center;"><h3>${label} (${filter.toUpperCase()})</h3><div class="grid-stats"><div><h4>${this.t('total_in')}</h4><span style="color:green;font-weight:bold;font-size:1.2em">${totalIn.toLocaleString()}</span></div><div><h4>${this.t('total_out')}</h4><span style="color:red;font-weight:bold;font-size:1.2em">${totalOut.toLocaleString()}</span></div><div><h4>${this.t('net_cash')}</h4><h2 style="color:${net>=0?'green':'red'}">${net.toLocaleString()}</h2></div></div></div><div class="card"><h3>${this.t('rep_det_all')}</h3><div class="table-scroll" style="max-height:400px; overflow-y:auto">${h}</div></div>`;
-                } catch(e) { container.innerHTML = `<p style="color:red">Error: ${e.message}</p>`; }
+                } catch(e) { console.error(e); container.innerHTML = `<p style="color:red">Error: ${e.message}</p>`; }
             },
             admin: async function(div) { div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-box"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; s.forEach(d=>{ const v=d.data(); const comp = v.actualName || v.targetCompanyName || '-'; const ph = v.actualPhone || v.targetPhone || '-'; const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; const stopBtnText = v.status === 'active' ? 'إيقاف' : 'تفعيل'; b+=`<tr><td>${this.formatDate(v.createdAt)}</td><td style="font-family:monospace;font-weight:bold">${v.code}</td><td>${comp}</td><td style="color:var(--primary);font-weight:bold">${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_renew')}</button> <button onclick="app.toggleStatus('${d.id}', '${v.status}')" class="btn btn-warn" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${stopBtnText}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_del')}</button></td></tr>`; }); document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; },
             gen: async function() { const n=document.getElementById('an').value, p=document.getElementById('ap').value, dur=document.getElementById('adur').value; if(n&&p) { await db.collection('activation_codes').add({code:this.randomStr(10), targetCompanyName:n, targetPhone:p, status:'active', used:false, createdAt:new Date().toISOString(), subscriptionType: dur, paymentHistory: []}); this.nav('admin'); } },
