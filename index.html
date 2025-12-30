@@ -712,7 +712,22 @@
                 this.nav('customers'); });
             },
             
-            listBanks: async function(div) { div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('banks')}</h3><button onclick="app.addBankModal()" class="btn btn-prim" style="width:auto;">+</button></div><input id="searchBank" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchBank', 'bnkTbl')"><div class="card"><div class="table-scroll"><table id="bnkTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('banks'); let h=''; s.forEach(b => { h += `<tr><td>${b.name}</td><td>${b.balance.toLocaleString()}</td><td><button onclick="app.viewStatement('${b.id}','bank','${b.name}')" class="btn btn-prim" style="padding:5px;">${this.t('stmt')}</button> <button onclick="app.del('${b.id}', 'banks')" class="btn btn-dan" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); document.querySelector('#bnkTbl tbody').innerHTML = h || '<tr><td colspan="3">-</td></tr>'; },
+            listBanks: async function(div) {
+                div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('banks')}</h3><button onclick="app.addBankModal()" class="btn btn-prim" style="width:auto;">+</button></div><input id="searchBank" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchBank', 'bnkTbl')"><div class="card"><div class="table-scroll"><table id="bnkTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody><tr><td colspan="3">${this.t('wait')}</td></tr></tbody></table></div></div>`;
+                
+                const s = await this.getData('banks');
+                let h = '';
+                if (s && s.length > 0) {
+                    s.forEach(b => {
+                        const safeBal = (b.balance !== undefined && b.balance !== null) ? Number(b.balance) : 0;
+                        h += `<tr><td>${b.name}</td><td>${safeBal.toLocaleString()}</td><td><button onclick="app.viewStatement('${b.id}','bank','${b.name}')" class="btn btn-prim" style="padding:5px;">${this.t('stmt')}</button> <button onclick="app.del('${b.id}', 'banks')" class="btn btn-dan" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+                    });
+                }
+                
+                const tbody = div.querySelector('#bnkTbl tbody');
+                if(tbody) tbody.innerHTML = h || '<tr><td colspan="3">-</td></tr>';
+            },
+
             addBankModal: function() { 
                 this.showModal(this.t('banks'), `<input id="nbName" class="inp" placeholder="${this.t('th_name')}"><input type="number" id="nbBal" class="inp" placeholder="${this.t('balance')}">`, async () => { 
                     const n = document.getElementById('nbName').value; const b = Number(document.getElementById('nbBal').value); 
