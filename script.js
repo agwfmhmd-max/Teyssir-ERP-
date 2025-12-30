@@ -1,4 +1,4 @@
-const CACHE_NAME = 'teyssir-erp-v1';
+const CACHE_NAME = 'teyssir-erp-offline-v4';
 const ASSETS = [
     './',
     './index.html',
@@ -13,59 +13,37 @@ const ASSETS = [
     'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
-// Install Event: Cache Files
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-        .then(cache => {
-            console.log('Opened cache');
-            return cache.addAll(ASSETS);
-        })
+        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
     );
 });
 
-// Activate Event: Cleanup Old Caches
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cache => {
-                    if (cache !== CACHE_NAME) {
-                        return caches.delete(cache);
-                    }
-                })
-            );
-        })
+        caches.keys().then(keys => Promise.all(
+            keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null)
+        ))
     );
 });
 
-// Fetch Event: Network First, then Cache
 self.addEventListener('fetch', event => {
-    // Skip non-GET requests or Firebase API calls (let Firebase SDK handle offline)
-    if (event.request.method !== 'GET' || event.request.url.includes('googleapis.com')) {
+    // استثناء طلبات Firebase (تتم معالجتها عبر IndexedDB الخاص بـ SDK)
+    if (event.request.url.includes('firestore.googleapis.com') || event.request.url.includes('google.com')) {
         return;
     }
 
     event.respondWith(
-        fetch(event.request)
-        .then(response => {
-            // Check if valid response
-            if (!response || response.status !== 200 || response.type !== 'basic' && !response.url.includes('cdn') && !response.url.includes('fonts')) {
-                return response;
-            }
-
-            // Clone response to cache
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-            .then(cache => {
-                cache.put(event.request, responseToCache);
+        caches.match(event.request).then(cachedResponse => {
+            return cachedResponse || fetch(event.request).then(networkResponse => {
+                return caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, networkResponse.clone());
+                    return networkResponse;
+                });
             });
-
-            return response;
-        })
-        .catch(() => {
-            // If offline, return from cache
-            return caches.match(event.request);
+        }).catch(() => {
+            // في حالة عدم الاتصال وعدم وجود كاش
+            return null;
         })
     );
 });

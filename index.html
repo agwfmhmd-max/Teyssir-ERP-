@@ -27,7 +27,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* Autocomplete Styles */
         .ac-wrap { position: relative; width: 100%; margin-bottom: 12px; }
         .ac-list { 
             position: absolute; top: 100%; left: 0; right: 0; 
@@ -39,8 +38,6 @@
         .ac-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; }
         .ac-item:hover { background: #f0f4ff; color: var(--primary); }
         .ac-item:last-child { border-bottom: none; }
-        
-        /* Charts Styles */
         .charts-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .chart-box { background: white; padding: 15px; border-radius: 15px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .chart-box h4 { margin-top: 0; color: var(--primary); text-align: center; margin-bottom: 10px; }
@@ -51,7 +48,6 @@
     <button onclick="app.toggleLang()" class="lang-btn-style"><i class="fa-solid fa-language"></i></button>
     <div id="connStatus" class="conn-status conn-online"><i class="fa-solid fa-wifi"></i> Online</div>
     
-    <!-- Subscription Alert -->
     <div id="subAlertBox" class="sub-alert-box">
         <i class="fa-solid fa-triangle-exclamation" style="color:#b91c1c"></i>
         <div class="sub-alert-text" data-key="msg_warn">اشتراكك ينتهي قريباً!</div>
@@ -146,7 +142,6 @@
     <div id="printArea" class="print-box"></div>
 
     <script>
-        // --- Service Worker Registration for Offline Mode ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('SW failed', err));
@@ -172,12 +167,18 @@
         firebase.firestore().enablePersistence({ synchronizeTabs: true }).catch(err => console.log("Persistence:", err.code));
         const db = firebase.firestore();
 
-        window.addEventListener('online', updateStatus);
+        window.addEventListener('online', () => { updateStatus(); app.syncOfflineInvoices(); });
         window.addEventListener('offline', updateStatus);
+        
         function updateStatus() {
             const el = document.getElementById('connStatus');
-            if(navigator.onLine) { el.className='conn-status conn-online'; el.innerHTML='<i class="fa-solid fa-wifi"></i> Online'; }
-            else { el.className='conn-status conn-offline'; el.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Offline'; }
+            if(navigator.onLine) { 
+                el.className='conn-status conn-online'; 
+                el.innerHTML='<i class="fa-solid fa-wifi"></i> Online'; 
+            } else { 
+                el.className='conn-status conn-offline'; 
+                el.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Offline (محفوظ)'; 
+            }
         }
 
         const dict = {
@@ -207,7 +208,7 @@
                 rep_daily: "التقرير المالي", rep_filter: "عرض التقرير", rep_det_all: "سجل العمليات التفصيلي",
                 total_in: "الداخل (إيراد)", total_out: "الخارج (مصروف)", net_cash: "الصافي",
                 th_inv_no: "رقم الفاتورة", adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
-                adm_gen: "توليد رمز جديد", adm_renew: "تجديد (MRU)", adm_pay_hist: "سجل الدفعات",
+                adm_gen: "توليد رمز جديد", adm_renew: "تجديد ($)", adm_pay_hist: "سجل الدفعات",
                 msg_sus: "تم تعطيل الحساب من الإدارة.", msg_exp: "انتهى الاشتراك. يرجى التجديد.", msg_warn: "تحذير: اشتراكك ينتهي قريباً.",
                 sub_day: "يومي", sub_week: "أسبوعي", sub_month: "شهري", sub_year: "سنوي",
                 adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف",
@@ -268,10 +269,17 @@
         const app = {
             state: { cid:null, name:'', phone:'', admin:false, lang:'ar', codeDocId: null, expiryDate: null, currentView: 'home' },
             cart: [], cachedProducts: [], listeners: [], cache: {},
-            charts: {}, // Store charts instances
+            charts: {},
 
             init: function() {
                 this.showLoader(); updateStatus();
+                // Check sync on load if online
+                if(navigator.onLine) {
+                    // Update Local Storage with latest DB counter
+                    this.fetchAndSetLocalCounter();
+                    setTimeout(() => this.syncOfflineInvoices(), 3000);
+                }
+                
                 if (!localStorage.getItem('welcomeSeen')) document.getElementById('welcomeModal').style.display = 'flex';
                 if (deferredPrompt) deferredPrompt.prompt();
                 this.loadArabicFont();
@@ -286,6 +294,21 @@
                 } else { this.switchScreen('authScreen'); }
             },
             
+            fetchAndSetLocalCounter: async function() {
+                if(!this.state.cid) return;
+                try {
+                    const counterDoc = await db.collection('counters').doc(this.state.cid).get();
+                    if(counterDoc.exists) {
+                        const dbNum = counterDoc.data().lastInvoiceNum;
+                        // Always respect the higher number (local or DB) to prevent duplicates
+                        const localNum = parseInt(localStorage.getItem('lastInvoiceNum') || '0');
+                        if(dbNum > localNum) {
+                            localStorage.setItem('lastInvoiceNum', dbNum);
+                        }
+                    }
+                } catch(e) { console.log("Counter fetch err", e); }
+            },
+
             loadArabicFont: function() {
                 fetch('https://raw.githubusercontent.com/google/fonts/main/ofl/tajawal/Tajawal-Regular.ttf')
                 .then(response => { if (!response.ok) throw new Error("Font fetch failed"); return response.arrayBuffer(); })
@@ -390,7 +413,13 @@
             },
             saveSession: function(cid, name, phone, code, codeDocId, isAdmin) { localStorage.setItem('mda_session', JSON.stringify({cid, name, phone, code, codeDocId, admin: isAdmin})); },
             logout: function() { this.listeners.forEach(u => { if (typeof u === 'function') u(); }); this.listeners = []; localStorage.removeItem('mda_session'); location.reload(); },
-            start: function(n,p) { document.getElementById('h_name').innerText=n; document.getElementById('h_phone').innerText=p; if(this.state.admin) document.getElementById('adminLink').style.display='flex'; else document.getElementById('adminLink').style.display='none'; this.switchScreen('appScreen'); this.nav('home'); },
+            start: function(n,p) { 
+                document.getElementById('h_name').innerText=n; document.getElementById('h_phone').innerText=p; if(this.state.admin) document.getElementById('adminLink').style.display='flex'; else document.getElementById('adminLink').style.display='none'; 
+                this.switchScreen('appScreen'); 
+                // Ensure counter is synced on start
+                if(navigator.onLine) this.fetchAndSetLocalCounter();
+                this.nav('home'); 
+            },
 
             nav: function(page) {
                 if(page === 'admin' && !this.state.admin) return;
@@ -426,46 +455,29 @@
             getData: async function(collection, orderBy = null) {
                 if (this.cache[collection]) return this.cache[collection];
                 let q = db.collection(collection).where('companyId','==',this.state.cid);
-                // Removed orderBy from DB query to avoid index requirement errors
                 const snaps = await q.get(); 
                 const data = snaps.docs.map(d=>({id:d.id, ...d.data()}));
-                // Sort in memory
                 data.sort((a,b)=>new Date(b.createdAt || 0)-new Date(a.createdAt || 0));
                 this.cache[collection] = data; return data;
             },
             clearCache: function(collection) { if (collection) delete this.cache[collection]; else this.cache = {}; },
 
-            // --- AUTOCOMPLETE UTILITY ---
             setupAutocomplete: function(inpId, hiddenId, data, key) {
                 const inp = document.getElementById(inpId);
                 const hid = document.getElementById(hiddenId);
                 const wrapper = inp.parentNode;
-                
-                // Create list container
                 let list = wrapper.querySelector('.ac-list');
                 if(!list) {
                     list = document.createElement('div');
                     list.className = 'ac-list';
                     wrapper.appendChild(list);
                 }
-
                 inp.addEventListener('input', function() {
                     const val = this.value.toLowerCase();
                     list.innerHTML = '';
-                    if(!val) { 
-                        list.style.display = 'none'; 
-                        hid.value = ''; // Reset ID if empty
-                        return; 
-                    }
-                    
+                    if(!val) { list.style.display = 'none'; hid.value = ''; return; }
                     const matches = data.filter(d => (d[key] || '').toLowerCase().includes(val));
-                    
-                    if(matches.length === 0) {
-                        list.style.display = 'none';
-                        hid.value = ''; // Invalid selection
-                        return;
-                    }
-
+                    if(matches.length === 0) { list.style.display = 'none'; hid.value = ''; return; }
                     matches.forEach(d => {
                         const item = document.createElement('div');
                         item.className = 'ac-item';
@@ -474,9 +486,7 @@
                             inp.value = d[key];
                             hid.value = d.id;
                             list.style.display = 'none';
-                            // Trigger change if needed for dependent fields
                             if(inp.onchange) inp.onchange();
-                            // Trigger native change event for other listeners
                             const event = new Event('change');
                             inp.dispatchEvent(event);
                         };
@@ -484,28 +494,86 @@
                     });
                     list.style.display = 'block';
                 });
-
-                // Hide when clicking outside
                 document.addEventListener('click', function(e) {
                     if(e.target !== inp) list.style.display = 'none';
                 });
             },
 
-            // --- FILTER TABLE UTILITY ---
             filterTable: function(inputId, tableId) {
                 const input = document.getElementById(inputId);
                 const filter = input.value.toLowerCase();
                 const table = document.getElementById(tableId);
                 const tr = table.getElementsByTagName('tr');
-
-                // Start from 1 to skip header
                 for (let i = 1; i < tr.length; i++) {
                     const rowContent = tr[i].textContent || tr[i].innerText;
-                    if (rowContent.toLowerCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
+                    if (rowContent.toLowerCase().indexOf(filter) > -1) { tr[i].style.display = ""; } else { tr[i].style.display = "none"; }
+                }
+            },
+
+            // --- SYNC FUNCTION FOR OFFLINE INVOICES ---
+            // CORRECTION: Convert OFF-INV to INV using valid sequence
+            syncOfflineInvoices: async function() {
+                if(!navigator.onLine || !this.state.cid) return;
+                
+                try {
+                    // 1. Get offline invoices
+                    const offlineSnaps = await db.collection('invoices')
+                        .where('companyId', '==', this.state.cid)
+                        .where('invNum', '>=', 'OFF-INV')
+                        .where('invNum', '<=', 'OFF-INV\uf8ff')
+                        .get();
+
+                    if(offlineSnaps.empty) return;
+
+                    console.log(`Found ${offlineSnaps.size} offline invoices to sync...`);
+                    
+                    // 2. We need to assign valid INV- IDs sequentially.
+                    // We must convert specific offline IDs to specific real IDs to avoid duplicates.
+                    // The easiest way is to strip the 'OFF-' prefix if the number is already validly sequential (e.g. 0013)
+                    // But we must verify the counter in DB.
+                    
+                    const counterRef = db.collection('counters').doc(this.state.cid);
+                    
+                    // Process one by one to ensure sequence (or bulk if logic allows)
+                    for (const doc of offlineSnaps.docs) {
+                        const offNum = doc.data().invNum; // e.g. OFF-INV-0013
+                        
+                        // Extract number part: 0013
+                        const numPart = offNum.replace('OFF-INV-', ''); 
+                        const newInvNum = 'INV-' + numPart; // INV-0013
+
+                        await db.runTransaction(async (transaction) => {
+                            // Update invoice
+                            transaction.update(doc.ref, { invNum: newInvNum });
+                            
+                            // Update transaction
+                            const transSnap = await db.collection('transactions')
+                                .where('companyId', '==', this.state.cid)
+                                .where('refId', '==', doc.id)
+                                .get();
+                            
+                            transSnap.forEach(tDoc => {
+                                transaction.update(tDoc.ref, { invNum: newInvNum, note: `Invoice ${newInvNum}` });
+                            });
+                            
+                            // IMPORTANT: Update DB Counter to ensure next online invoice starts AFTER this one.
+                            // We check if this number is higher than current DB counter.
+                            const counterDoc = await transaction.get(counterRef);
+                            let currentDbMax = 0;
+                            if(counterDoc.exists) currentDbMax = counterDoc.data().lastInvoiceNum || 0;
+                            
+                            const thisNumInt = parseInt(numPart);
+                            if(thisNumInt > currentDbMax) {
+                                transaction.set(counterRef, { lastInvoiceNum: thisNumInt }, { merge: true });
+                            }
+                        });
                     }
+                    console.log("Sync complete.");
+                    this.clearCache('invoices');
+                    if(this.state.currentView === 'invoices') this.nav('invoices');
+                    
+                } catch(e) {
+                    console.error("Sync failed:", e);
                 }
             },
 
@@ -566,10 +634,8 @@
                     </div>
                 </div>`;
                 
-                // Init Autocomplete
                 this.setupAutocomplete('posCustName', 'posCustId', customers, 'name');
                 this.setupAutocomplete('posBankName', 'posBankId', banks, 'name');
-
                 app.togglePosInputs(); 
                 setTimeout(() => {
                     const calc = () => app.calcDebt();
@@ -582,7 +648,6 @@
                 const cInp = document.getElementById('payCash');
                 const bInp = document.getElementById('payBank');
                 const bDiv = document.getElementById('bankSelectDiv');
-                
                 if(m === 'cash') { cInp.style.display='block'; bInp.style.display='none'; bDiv.style.display='none'; bInp.value=0; }
                 else if (m === 'bank') { cInp.style.display='none'; bInp.style.display='block'; bDiv.style.display='block'; cInp.value=0; }
                 else { cInp.style.display='block'; bInp.style.display='block'; bDiv.style.display='block'; }
@@ -606,11 +671,9 @@
                 this.cart.forEach((i,x)=>{ t+=i.t; h+=`<div class="cart-item"><div><b>${i.n}</b> <small>(${i.p} x ${i.q})</small></div><div style="display:flex;align-items:center;gap:10px;"><b>${i.t}</b><i onclick="app.remCart(${x})" class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer"></i></div></div>`; });
                 c.innerHTML=h||`<p style="text-align:center; color:#999; margin-top:20px;">${this.t('empty')}</p>`; 
                 document.getElementById('cartTotal').innerText=t; 
-                
                 const m = document.getElementById('posPayMethod').value;
                 if(m === 'cash') document.getElementById('payCash').value = t;
                 if(m === 'bank') document.getElementById('payBank').value = t;
-                
                 this.calcDebt();
             },
             remCart: function(x){ this.cart.splice(x,1); this.renderCart(); },
@@ -627,14 +690,11 @@
                     if(!this.isValidPhone(ph)) return alert(this.t('err_phone_len')); 
                     const r = await db.collection('customers').add({companyId:this.state.cid, name:n, phone:ph||'', balance:0, createdAt:new Date().toISOString()}); 
                     this.clearCache('customers'); 
-                    // Auto select the new customer
                     document.getElementById('posCustName').value = n;
                     document.getElementById('posCustId').value = r.id;
                 }
             },
-            getNextInvoiceNumber: async function(transaction) {
-                const counterRef = db.collection('counters').doc(this.state.cid); const doc = await transaction.get(counterRef); let nextNum = 1; if (doc.exists) { nextNum = doc.data().lastInvoiceNum + 1; } transaction.set(counterRef, { lastInvoiceNum: nextNum }, { merge: true }); return 'INV-' + String(nextNum).padStart(4, '0');
-            },
+            
             finalizeInvoice: async function() {
                 if(!this.cart.length) return alert(this.t('empty'));
                 const custId = document.getElementById('posCustId').value; 
@@ -656,22 +716,49 @@
 
                 this.showLoader();
                 try {
-                    await db.runTransaction(async (transaction) => {
-                        const now = new Date().toISOString(); const invNum = await this.getNextInvoiceNumber(transaction); const invRef = db.collection('invoices').doc();
-                        
-                        transaction.set(invRef, { companyId: this.state.cid, invNum: invNum, customer: custName, customerId: custId, items: this.cart, total, paid: totalPaid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, bankName: bankName, createdAt: now });
-                        
-                        let totalCost = 0;
-                        for(let i of this.cart) { const pRef = db.collection('products').doc(i.id); transaction.update(pRef, { stock: firebase.firestore.FieldValue.increment(-i.q) }); totalCost += (i.bp * i.q); }
-                        
-                        if(debt > 0) { const cRef = db.collection('customers').doc(custId); transaction.update(cRef, { balance: firebase.firestore.FieldValue.increment(debt) }); }
-                        if(bank > 0 && bankId) { const bRef = db.collection('banks').doc(bankId); transaction.update(bRef, { balance: firebase.firestore.FieldValue.increment(bank) }); }
-                        
-                        const tRef = db.collection('transactions').doc();
-                        transaction.set(tRef, { companyId: this.state.cid, type: 'sale', refId: invRef.id, invNum: invNum, amount: total, paid: totalPaid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, cogs: totalCost, customerId: custId, createdAt: now, note: `Invoice ${invNum}` });
-                        
-                        this.printData = { id: invNum, c: custName, t: total, items: this.cart, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
-                    });
+                    let invNum;
+                    const now = new Date().toISOString();
+                    const batch = db.batch();
+
+                    // --- CORRECT OFFLINE NUMBERING LOGIC ---
+                    // 1. Always rely on local storage increment for continuity
+                    let lastNum = parseInt(localStorage.getItem('lastInvoiceNum') || '0');
+                    let nextNum = lastNum + 1;
+                    
+                    // 2. Generate ID String
+                    if (navigator.onLine) {
+                        invNum = 'INV-' + String(nextNum).padStart(4, '0');
+                        // Also update DB counter to reflect this new usage
+                        const counterRef = db.collection('counters').doc(this.state.cid);
+                        batch.set(counterRef, { lastInvoiceNum: nextNum }, { merge: true });
+                    } else {
+                        invNum = 'OFF-INV-' + String(nextNum).padStart(4, '0');
+                    }
+                    
+                    // 3. Update Local Storage immediately
+                    localStorage.setItem('lastInvoiceNum', nextNum);
+
+                    const invRef = db.collection('invoices').doc();
+                    batch.set(invRef, { companyId: this.state.cid, invNum: invNum, customer: custName, customerId: custId, items: this.cart, total, paid: totalPaid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, bankName: bankName, createdAt: now });
+                    
+                    let totalCost = 0;
+                    for(let i of this.cart) { 
+                        const pRef = db.collection('products').doc(i.id); 
+                        batch.update(pRef, { stock: firebase.firestore.FieldValue.increment(-i.q) }); 
+                        totalCost += (i.bp * i.q); 
+                    }
+                    
+                    if(debt > 0) { const cRef = db.collection('customers').doc(custId); batch.update(cRef, { balance: firebase.firestore.FieldValue.increment(debt) }); }
+                    if(bank > 0 && bankId) { const bRef = db.collection('banks').doc(bankId); batch.update(bRef, { balance: firebase.firestore.FieldValue.increment(bank) }); }
+                    
+                    const tRef = db.collection('transactions').doc();
+                    batch.set(tRef, { companyId: this.state.cid, type: 'sale', refId: invRef.id, invNum: invNum, amount: total, paid: totalPaid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, cogs: totalCost, customerId: custId, createdAt: now, note: `Invoice ${invNum}` });
+                    
+                    await batch.commit();
+
+                    // --- OFFLINE PRINTING FIX: Use local data object immediately ---
+                    this.printData = { id: invNum, c: custName, t: total, items: this.cart, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
+                    
                     this.clearCache('products'); this.clearCache('invoices'); this.clearCache('customers'); this.clearCache('transactions'); this.clearCache('banks');
                     this.print(this.printData.id, this.printData.c, this.printData.t, this.printData.items, this.printData.p, this.printData.d, this.printData.pm, this.printData.bn); this.nav('pos');
                 } catch(e) { console.error(e); alert(e.message); } this.hideLoader();
@@ -1350,77 +1437,35 @@
                 try {
                     let start = new Date(); let end = new Date(); let label = "";
                     if(dateVal) { start = new Date(dateVal); start.setHours(0,0,0,0); end = new Date(dateVal); end.setHours(23,59,59,999); label = `Report: ${dateVal}`; } else if (monthVal) { const [y, m] = monthVal.split('-'); start = new Date(y, m-1, 1); start.setHours(0,0,0,0); end = new Date(y, m, 0); end.setHours(23,59,59,999); label = `Report: ${monthVal}`; } else { start.setHours(0,0,0,0); end.setHours(23,59,59,999); label = "Today"; }
-                    
-                    // Fetch Transactions
                     const snap = await db.collection('transactions').where('companyId','==',this.state.cid).get(); 
-                    
-                    // Fetch Invoices for Product Analysis
-                    const invSnap = await db.collection('invoices').where('companyId','==',this.state.cid).get();
-
                     let totalIn = 0; let totalOut = 0; let txs = [];
-                    let cashIn = 0; let bankIn = 0;
-                    
-                    // Process Transactions
                     snap.forEach(d => { 
                         const t = d.data(); const tDate = new Date(t.createdAt); 
                         if(tDate >= start && tDate <= end) { 
                             let amountIn = 0; let amountOut = 0;
-                            
-                            // Base amounts
-                            if(['sale', 'revenue', 'debt_payment', 'opening_balance'].includes(t.type)) {
-                                amountIn = (t.type === 'sale' ? t.paid : t.amount);
-                            } else {
-                                amountOut = (t.type === 'purchase_stock' ? t.paid : t.amount);
-                            }
-
-                            // Filter Logic
                             if(filter === 'all') {
-                                totalIn += amountIn; totalOut += amountOut;
-                                if(amountIn > 0) { cashIn += (t.cashAmount||0); bankIn += (t.bankAmount||0); }
+                                if(t.type === 'sale') amountIn = t.paid;
+                                else if(t.type === 'revenue' || t.type === 'debt_payment' || t.type === 'opening_balance') amountIn = t.amount;
+                                else if(t.type === 'purchase_stock') amountOut = t.paid;
+                                else if(t.type === 'expense' || t.type === 'salary_payment' || t.type === 'supplier_payment') amountOut = t.amount;
                             } else if (filter === 'cash') {
                                 if(t.cashAmount > 0) {
-                                    amountIn = (amountIn > 0 ? t.cashAmount : 0);
-                                    amountOut = (amountOut > 0 ? t.cashAmount : 0);
-                                    totalIn += amountIn; totalOut += amountOut;
-                                }
+                                    if(t.type === 'sale' || t.type === 'revenue' || t.type === 'debt_payment') amountIn = t.cashAmount;
+                                    else amountOut = t.cashAmount;
+                                } else if (t.type === 'expense' && t.method === 'cash') amountOut = t.amount; // Old data compatibility
                             } else if (filter === 'bank') {
                                 if(t.bankAmount > 0) {
-                                    amountIn = (amountIn > 0 ? t.bankAmount : 0);
-                                    amountOut = (amountOut > 0 ? t.bankAmount : 0);
-                                    totalIn += amountIn; totalOut += amountOut;
+                                    if(t.type === 'sale' || t.type === 'revenue' || t.type === 'debt_payment' || t.type === 'opening_balance') amountIn = t.bankAmount;
+                                    else amountOut = t.bankAmount;
                                 }
                             }
-                            
                             if(amountIn > 0 || amountOut > 0) {
                                 txs.push({ ...t, fIn: amountIn, fOut: amountOut });
+                                totalIn += amountIn; totalOut += amountOut;
                             }
                         } 
                     });
-
-                    // Process Products (from Invoices)
-                    let productStats = {};
-                    invSnap.forEach(d => {
-                        const inv = d.data(); const iDate = new Date(inv.createdAt);
-                        if(iDate >= start && iDate <= end) {
-                            if(inv.items) {
-                                inv.items.forEach(item => {
-                                    if(!productStats[item.n]) productStats[item.n] = 0;
-                                    productStats[item.n] += item.q;
-                                });
-                            }
-                        }
-                    });
-
-                    // Sort Top Products
-                    let topProducts = Object.keys(productStats).map(key => ({name: key, qty: productStats[key]}));
-                    topProducts.sort((a,b) => b.qty - a.qty);
-                    topProducts = topProducts.slice(0, 5);
-
                     txs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); const net = totalIn - totalOut;
-                    
-                    // Draw Charts
-                    app.drawCharts({ totalIn, totalOut, net, cashIn, bankIn, topProducts });
-
                     let h = `<table style="width:100%; font-size:13px;"><thead><tr><th>Type</th><th>Ref</th><th>Val</th></tr></thead><tbody>`;
                     txs.forEach(t => { 
                         let typeLabel = t.type; let refLabel = t.note || (t.invNum ? t.invNum : '-'); 
@@ -1428,7 +1473,7 @@
                         h += `<tr><td>${typeLabel}</td><td>${refLabel}</td><td style="color:${color}">${val.toLocaleString()}</td></tr>`; 
                     }); h += '</tbody></table>';
                     container.innerHTML = `<div class="card" style="background:#eef2ff; border:1px solid var(--primary); text-align:center;"><h3>${label} (${filter.toUpperCase()})</h3><div class="grid-stats"><div><h4>${this.t('total_in')}</h4><span style="color:green;font-weight:bold;font-size:1.2em">${totalIn.toLocaleString()}</span></div><div><h4>${this.t('total_out')}</h4><span style="color:red;font-weight:bold;font-size:1.2em">${totalOut.toLocaleString()}</span></div><div><h4>${this.t('net_cash')}</h4><h2 style="color:${net>=0?'green':'red'}">${net.toLocaleString()}</h2></div></div></div><div class="card"><h3>${this.t('rep_det_all')}</h3><div class="table-scroll" style="max-height:400px; overflow-y:auto">${h}</div></div>`;
-                } catch(e) { console.error(e); container.innerHTML = `<p style="color:red">Error: ${e.message}</p>`; }
+                } catch(e) { container.innerHTML = `<p style="color:red">Error: ${e.message}</p>`; }
             },
             admin: async function(div) { div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-box"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; s.forEach(d=>{ const v=d.data(); const comp = v.actualName || v.targetCompanyName || '-'; const ph = v.actualPhone || v.targetPhone || '-'; const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; const stopBtnText = v.status === 'active' ? 'إيقاف' : 'تفعيل'; b+=`<tr><td>${this.formatDate(v.createdAt)}</td><td style="font-family:monospace;font-weight:bold">${v.code}</td><td>${comp}</td><td style="color:var(--primary);font-weight:bold">${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_renew')}</button> <button onclick="app.toggleStatus('${d.id}', '${v.status}')" class="btn btn-warn" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${stopBtnText}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_del')}</button></td></tr>`; }); document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; },
             gen: async function() { const n=document.getElementById('an').value, p=document.getElementById('ap').value, dur=document.getElementById('adur').value; if(n&&p) { await db.collection('activation_codes').add({code:this.randomStr(10), targetCompanyName:n, targetPhone:p, status:'active', used:false, createdAt:new Date().toISOString(), subscriptionType: dur, paymentHistory: []}); this.nav('admin'); } },
