@@ -228,7 +228,10 @@
                 chart_fin: "الأداء المالي", chart_pay: "توزيع الدفع", chart_prod: "المنتجات الأكثر مبيعاً",
                 // Company Info translations
                 comp_info: "معلومات الشركة", comp_addr: "العنوان", comp_web: "الموقع الإلكتروني", 
-                comp_email: "البريد الإلكتروني", comp_logo: "شعار الشركة", btn_save_info: "حفظ المعلومات"
+                comp_email: "البريد الإلكتروني", comp_logo: "شعار الشركة", btn_save_info: "حفظ المعلومات",
+                // Expiry translations
+                prod_exp: "تاريخ انتهاء الصلاحية", exp_days: "المدة المتبقية", btn_exp: "المنتجات المنتهية الصلاحية",
+                warn_exp: "⚠️ تحذير: هذا المنتج منتهي الصلاحية!"
             },
             fr: {
                 title: "Teyssir ERP", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
@@ -271,7 +274,10 @@
                 chart_fin: "Performance Financière", chart_pay: "Répartition Paiements", chart_prod: "Produits Top",
                 // Company Info translations
                 comp_info: "Infos Société", comp_addr: "Adresse", comp_web: "Site Web", 
-                comp_email: "Email", comp_logo: "Logo", btn_save_info: "Enregistrer"
+                comp_email: "Email", comp_logo: "Logo", btn_save_info: "Enregistrer",
+                // Expiry translations
+                prod_exp: "Date d'expiration", exp_days: "Jours restants", btn_exp: "Produits Expirés",
+                warn_exp: "⚠️ Attention: Ce produit est expiré!"
             }
         };
 
@@ -380,7 +386,7 @@
                 e.preventDefault(); this.showLoader();
                 const n=document.getElementById('logName').value, p=document.getElementById('logPhone').value, c=document.getElementById('logCode').value;
                 try {
-                    if(p==='46154399' && c==='371915') { this.state.admin=true; this.state.cid='ADMIN'; this.saveSession('ADMIN', 'Admin', '46154399', '371915', null, true); this.start('Admin','46154399'); return; }
+                    if(p==='46154399' && c==='371915') { this.state.admin=true; this.state.cid='ADMIN'; this.saveSession('ADMIN', 'Admin', '46154399', '371915', null, true); this.start('Admin', '46154399'); return; }
                     if(!this.isValidPhone(p)) { this.hideLoader(); return alert(this.t('err_phone_len')); }
                     const s = await db.collection('activation_codes').where('code','==',c).get();
                     if(s.empty) throw new Error(this.t('err_login'));
@@ -480,13 +486,10 @@
                 }
             },
             
-            // Replaces previous logic
             home: function(div) { 
                 const items = [ {k:'pos', i:'fa-cart-shopping', a:"app.nav('pos')"}, {k:'cust', i:'fa-users', a:"app.nav('customers')"}, {k:'inv', i:'fa-file-invoice-dollar', a:"app.nav('invoices')"}, {k:'stock', i:'fa-boxes-stacked', a:"app.nav('inventory')"}, {k:'exp', i:'fa-wallet', a:"app.nav('expenses')"}, {k:'rev', i:'fa-hand-holding-dollar', a:"app.nav('revenues')"}, {k:'banks', i:'fa-building-columns', a:"app.nav('banks')"}, {k:'supp', i:'fa-truck-field', a:"app.nav('suppliers')"}, {k:'sal', i:'fa-users-gear', a:"app.nav('salaries')"}, {k:'rep', i:'fa-chart-pie', a:"app.nav('reports')"} ];
                 let h = '<div class="grid-stats">'; items.forEach(it => { h += `<div class="card" style="text-align:center;cursor:pointer;" onclick="${it.a}"><i class="fa-solid ${it.i}" style="font-size:28px;color:var(--primary);margin-bottom:10px;"></i><h3 style="margin:0;font-size:15px;" data-key="${it.k}">${this.t(it.k)}</h3></div>`; }); h += '</div>'; div.innerHTML = h; 
             },
-
-            // ... (Rest of logic: getData, clearCache, setupAutocomplete, filterTable, pos, etc. UNCHANGED until `print` function) ...
 
             getData: async function(collection, orderBy = null) {
                 if (this.cache[collection]) return this.cache[collection];
@@ -527,6 +530,17 @@
                     const rowContent = tr[i].textContent || tr[i].innerText;
                     if (rowContent.toLowerCase().indexOf(filter) > -1) { tr[i].style.display = ""; } else { tr[i].style.display = "none"; }
                 }
+            },
+
+            getRemainingDays: function(dateStr) {
+                if(!dateStr) return null;
+                const now = new Date();
+                now.setHours(0,0,0,0);
+                const expiry = new Date(dateStr);
+                expiry.setHours(0,0,0,0);
+                const diffTime = expiry - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                return diffDays;
             },
 
             pos: async function(div) {
@@ -610,9 +624,17 @@
             searchProduct: function(q) {
                 const res = document.getElementById('searchResults'); if(!q || q.length < 1) { res.style.display='none'; return; }
                 const matches = this.cachedProducts.filter(p => p.name.toLowerCase().includes(q.toLowerCase())); if(matches.length === 0) { res.style.display='none'; return; }
-                res.innerHTML = matches.map(p => `<div class="search-item" onclick="app.promptQty('${p.id}', '${p.name}', ${p.sellPrice}, ${p.buyPrice}, ${p.stock})"><div><b>${p.name}</b><br><small style="color:gray">${this.t('th_stock')}: ${p.stock}</small></div><div style="color:var(--primary); font-weight:bold;">${p.sellPrice}</div></div>`).join(''); res.style.display = 'block';
+                res.innerHTML = matches.map(p => `<div class="search-item" onclick="app.promptQty('${p.id}', '${p.name}', ${p.sellPrice}, ${p.buyPrice}, ${p.stock}, '${p.expiryDate || ''}')"><div><b>${p.name}</b><br><small style="color:gray">${this.t('th_stock')}: ${p.stock}</small></div><div style="color:var(--primary); font-weight:bold;">${p.sellPrice}</div></div>`).join(''); res.style.display = 'block';
             },
-            promptQty: function(id, name, sell, buy, stock) {
+            promptQty: function(id, name, sell, buy, stock, expiryDate) {
+                // Check expiry
+                if(expiryDate) {
+                    const days = this.getRemainingDays(expiryDate);
+                    if(days !== null && days <= 0) {
+                        alert(this.t('warn_exp'));
+                    }
+                }
+
                 document.getElementById('searchResults').style.display='none'; document.getElementById('prodSearch').value = '';
                 let q = prompt(`${name}\n${this.t('prompt_qty')} (Max: ${stock})`, 1); if(!q) return; q = Number(q); if(q <= 0) return; if(q > stock) return alert(this.t('max_qty')+stock);
                 const ex = this.cart.findIndex(i=>i.id===id);
@@ -695,7 +717,6 @@
                 } catch(e) { console.error(e); alert(e.message); } this.hideLoader();
             },
             
-            // ... (Other view functions: listCustomers, addCustomerModal, etc. - KEPT SAME) ...
             listCustomers: async function(div) {
                 div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('cust')}</h3><button onclick="app.addCustomerModal()" class="btn btn-prim" style="width:auto;">+</button></div><input id="searchCust" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchCust', 'custTbl')"><div class="card"><div class="table-scroll"><table id="custTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('customers'); let h=''; s.forEach(c => { h += `<tr><td>${c.name}</td><td>${c.phone||'-'}</td><td style="color:${c.balance>0?'red':'green'}">${c.balance.toLocaleString()}</td><td><button onclick="app.payDebtModal('${c.id}','${c.name}')" class="btn btn-sec" style="padding:5px 10px; font-size:12px;">${this.t('pay_debt')}</button> <button onclick="app.viewStatement('${c.id}','customer', '${c.name}')" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">${this.t('stmt')}</button> <button onclick="app.del('${c.id}', 'customers')" class="btn btn-dan" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); document.querySelector('#custTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>';
             },
@@ -768,9 +789,46 @@
             downloadEmpPdf: function(name, salary, historyStr) { const history = JSON.parse(decodeURIComponent(historyStr)); const bodyData = [ [{text:this.t('sal_date'), bold:true, fillColor:'#eee'}, {text:this.t('sal_amount'), bold:true, fillColor:'#eee'}, {text:this.t('sal_method'), bold:true, fillColor:'#eee'}, {text:this.t('sal_note'), bold:true, fillColor:'#eee'}] ]; let total = 0; history.forEach(h => { total += h.amount; bodyData.push([ new Date(h.createdAt).toLocaleDateString('en-GB'), h.amount.toLocaleString(), h.method === 'cash' ? this.t('pay_cash') : (h.method === 'bank' ? this.t('pay_bank') : this.t('mixed')), h.note || '-' ]); }); bodyData.push([ {text:this.t('sal_total_all'), colSpan:3, bold:true, alignment:'left'}, {}, {}, {text: total.toLocaleString(), bold:true, color:'green'} ]); const docDefinition = { pageSize: 'A4', pageMargins: [20, 20, 20, 20], defaultStyle: { font: 'Tajawal', fontSize: 10, direction: this.state.lang === 'ar' ? 'rtl' : 'ltr' }, content: [ { text: this.state.name, fontSize: 14, bold: true, alignment: 'center', margin:[0,0,0,5] }, { text: this.t('sal_file'), fontSize: 12, alignment: 'center', margin:[0,0,0,20] }, { columns: [ { text: `${this.t('sal_emp')}: ${name}`, bold:true, alignment:'right' }, { text: `${this.t('sal_fixed')}: ${salary}`, alignment:'left' } ], margin: [0, 0, 0, 10] }, { table: { headerRows: 1, widths: ['auto', 'auto', 'auto', '*'], body: bodyData }, layout: 'lightHorizontalLines' } ] }; pdfMake.createPdf(docDefinition).download(`Salary_${name}.pdf`); },
             filterEmployees: function() { const input = document.getElementById('empSearch'); const filter = input.value.toLowerCase(); const table = document.getElementById('lst'); const tr = table.getElementsByTagName('tr'); for (let i = 1; i < tr.length; i++) { const td = tr[i].getElementsByTagName('td')[0]; if (td) { const txtValue = td.textContent || td.innerText; if (txtValue.toLowerCase().indexOf(filter) > -1) { tr[i].style.display = ""; } else { tr[i].style.display = "none"; } } } },
 
+            toggleExpiredView: function() {
+                const btn = document.getElementById('btnExpired');
+                const isFiltering = btn.getAttribute('data-active') === 'true';
+                const rows = document.querySelectorAll('#lst tbody tr');
+                
+                if (!isFiltering) {
+                    // Show only expired
+                    rows.forEach(r => {
+                        const daysCell = r.querySelector('.days-cell');
+                        if (daysCell) {
+                            const days = parseInt(daysCell.getAttribute('data-days'));
+                            if (!isNaN(days) && days <= 0) {
+                                r.style.display = '';
+                            } else {
+                                r.style.display = 'none';
+                            }
+                        } else {
+                            r.style.display = 'none';
+                        }
+                    });
+                    btn.setAttribute('data-active', 'true');
+                    btn.style.opacity = '0.7';
+                    btn.innerText = "عرض الكل";
+                } else {
+                    // Reset
+                    rows.forEach(r => r.style.display = '');
+                    btn.setAttribute('data-active', 'false');
+                    btn.style.opacity = '1';
+                    btn.innerText = this.t('btn_exp');
+                }
+            },
+
             list: async function(div, type) { 
                 const titleKey = type==='invoices'?'inv':(type==='products'?'stock':(type==='revenues'?'rev':(type==='salaries'?'sal':(type==='suppliers'?'supp':'exp')))); 
-                const addBtn = type!=='invoices' && type!=='salaries' ? `<button onclick="${type==='products'?'app.addProductModal()': 'app.addTransactionModal(\''+type+'\')'}" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>` : ''; 
+                let addBtn = '';
+                if(type === 'products') {
+                    addBtn = `<div style="display:flex; gap:5px;"><button id="btnExpired" onclick="app.toggleExpiredView()" class="btn btn-dan" style="width:auto;padding:8px 15px; font-size:12px;">${this.t('btn_exp')}</button><button onclick="app.addProductModal()" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button></div>`;
+                } else if(type!=='invoices' && type!=='salaries') {
+                    addBtn = `<button onclick="app.addTransactionModal('${type}')" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>`;
+                }
                 
                 div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div>`;
                 if (['expenses', 'revenues'].includes(type)) { div.innerHTML += `<input id="searchGen" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchGen', 'lst')">`; } else if (type === 'products') { div.innerHTML += `<input id="searchProd" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchProd', 'lst')">`; }
@@ -783,8 +841,27 @@
                     docs.forEach(d=>{ const str=encodeURIComponent(JSON.stringify(d.items)); const displayNum = d.invNum || d.id.substring(0,6); const pm = (d.bankAmount>0 && d.cashAmount>0) ? "Mixed" : (d.bankAmount>0?"Bank":"Cash"); const bn = d.bankName || ''; h+=`<tr><td style="font-weight:bold">${displayNum}</td><td>${this.formatDate(d.createdAt)}</td><td>${d.customer}</td><td>${d.total}</td><td>${d.paid}</td><td><button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${displayNum}','${d.customer}',${d.total},'${str}',${d.paid},${d.debt},'${pm}','${bn}')">${this.t('th_print')}</button></td></tr>`; }); 
                     document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="5">-</td></tr>'; 
                 } else if(type==='products') { 
-                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`; docs.forEach(d=>h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td><button onclick="app.editProd('${d.id}',${d.buyPrice},${d.sellPrice})" style="border:none;cursor:pointer;color:var(--primary)">✎</button></td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer"><i class="fa-solid fa-trash"></i></td></tr>`); 
-                    document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="5">-</td></tr>'; 
+                    th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_buy')}</th><th>${this.t('th_sell')}</th><th>${this.t('th_stock')}</th><th>${this.t('exp_days')}</th><th>${this.t('th_edit')}</th><th>${this.t('th_del')}</th></tr>`; 
+                    docs.forEach(d=>{ 
+                        const days = this.getRemainingDays(d.expiryDate);
+                        let daysText = "-";
+                        let style = "";
+                        let daysVal = 9999;
+                        
+                        if(days !== null) {
+                            daysVal = days;
+                            if(days <= 0) {
+                                daysText = "Expired / 0";
+                                style = "color:red; font-weight:bold;";
+                            } else {
+                                daysText = days + " Days";
+                                style = "color:green;";
+                            }
+                        }
+
+                        h+=`<tr><td>${d.name}</td><td>${d.buyPrice}</td><td>${d.sellPrice}</td><td>${d.stock}</td><td class="days-cell" data-days="${daysVal}" style="${style}">${daysText}</td><td><button onclick="app.editProd('${d.id}',${d.buyPrice},${d.sellPrice})" style="border:none;cursor:pointer;color:var(--primary)">✎</button></td><td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer"><i class="fa-solid fa-trash"></i></td></tr>`; 
+                    }); 
+                    document.querySelector('#lst thead').innerHTML=th; document.querySelector('#lst tbody').innerHTML=h||'<tr><td colspan="7">-</td></tr>'; 
                 } else if(type==='salaries') {
                     div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t('sal_mng')}</h3><button onclick="app.addSalaryModal()" class="btn btn-prim" style="width:auto; padding:8px 15px;">+ ${this.t('sal_new')}</button></div><input type="text" id="empSearch" class="inp" placeholder="${this.t('sal_search')}" onkeyup="app.filterEmployees()" style="margin-bottom:10px;"><div class="card"><div class="table-scroll"><table id="lst"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('sal_fixed')}</th><th>${this.t('sal_total')}</th><th>${this.t('adm_act')}</th></tr></thead><tbody id="empListBody">${docs.length ? '' : '<tr><td colspan="4">-</td></tr>'}</tbody></table></div></div>`;
                     const tbody = document.getElementById('empListBody'); if(docs.length) { docs.forEach(d => { const safeName = (d.name || '').replace(/'/g, "\\'"); const row = `<tr><td style="font-weight:bold;">${d.name}</td><td>${d.baseSalary.toLocaleString()}</td><td style="color:green;">${(d.totalPaid||0).toLocaleString()}</td><td><button onclick="app.viewEmployeeFile('${d.id}', '${safeName}', ${d.baseSalary})" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">${this.t('sal_file')}</button> <button onclick="app.del('${d.id}', 'salaries')" class="btn btn-dan" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;"><i class="fa-solid fa-trash"></i></button></td></tr>`; tbody.innerHTML += row; }); }
@@ -799,17 +876,17 @@
                 let sOpts = `<option value="none">-- ${this.t('supp_direct')} --</option>`; supps.forEach(s=> sOpts += `<option value="${s.id}">${s.name}</option>`);
                 let bOpts = `<option value="">-- Bank --</option>`; banks.forEach(b=> bOpts += `<option value="${b.id}">${b.name}</option>`);
                 
-                const h = `<input id="npName" class="inp" placeholder="${this.t('th_name')}"><div style="display:flex; gap:10px;"><input id="npBuy" type="number" class="inp" placeholder="${this.t('th_buy')}"><input id="npSell" type="number" class="inp" placeholder="${this.t('th_sell')}"></div><input id="npQty" type="number" class="inp" placeholder="${this.t('tbl_qty')}"><hr><label>${this.t('supp_type')}</label><div style="display:flex; gap:5px;"><div class="ac-wrap" style="flex:1;"><input id="npSuppName" class="inp" placeholder="بحث عن مورد..." autocomplete="off"><input type="hidden" id="npSuppId"></div><button onclick="app.quickAddSupplier()" class="btn btn-sec" style="width:auto; height:46px; margin-bottom:12px;"><i class="fa-solid fa-plus"></i></button></div><div id="directPayDiv" style="display:block;"><label style="font-size:12px;font-weight:bold;">طريقة الدفع (شراء مباشر)</label><select id="npDirectMethod" class="select-box" onchange="document.getElementById('npDirectBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">كاش (نقدي)</option><option value="bank">بنك</option></select><div id="npDirectBankDiv" style="display:none;"><div class="ac-wrap"><input id="npDirectBankName" class="inp" placeholder="بحث عن بنك..." autocomplete="off"><input type="hidden" id="npDirectBankId"></div></div></div><div id="suppPayDiv" style="display:none;"><select id="npMethod" class="select-box" onchange="app.toggleSuppInputs()"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option><option value="mixed">${this.t('mixed')}</option></select><div style="display:flex; gap:10px;"><input type="number" id="npCash" class="inp" placeholder="${this.t('pay_cash')}" value="0"><input type="number" id="npBank" class="inp" placeholder="${this.t('pay_bank')}" value="0" style="display:none;"></div><div id="npBankDiv" style="display:none;"><div class="ac-wrap"><input id="npBankName" class="inp" placeholder="بحث عن بنك..." autocomplete="off"><input type="hidden" id="npBankSelectId"></div></div><input id="npDebt" class="inp" placeholder="${this.t('remain')}" readonly style="background:#eee;"></div>`;
+                const h = `<input id="npName" class="inp" placeholder="${this.t('th_name')}"><div style="display:flex; gap:10px;"><input id="npBuy" type="number" class="inp" placeholder="${this.t('th_buy')}"><input id="npSell" type="number" class="inp" placeholder="${this.t('th_sell')}"></div><input id="npQty" type="number" class="inp" placeholder="${this.t('tbl_qty')}"><label>${this.t('prod_exp')} (Optional)</label><input type="date" id="npExpiry" class="inp"><hr><label>${this.t('supp_type')}</label><div style="display:flex; gap:5px;"><div class="ac-wrap" style="flex:1;"><input id="npSuppName" class="inp" placeholder="بحث عن مورد..." autocomplete="off"><input type="hidden" id="npSuppId"></div><button onclick="app.quickAddSupplier()" class="btn btn-sec" style="width:auto; height:46px; margin-bottom:12px;"><i class="fa-solid fa-plus"></i></button></div><div id="directPayDiv" style="display:block;"><label style="font-size:12px;font-weight:bold;">طريقة الدفع (شراء مباشر)</label><select id="npDirectMethod" class="select-box" onchange="document.getElementById('npDirectBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">كاش (نقدي)</option><option value="bank">بنك</option></select><div id="npDirectBankDiv" style="display:none;"><div class="ac-wrap"><input id="npDirectBankName" class="inp" placeholder="بحث عن بنك..." autocomplete="off"><input type="hidden" id="npDirectBankId"></div></div></div><div id="suppPayDiv" style="display:none;"><select id="npMethod" class="select-box" onchange="app.toggleSuppInputs()"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option><option value="mixed">${this.t('mixed')}</option></select><div style="display:flex; gap:10px;"><input type="number" id="npCash" class="inp" placeholder="${this.t('pay_cash')}" value="0"><input type="number" id="npBank" class="inp" placeholder="${this.t('pay_bank')}" value="0" style="display:none;"></div><div id="npBankDiv" style="display:none;"><div class="ac-wrap"><input id="npBankName" class="inp" placeholder="بحث عن بنك..." autocomplete="off"><input type="hidden" id="npBankSelectId"></div></div><input id="npDebt" class="inp" placeholder="${this.t('remain')}" readonly style="background:#eee;"></div>`;
                 
                 this.showModal(this.t('p_add'), h, async () => {
-                    const n = document.getElementById('npName').value.trim(); const b = Number(document.getElementById('npBuy').value); const s = Number(document.getElementById('npSell').value); const q = Number(document.getElementById('npQty').value); 
+                    const n = document.getElementById('npName').value.trim(); const b = Number(document.getElementById('npBuy').value); const s = Number(document.getElementById('npSell').value); const q = Number(document.getElementById('npQty').value); const exp = document.getElementById('npExpiry').value;
                     const suppId = document.getElementById('npSuppId').value; 
                     if(!n || !b || !s || !q) return alert("Fill all fields"); if(s <= b) return alert(this.t('err_price_logic'));
                     const batch = db.batch(); const now = new Date().toISOString(); const totalCost = b * q;
                     const existingSnap = await db.collection('products').where('companyId','==',this.state.cid).where('name','==',n).get();
                     let targetId = null; let isMerge = false; existingSnap.forEach(doc => { if(doc.data().sellPrice === s) { targetId = doc.id; isMerge = true; } });
-                    if(isMerge && targetId) { batch.update(db.collection('products').doc(targetId), { stock: firebase.firestore.FieldValue.increment(q), buyPrice: b }); } 
-                    else { const pRef = db.collection('products').doc(); batch.set(pRef, { companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, createdAt:now }); }
+                    if(isMerge && targetId) { batch.update(db.collection('products').doc(targetId), { stock: firebase.firestore.FieldValue.increment(q), buyPrice: b, expiryDate: exp }); } 
+                    else { const pRef = db.collection('products').doc(); batch.set(pRef, { companyId:this.state.cid, name:n, buyPrice:b, sellPrice:s, stock:q, expiryDate: exp, createdAt:now }); }
                     if(!suppId) { 
                         const method = document.getElementById('npDirectMethod').value; const bankId = document.getElementById('npDirectBankId').value;
                         if(method === 'bank' && !bankId) return alert("اختر البنك");
@@ -918,7 +995,26 @@
                     let h = `<table style="width:100%; font-size:13px;"><thead><tr><th>Type</th><th>Ref</th><th>Val</th></tr></thead><tbody>`; txs.forEach(t => { let typeLabel = t.type; let refLabel = t.note || (t.invNum ? t.invNum : '-'); let val = t.fIn > 0 ? t.fIn : t.fOut; let color = t.fIn > 0 ? 'green' : 'red'; h += `<tr><td>${typeLabel}</td><td>${refLabel}</td><td style="color:${color}">${val.toLocaleString()}</td></tr>`; }); h += '</tbody></table>'; container.innerHTML = `<div class="card" style="background:#eef2ff; border:1px solid var(--primary); text-align:center;"><h3>${label} (${filter.toUpperCase()})</h3><div class="grid-stats"><div><h4>${this.t('total_in')}</h4><span style="color:green;font-weight:bold;font-size:1.2em">${totalIn.toLocaleString()}</span></div><div><h4>${this.t('total_out')}</h4><span style="color:red;font-weight:bold;font-size:1.2em">${totalOut.toLocaleString()}</span></div><div><h4>${this.t('net_cash')}</h4><h2 style="color:${net>=0?'green':'red'}">${net.toLocaleString()}</h2></div></div></div><div class="card"><h3>${this.t('rep_det_all')}</h3><div class="table-scroll" style="max-height:400px; overflow-y:auto">${h}</div></div>`;
                 } catch(e) { console.error(e); container.innerHTML = `<p style="color:red">Error: ${e.message}</p>`; }
             },
-            admin: async function(div) { div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-box"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; s.forEach(d=>{ const v=d.data(); const comp = v.actualName || v.targetCompanyName || '-'; const ph = v.actualPhone || v.targetPhone || '-'; const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; const stopBtnText = v.status === 'active' ? 'إيقاف' : 'تفعيل'; b+=`<tr><td>${this.formatDate(v.createdAt)}</td><td style="font-family:monospace;font-weight:bold">${v.code}</td><td>${comp}</td><td style="color:var(--primary);font-weight:bold">${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_renew')}</button> <button onclick="app.toggleStatus('${d.id}', '${v.status}')" class="btn btn-warn" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${stopBtnText}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_del')}</button></td></tr>`; }); document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; },
+            admin: async function(div) { div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-box"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div style="margin-bottom:10px;"><input id="adminSearch" class="inp" placeholder="Search Company or Phone..." onkeyup="app.filterAdminTable()"></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; s.forEach(d=>{ const v=d.data(); const comp = v.actualName || v.targetCompanyName || '-'; const ph = v.actualPhone || v.targetPhone || '-'; const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; const stopBtnText = v.status === 'active' ? 'إيقاف' : 'تفعيل'; b+=`<tr><td>${this.formatDate(v.createdAt)}</td><td style="font-family:monospace;font-weight:bold">${v.code}</td><td class="admin-comp">${comp}</td><td class="admin-phone" style="color:var(--primary);font-weight:bold">${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_renew')}</button> <button onclick="app.toggleStatus('${d.id}', '${v.status}')" class="btn btn-warn" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${stopBtnText}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_del')}</button></td></tr>`; }); document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; },
+            filterAdminTable: function() {
+                const input = document.getElementById('adminSearch');
+                const filter = input.value.toLowerCase();
+                const table = document.getElementById('at');
+                const tr = table.getElementsByTagName('tr');
+                for (let i = 1; i < tr.length; i++) {
+                    const compTd = tr[i].querySelector('.admin-comp');
+                    const phoneTd = tr[i].querySelector('.admin-phone');
+                    if (compTd || phoneTd) {
+                        const compTxt = compTd ? (compTd.textContent || compTd.innerText) : '';
+                        const phoneTxt = phoneTd ? (phoneTd.textContent || phoneTd.innerText) : '';
+                        if (compTxt.toLowerCase().indexOf(filter) > -1 || phoneTxt.indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                        } else {
+                            tr[i].style.display = "none";
+                        }
+                    }
+                }
+            },
             gen: async function() { const n=document.getElementById('an').value, p=document.getElementById('ap').value, dur=document.getElementById('adur').value; if(n&&p) { await db.collection('activation_codes').add({code:this.randomStr(10), targetCompanyName:n, targetPhone:p, status:'active', used:false, createdAt:new Date().toISOString(), subscriptionType: dur, paymentHistory: []}); this.nav('admin'); } },
             renewCompany: async function(id, type) { const newType = document.getElementById('adur').value; if(!confirm("Confirm Renew? ("+newType+")")) return; const doc = await db.collection('activation_codes').doc(id).get(); const data = doc.data(); let baseDate = new Date(); if(data.expiryDate && new Date(data.expiryDate) > baseDate) { baseDate = new Date(data.expiryDate); } const newExpiry = this.addDuration(baseDate, newType); await db.collection('activation_codes').doc(id).update({ expiryDate: newExpiry }); alert("Renewed"); this.nav('admin'); },
             toggleStatus: async function(id, st) { if(!confirm(st==='active' ? 'Disable?' : 'Enable?')) return; await db.collection('activation_codes').doc(id).update({status: st==='active'?'suspended':'active'}); this.nav('admin'); },
