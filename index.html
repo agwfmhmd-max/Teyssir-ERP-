@@ -695,29 +695,31 @@
                 const debt = tot - (cash + bank); 
                 document.getElementById('debtAmount').innerText = debt > 0 ? debt : 0; 
             },
+            
+            // --- OFFLINE FIX: Use doc() to generate ID locally, then set() ---
             quickAddCustomer: async function() {
                 const n = prompt(this.t('prompt_name')); const ph = prompt(this.t('adm_phone'));
                 if(n && ph) { 
                     if(!this.isValidPhone(ph)) return alert(this.t('err_phone_len')); 
-                    const r = await db.collection('customers').add({companyId:this.state.cid, name:n, phone:ph||'', balance:0, createdAt:new Date().toISOString()}); 
+                    
+                    // OFFLINE FRIENDLY: Generate ID locally
+                    const ref = db.collection('customers').doc();
+                    const custData = {companyId:this.state.cid, name:n, phone:ph||'', balance:0, createdAt:new Date().toISOString()};
+                    ref.set(custData).catch(e => console.error(e));
+                    
                     this.clearCache('customers'); 
                     document.getElementById('posCustName').value = n;
-                    document.getElementById('posCustId').value = r.id;
+                    document.getElementById('posCustId').value = ref.id;
                 }
             },
+            
             getNextInvoiceNumber: async function(transaction) {
-                // NOTE: For Batch offline support, using transaction for counter is tricky. 
-                // We will use a simpler approach: Read, Increment, Write. 
-                // In high concurrency offline, this might conflict, but for this app scope it's acceptable.
-                // However, since finalizeInvoice is now using Batch, we can't await a transaction inside easily.
-                // We'll use a random fallback or simple increment based on local cache for now, OR separate the counter update.
-                // To keep it simple and safe for offline: We generate a timestamp-based ID or read last known.
                 const counterRef = db.collection('counters').doc(this.state.cid);
                 let nextNum = 1;
                 try {
                     const doc = await counterRef.get();
                     if(doc.exists) nextNum = doc.data().lastInvoiceNum + 1;
-                } catch(e) { console.log("Offline counter read"); } // Fallback
+                } catch(e) { console.log("Offline counter read"); } 
                 return { num: 'INV-' + String(nextNum).padStart(4, '0'), nextVal: nextNum };
             },
             finalizeInvoice: async function() {
@@ -741,54 +743,41 @@
 
                 this.showLoader();
                 try {
-                    // ** CRITICAL FIX: Use WriteBatch for Offline Support **
-                    // Transactions fail offline. Batches work offline.
-                    
-                    // 1. Get Invoice Number (Best Effort)
                     const counterData = await this.getNextInvoiceNumber(); 
                     const invNum = counterData.num;
                     
                     const batch = db.batch();
                     const now = new Date().toISOString();
                     
-                    // 2. Create Invoice
                     const invRef = db.collection('invoices').doc();
                     batch.set(invRef, { companyId: this.state.cid, invNum: invNum, customer: custName, customerId: custId, items: this.cart, total, paid: totalPaid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, bankName: bankName, createdAt: now });
                     
-                    // 3. Update Counter
                     const counterRef = db.collection('counters').doc(this.state.cid);
                     batch.set(counterRef, { lastInvoiceNum: counterData.nextVal }, { merge: true });
 
-                    // 4. Update Stock & Calculate Cost
                     let totalCost = 0;
                     for(let i of this.cart) { 
                         const pRef = db.collection('products').doc(i.id); 
-                        // Decrement stock. If it goes below 0, it stays below 0. NO DELETE.
                         batch.update(pRef, { stock: firebase.firestore.FieldValue.increment(-i.q) }); 
                         totalCost += (i.bp * i.q); 
                     }
                     
-                    // 5. Update Customer Balance (Debt)
                     if(debt > 0) { 
                         const cRef = db.collection('customers').doc(custId); 
                         batch.update(cRef, { balance: firebase.firestore.FieldValue.increment(debt) }); 
                     }
 
-                    // 6. Update Bank Balance
                     if(bank > 0 && bankId) { 
                         const bRef = db.collection('banks').doc(bankId); 
                         batch.update(bRef, { balance: firebase.firestore.FieldValue.increment(bank) }); 
                     }
                     
-                    // 7. Create Transaction Record
                     const tRef = db.collection('transactions').doc();
                     batch.set(tRef, { companyId: this.state.cid, type: 'sale', refId: invRef.id, invNum: invNum, amount: total, paid: totalPaid, debt: debt, cashAmount: cash, bankAmount: bank, bankId: bankId, cogs: totalCost, customerId: custId, createdAt: now, note: `Invoice ${invNum}` });
                     
-                    // Commit Batch (Works offline!)
-                    // CRITICAL CHANGE: Do NOT await this if offline, or handle the promise to not block UI
+                    // OFFLINE FIX: Do NOT await
                     batch.commit().catch(e => console.error("Sync error (will retry): ", e));
 
-                    // Print Data Prep
                     this.printData = { id: invNum, c: custName, t: total, items: this.cart, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
                     
                     this.clearCache('products'); this.clearCache('invoices'); this.clearCache('customers'); this.clearCache('transactions'); this.clearCache('banks');
@@ -801,12 +790,27 @@
             listCustomers: async function(div) {
                 div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('cust')}</h3><button onclick="app.addCustomerModal()" class="btn btn-prim" style="width:auto;">+</button></div><input id="searchCust" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchCust', 'custTbl')"><div class="card"><div class="table-scroll"><table id="custTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('balance')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('customers'); let h=''; s.forEach(c => { h += `<tr><td>${c.name}</td><td>${c.phone||'-'}</td><td style="color:${c.balance>0?'red':'green'}">${c.balance.toLocaleString()}</td><td><button onclick="app.payDebtModal('${c.id}','${c.name}')" class="btn btn-sec" style="padding:5px 10px; font-size:12px;">${this.t('pay_debt')}</button> <button onclick="app.viewStatement('${c.id}','customer', '${c.name}')" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">${this.t('stmt')}</button> <button onclick="app.del('${c.id}', 'customers')" class="btn btn-dan" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); document.querySelector('#custTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>';
             },
-            addCustomerModal: function() { this.showModal(this.t('new_cust'), `<input id="ncName" class="inp" placeholder="${this.t('prompt_name')}"><input id="ncPhone" class="inp" placeholder="${this.t('adm_phone')}">`, async () => { const n=document.getElementById('ncName').value, p=document.getElementById('ncPhone').value; if(n && p) { if(!this.isValidPhone(p)) return alert(this.t('err_phone_len')); await db.collection('customers').add({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}); this.clearCache('customers'); this.nav('customers'); } }); },
+            
+            // --- OFFLINE FIX: addCustomerModal ---
+            addCustomerModal: function() { 
+                this.showModal(this.t('new_cust'), `<input id="ncName" class="inp" placeholder="${this.t('prompt_name')}"><input id="ncPhone" class="inp" placeholder="${this.t('adm_phone')}">`, async () => { 
+                    const n=document.getElementById('ncName').value, p=document.getElementById('ncPhone').value; 
+                    if(n && p) { 
+                        if(!this.isValidPhone(p)) return alert(this.t('err_phone_len')); 
+                        
+                        const ref = db.collection('customers').doc();
+                        ref.set({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}).catch(e=>console.error(e));
+                        
+                        this.clearCache('customers'); 
+                        this.nav('customers'); 
+                    } 
+                }); 
+            },
+            
             payDebtModal: async function(cid, cname) {
                 const banks = await this.getData('banks'); let bOpts = `<option value="">-- Select Bank --</option>`; banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
                 this.showModal(this.t('pay_debt'), `<p>Customer: <b>${cname}</b></p><input type="number" id="pdAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="pdMethod" class="select-box" onchange="document.getElementById('pdBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="pdBankDiv" style="display:none;"><select id="pdBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('pdAmount').value); const method = document.getElementById('pdMethod').value; const bid = document.getElementById('pdBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); 
                 
-                // Using Batch for Offline support
                 const batch = db.batch(); 
                 const now = new Date().toISOString(); 
                 const tRef = db.collection('transactions').doc(); 
@@ -817,7 +821,7 @@
                 batch.update(db.collection('customers').doc(cid), { balance: firebase.firestore.FieldValue.increment(-amt) }); 
                 if(method==='bank') batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(amt) }); 
                 
-                // Don't await commit to prevent hanging offline
+                // OFFLINE FIX
                 batch.commit().catch(e => console.error(e));
                 
                 this.clearCache('customers'); this.clearCache('transactions'); this.clearCache('banks');
@@ -840,17 +844,40 @@
                 if(tbody) tbody.innerHTML = h || '<tr><td colspan="3">-</td></tr>';
             },
 
+            // --- OFFLINE FIX: addBankModal ---
             addBankModal: function() { 
                 this.showModal(this.t('banks'), `<input id="nbName" class="inp" placeholder="${this.t('th_name')}"><input type="number" id="nbBal" class="inp" placeholder="${this.t('balance')}">`, async () => { 
                     const n = document.getElementById('nbName').value; const b = Number(document.getElementById('nbBal').value); 
-                    if(n) { const batch = db.batch(); const now = new Date().toISOString(); const bankRef = db.collection('banks').doc(); batch.set(bankRef, {companyId:this.state.cid, name:n, balance:b||0, createdAt:now}); if(b > 0) { const transRef = db.collection('transactions').doc(); batch.set(transRef, { companyId: this.state.cid, type: 'opening_balance', bankId: bankRef.id, amount: b, bankAmount: b, cashAmount: 0, method: 'bank', note: 'Opening Balance', createdAt: now }); } 
-                    batch.commit().catch(e=>console.error(e)); 
-                    this.clearCache('banks'); this.clearCache('transactions'); this.nav('banks'); } 
+                    if(n) { 
+                        const batch = db.batch(); const now = new Date().toISOString(); 
+                        const bankRef = db.collection('banks').doc(); 
+                        batch.set(bankRef, {companyId:this.state.cid, name:n, balance:b||0, createdAt:now}); 
+                        if(b > 0) { 
+                            const transRef = db.collection('transactions').doc(); 
+                            batch.set(transRef, { companyId: this.state.cid, type: 'opening_balance', bankId: bankRef.id, amount: b, bankAmount: b, cashAmount: 0, method: 'bank', note: 'Opening Balance', createdAt: now }); 
+                        } 
+                        batch.commit().catch(e=>console.error(e)); 
+                        this.clearCache('banks'); this.clearCache('transactions'); this.nav('banks'); 
+                    } 
                 }); 
             },
 
             listSuppliers: async function(div) { div.innerHTML = `<div style="display:flex; justify-content:space-between;"><h3>${this.t('supp')}</h3><button onclick="app.addSuppModal()" class="btn btn-prim" style="width:auto;">+</button></div><input id="searchSupp" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchSupp', 'supTbl')"><div class="card"><div class="table-scroll"><table id="supTbl"><thead><tr><th>${this.t('th_name')}</th><th>${this.t('adm_phone')}</th><th>${this.t('supp_bal')}</th><th>Action</th></tr></thead><tbody></tbody></table></div></div>`; const s = await this.getData('suppliers'); let h=''; s.forEach(b => { h += `<tr><td>${b.name}</td><td>${b.phone||'-'}</td><td style="color:${b.balance>0?'red':'green'}">${b.balance?.toLocaleString()||0}</td><td><button onclick="app.paySupplierDebt('${b.id}','${b.name}')" class="btn btn-sec" style="padding:5px; font-size:12px;">${this.t('pay_supp')}</button> <button onclick="app.viewStatement('${b.id}','supplier','${b.name}')" class="btn btn-prim" style="padding:5px 10px; font-size:12px;">${this.t('stmt')}</button> <button onclick="app.del('${b.id}', 'suppliers')" class="btn btn-dan" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;"><i class="fa-solid fa-trash"></i></button></td></tr>`; }); document.querySelector('#supTbl tbody').innerHTML = h || '<tr><td colspan="4">-</td></tr>'; },
-            addSuppModal: function() { this.showModal(this.t('new_supp'), `<input id="nsName" class="inp" placeholder="${this.t('th_name')}"><input id="nsPhone" class="inp" placeholder="${this.t('adm_phone')}">`, async () => { const n=document.getElementById('nsName').value, p=document.getElementById('nsPhone').value; if(n) { await db.collection('suppliers').add({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}); this.clearCache('suppliers'); this.nav('suppliers'); } }); },
+            
+            // --- OFFLINE FIX: addSuppModal ---
+            addSuppModal: function() { 
+                this.showModal(this.t('new_supp'), `<input id="nsName" class="inp" placeholder="${this.t('th_name')}"><input id="nsPhone" class="inp" placeholder="${this.t('adm_phone')}">`, async () => { 
+                    const n=document.getElementById('nsName').value, p=document.getElementById('nsPhone').value; 
+                    if(n) { 
+                        const ref = db.collection('suppliers').doc();
+                        ref.set({companyId:this.state.cid, name:n, phone:p, balance:0, createdAt:new Date().toISOString()}).catch(e=>console.error(e));
+                        
+                        this.clearCache('suppliers'); 
+                        this.nav('suppliers'); 
+                    } 
+                }); 
+            },
+            
             paySupplierDebt: async function(sid, sname) {
                 const banks = await this.getData('banks'); let bOpts = `<option value="">-- Select Bank --</option>`; banks.forEach(b => bOpts += `<option value="${b.id}">${b.name}</option>`);
                 this.showModal(this.t('pay_supp'), `<p>Supplier: <b>${sname}</b></p><input type="number" id="psAmount" class="inp" placeholder="${this.t('prompt_amount')}"><select id="psMethod" class="select-box" onchange="document.getElementById('psBankDiv').style.display = this.value==='bank'?'block':'none'"><option value="cash">${this.t('cash')}</option><option value="bank">${this.t('bank')}</option></select><div id="psBankDiv" style="display:none;"><select id="psBank" class="select-box">${bOpts}</select></div>`, async () => { const amt = Number(document.getElementById('psAmount').value); const method = document.getElementById('psMethod').value; const bid = document.getElementById('psBank').value; if(!amt) return; if(method==='bank' && !bid) return alert(this.t('select_bank')); const batch = db.batch(); const now = new Date().toISOString(); 
@@ -875,7 +902,20 @@
             },
             
             // Employee Functions
-            addSalaryModal: async function() { this.showModal(this.t('sal_new'), `<input id="empName" class="inp" placeholder="${this.t('th_name')}"><input type="number" id="empSalary" class="inp" placeholder="${this.t('sal_fixed')}"><label style="font-size:12px;font-weight:bold;">${this.t('sal_method')}</label><select id="empMethod" class="select-box"><option value="cash">${this.t('pay_cash')}</option><option value="bank">${this.t('pay_bank')}</option></select>`, async () => { const name = document.getElementById('empName').value; const salary = Number(document.getElementById('empSalary').value); const method = document.getElementById('empMethod').value; if(!name || !salary) return alert("يرجى إدخال الاسم والراتب"); const batch = db.batch(); const now = new Date().toISOString(); const empRef = db.collection('salaries').doc(); batch.set(empRef, { companyId: this.state.cid, name: name, baseSalary: salary, defaultMethod: method, totalPaid: 0, createdAt: now }); await batch.commit(); this.clearCache('salaries'); this.nav('salaries'); }); },
+            // --- OFFLINE FIX: addSalaryModal ---
+            addSalaryModal: async function() { 
+                this.showModal(this.t('sal_new'), `<input id="empName" class="inp" placeholder="${this.t('th_name')}"><input type="number" id="empSalary" class="inp" placeholder="${this.t('sal_fixed')}"><label style="font-size:12px;font-weight:bold;">${this.t('sal_method')}</label><select id="empMethod" class="select-box"><option value="cash">${this.t('pay_cash')}</option><option value="bank">${this.t('pay_bank')}</option></select>`, async () => { 
+                    const name = document.getElementById('empName').value; const salary = Number(document.getElementById('empSalary').value); const method = document.getElementById('empMethod').value; 
+                    if(!name || !salary) return alert("يرجى إدخال الاسم والراتب"); 
+                    
+                    const batch = db.batch(); const now = new Date().toISOString(); 
+                    const empRef = db.collection('salaries').doc(); 
+                    batch.set(empRef, { companyId: this.state.cid, name: name, baseSalary: salary, defaultMethod: method, totalPaid: 0, createdAt: now }); 
+                    batch.commit().catch(e=>console.error(e)); 
+                    
+                    this.clearCache('salaries'); this.nav('salaries'); 
+                }); 
+            },
             viewEmployeeFile: async function(empId, empName, baseSalary) {
                 const ws = document.getElementById('workspace'); ws.innerHTML = '<div class="spinner"></div>';
                 try { const snaps = await db.collection('transactions').where('companyId', '==', this.state.cid).where('type', '==', 'salary_payment').where('refId', '==', empId).get(); let history = snaps.docs.map(d => d.data()); history.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)); let totalPaid = 0; let rows = ''; history.forEach(h => { totalPaid += h.amount; let date = new Date(h.createdAt).toLocaleDateString('en-GB'); let methodTxt = h.method === 'cash' ? this.t('pay_cash') : (h.method === 'bank' ? this.t('pay_bank') : this.t('mixed')); rows += `<tr><td>${date}</td><td>${h.amount.toLocaleString()}</td><td>${methodTxt}</td><td style="font-size:11px; color:#666;">${h.note || '-'}</td></tr>`; }); const html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div><button onclick="app.nav('salaries')" class="btn btn-sec" style="width:auto; padding:5px 15px; font-size:12px; margin-bottom:5px;">&larr; ${this.t('sal_back')}</button><h2 style="margin:0; color:var(--primary);">${empName}</h2><small style="color:#666;">${this.t('sal_fixed')}: ${baseSalary.toLocaleString()}</small></div><div style="text-align:left;"><span style="display:block; font-size:12px;">${this.t('sal_total')}</span><span style="font-weight:bold; font-size:18px; color:green;">${totalPaid.toLocaleString()}</span></div></div><div style="display:flex; gap:10px; margin-bottom:20px;"><button onclick="app.payEmployeeModal('${empId}', '${empName}', ${baseSalary})" class="btn btn-prim"><i class="fa-solid fa-hand-holding-dollar"></i> ${this.t('sal_pay_btn')}</button><button onclick="app.downloadEmpPdf('${empName}', ${baseSalary}, '${encodeURIComponent(JSON.stringify(history))}')" class="btn btn-sec" style="background:#dc2626;"><i class="fa-solid fa-file-pdf"></i> ${this.t('sal_pdf')}</button></div><div class="card"><h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">${this.t('sal_rec')}</h3><div class="table-scroll"><table style="width:100%;"><thead><tr style="background:#f9f9f9;"><th>${this.t('sal_date')}</th><th>${this.t('sal_amount')}</th><th>${this.t('sal_method')}</th><th>${this.t('sal_note')}</th></tr></thead><tbody>${rows || `<tr><td colspan="4" style="text-align:center;">${this.t('sal_none')}</td></tr>`}</tbody></table></div></div>`; ws.innerHTML = html; } catch(e) { console.error(e); ws.innerHTML = `<p style="color:red; text-align:center;">حدث خطأ في تحميل البيانات.</p><button onclick="app.nav('salaries')" class="btn btn-sec">عودة</button>`; }
@@ -1009,7 +1049,22 @@
                 setTimeout(() => { app.toggleSuppInputs(); const calc = () => { const b = Number(document.getElementById('npBuy').value); const q = Number(document.getElementById('npQty').value); const c = Number(document.getElementById('npCash').value); const k = Number(document.getElementById('npBank').value); const d = (b*q) - (c+k); document.getElementById('npDebt').value = d > 0 ? d : 0; }; ['npBuy','npQty','npCash','npBank'].forEach(i => document.getElementById(i).addEventListener('input', calc)); }, 100);
             },
             toggleSuppInputs: function() { const m = document.getElementById('npMethod').value; const c = document.getElementById('npCash'); const b = document.getElementById('npBank'); const bd = document.getElementById('npBankDiv'); if(m === 'cash') { c.style.display='block'; b.style.display='none'; bd.style.display='none'; b.value=0; } else if (m === 'bank') { c.style.display='none'; b.style.display='block'; bd.style.display='block'; c.value=0; } else { c.style.display='block'; b.style.display='block'; bd.style.display='block'; } },
-            quickAddSupplier: async function() { const n = prompt(this.t('prompt_name')); const p = prompt(this.t('adm_phone')); if(n) { try { const ref = await db.collection('suppliers').add({ companyId: this.state.cid, name: n, phone: p||'', balance: 0, createdAt: new Date().toISOString() }); this.clearCache('suppliers'); document.getElementById('npSuppName').value = n; document.getElementById('npSuppId').value = ref.id; } catch(e) { alert(e.message); } } },
+            
+            // --- OFFLINE FIX: quickAddSupplier ---
+            quickAddSupplier: async function() { 
+                const n = prompt(this.t('prompt_name')); const p = prompt(this.t('adm_phone')); 
+                if(n) { 
+                    try { 
+                        const ref = db.collection('suppliers').doc();
+                        ref.set({ companyId: this.state.cid, name: n, phone: p||'', balance: 0, createdAt: new Date().toISOString() }).catch(e=>console.error(e));
+                        
+                        this.clearCache('suppliers'); 
+                        document.getElementById('npSuppName').value = n; 
+                        document.getElementById('npSuppId').value = ref.id; 
+                    } catch(e) { alert(e.message); } 
+                } 
+            },
+            
             togglePurchaseType: function(val) { document.getElementById('directPayDiv').style.display = val === 'none' ? 'block' : 'none'; document.getElementById('suppPayDiv').style.display = val === 'none' ? 'none' : 'block'; },
             editProd: async function(id, b, os) { let ns = prompt(this.t('prompt_new_price'), os); if(!ns) return; ns=Number(ns); if(ns<=b) return alert(this.t('err_price_logic')); await db.collection('products').doc(id).update({sellPrice:ns}); this.clearCache('products'); this.nav('inventory'); },
             del: async function(id, col) { if(confirm(this.t('confirm_del'))) { await db.collection(col).doc(id).delete(); this.clearCache(col); this.nav(col==='products'?'inventory':(col==='customers'?'customers':(col==='suppliers'?'suppliers':(col==='banks'?'banks':'salaries')))); } },
@@ -1263,7 +1318,16 @@
                     let h = `<table style="width:100%; font-size:13px;"><thead><tr><th>Type</th><th>Ref</th><th>Val</th></tr></thead><tbody>`; txs.forEach(t => { let typeLabel = t.type; let refLabel = t.note || (t.invNum ? t.invNum : '-'); let val = t.fIn > 0 ? t.fIn : t.fOut; let color = t.fIn > 0 ? 'green' : 'red'; h += `<tr><td>${typeLabel}</td><td>${refLabel}</td><td style="color:${color}">${val.toLocaleString()}</td></tr>`; }); h += '</tbody></table>'; container.innerHTML = `<div class="card" style="background:#eef2ff; border:1px solid var(--primary); text-align:center;"><h3>${label} (${filter.toUpperCase()})</h3><div class="grid-stats"><div><h4>${this.t('total_in')}</h4><span style="color:green;font-weight:bold;font-size:1.2em">${totalIn.toLocaleString()}</span></div><div><h4>${this.t('total_out')}</h4><span style="color:red;font-weight:bold;font-size:1.2em">${totalOut.toLocaleString()}</span></div><div><h4>${this.t('net_cash')}</h4><h2 style="color:${net>=0?'green':'red'}">${net.toLocaleString()}</h2></div></div></div><div class="card"><h3>${this.t('rep_det_all')}</h3><div class="table-scroll" style="max-height:400px; overflow-y:auto">${h}</div></div>`;
                 } catch(e) { console.error(e); container.innerHTML = `<p style="color:red">Error: ${e.message}</p>`; }
             },
-            admin: async function(div) { div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-box"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div style="margin-bottom:10px;"><input id="adminSearch" class="inp" placeholder="Search Company or Phone..." onkeyup="app.filterAdminTable()"></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; s.forEach(d=>{ const v=d.data(); const comp = v.actualName || v.targetCompanyName || '-'; const ph = v.actualPhone || v.targetPhone || '-'; const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; const stopBtnText = v.status === 'active' ? 'إيقاف' : 'تفعيل'; b+=`<tr><td>${this.formatDate(v.createdAt)}</td><td style="font-family:monospace;font-weight:bold">${v.code}</td><td class="admin-comp">${comp}</td><td class="admin-phone" style="color:var(--primary);font-weight:bold">${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_renew')}</button> <button onclick="app.toggleStatus('${d.id}', '${v.status}')" class="btn btn-warn" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${stopBtnText}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_del')}</button></td></tr>`; }); document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; },
+            admin: async function(div) { div.innerHTML = `<div class="card"><input id="an" class="inp" placeholder="Name"><input id="ap" class="inp" placeholder="Phone"><select id="adur" class="select-box"><option value="day">${this.t('sub_day')}</option><option value="week">${this.t('sub_week')}</option><option value="month" selected>${this.t('sub_month')}</option><option value="year">${this.t('sub_year')}</option></select><button onclick="app.gen()" class="btn btn-prim">${this.t('adm_gen')}</button></div><div style="margin-bottom:10px;"><input id="adminSearch" class="inp" placeholder="Search Company or Phone..." onkeyup="app.filterAdminTable()"></div><div class="card"><div class="table-scroll"><table id="at"><thead></thead><tbody></tbody></table></div></div>`; const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; s.forEach(d=>{ const v=d.data(); const comp = v.actualName || v.targetCompanyName || '-'; const ph = v.actualPhone || v.targetPhone || '-'; const expDate = v.expiryDate ? new Date(v.expiryDate).toLocaleDateString() : '-'; const stopBtnText = v.status === 'active' ? 'إيقاف' : 'تفعيل'; b+=`<tr><td>${this.formatDate(v.createdAt)}</td><td style="font-family:monospace;font-weight:bold">${v.code} <i class="fa-regular fa-copy" onclick="app.copyToClipboard('${v.code}')" style="cursor:pointer; margin-right:5px; color:var(--primary)" title="Copy"></i></td><td class="admin-comp">${comp}</td><td class="admin-phone" style="color:var(--primary);font-weight:bold">${ph}</td><td style="color:${new Date(v.expiryDate)<new Date()?'red':'var(--success)'}">${expDate}</td><td><button onclick="app.renewCompany('${d.id}', '${v.subscriptionType||'month'}')" class="btn btn-sec" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_renew')}</button> <button onclick="app.toggleStatus('${d.id}', '${v.status}')" class="btn btn-warn" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${stopBtnText}</button> <button onclick="app.delCode('${d.id}')" class="btn btn-dan" style="padding:5px;font-size:11px; display:inline-block; width:auto; margin:0 2px;">${this.t('adm_del')}</button></td></tr>`; }); document.querySelector('#at thead').innerHTML=h; document.querySelector('#at tbody').innerHTML=b; },
+            
+            copyToClipboard: function(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("تم نسخ الكود: " + text);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            },
+
             filterAdminTable: function() {
                 const input = document.getElementById('adminSearch');
                 const filter = input.value.toLowerCase();
