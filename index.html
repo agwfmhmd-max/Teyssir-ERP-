@@ -474,15 +474,24 @@
 
             refreshTreasury: async function() {
                 try {
+                    // Try to get latest from server, if fail, rely on local OR recalc
                     const doc = await db.collection('treasury').doc(this.state.cid).get();
                     if(doc.exists) {
-                        const serverData = doc.data(); const serverBal = Number(serverData.balance || 0); const serverTime = new Date(serverData.updatedAt || 0).getTime();
-                        const localTimeStr = localStorage.getItem('teyssir_cash_time'); const localBalStr = localStorage.getItem('teyssir_cash_balance');
-                        let useServer = true;
-                        if(localTimeStr && localBalStr) { if(new Date(localTimeStr).getTime() > serverTime) { useServer = false; this.state.cashBalance = Number(localBalStr); } }
-                        if(useServer) { this.state.cashBalance = serverBal; localStorage.setItem('teyssir_cash_balance', serverBal); localStorage.setItem('teyssir_cash_time', serverData.updatedAt || new Date().toISOString()); }
-                    } else { await db.collection('treasury').doc(this.state.cid).set({ balance: 0, updatedAt: new Date().toISOString() }); this.state.cashBalance = 0; }
-                } catch(e) { console.error("Online sync failed, using local", e); }
+                        this.state.cashBalance = Number(doc.data().balance || 0);
+                    } else {
+                        // RECALCULATE MODE: If treasury doc missing, calc from tx history
+                        const txs = await db.collection('transactions').where('companyId','==',this.state.cid).where('isTreasury','==',true).get();
+                        let bal = 0;
+                        txs.forEach(t => {
+                            const d = t.data();
+                            if(d.type === 'cash_in') bal += d.amount;
+                            if(d.type === 'cash_out') bal -= d.amount;
+                        });
+                        this.state.cashBalance = bal;
+                        // Save correct balance
+                        await db.collection('treasury').doc(this.state.cid).set({ balance: bal, updatedAt: new Date().toISOString() });
+                    }
+                } catch(e) { console.error("Online sync failed", e); }
                 const balEl = document.querySelector('.treasury-balance'); if(balEl) balEl.innerText = this.state.cashBalance.toLocaleString() + " MRU";
             },
 
@@ -807,7 +816,18 @@
                             income += Number(actualPaid); 
                         } 
                         else if (t.type === 'revenue' || t.type === 'debt_payment') { income += t.amount; } 
-                        if(t.type === 'expense' || t.type === 'salary_payment' || t.type === 'supplier_payment' || t.type === 'purchase_stock') { expense += t.amount; } 
+                        
+                        // Handle Expense / Purchase paid amount
+                        if(t.type === 'purchase_stock') {
+                            // Only count what was paid, not the debt
+                            let actualPaid = 0;
+                            if(typeof t.paid !== 'undefined') actualPaid = t.paid;
+                            else actualPaid = (t.cashAmount || 0) + (t.bankAmount || 0);
+                            expense += Number(actualPaid);
+                        } else if(t.type === 'expense' || t.type === 'salary_payment' || t.type === 'supplier_payment') { 
+                            expense += t.amount; 
+                        } 
+                        
                         if(t.cashAmount) cashIn += t.cashAmount; if(t.bankAmount) bankIn += t.bankAmount; 
                     });
                     
@@ -831,7 +851,9 @@
                         const amountColor = (t.type.includes('sale') || t.type === 'revenue' || t.type === 'debt_payment') ? 'green' : 'red'; 
                         
                         let displayAmount = t.amount;
-                        if(t.type === 'sale') displayAmount = t.paid || ((t.cashAmount||0) + (t.bankAmount||0));
+                        if(t.type === 'sale' || t.type === 'purchase_stock') {
+                             displayAmount = t.paid || ((t.cashAmount||0) + (t.bankAmount||0));
+                        }
 
                         tableRows += `<tr><td>${date}</td><td>${t.type}</td><td>${t.note || '-'}</td><td style="color:${amountColor}; font-weight:bold; direction:ltr; text-align:right;">${displayAmount.toLocaleString()}</td></tr>`; 
                     });
@@ -853,7 +875,9 @@
                 txs.forEach(t => { 
                     const d = new Date(t.createdAt).toLocaleString(); const color = (t.type.includes('sale') || t.type === 'revenue' || t.type === 'debt_payment') ? 'green' : 'red'; 
                     let displayAmount = t.amount;
-                    if(t.type === 'sale') displayAmount = t.paid || ((t.cashAmount||0) + (t.bankAmount||0));
+                    if(t.type === 'sale' || t.type === 'purchase_stock') {
+                         displayAmount = t.paid || ((t.cashAmount||0) + (t.bankAmount||0));
+                    }
                     bodyData.push([ {text: d, fontSize: 9}, {text: t.type, fontSize: 9}, {text: t.note || '-', fontSize: 9}, {text: displayAmount.toLocaleString(), fontSize: 9, color: color, alignment: 'right'} ]); 
                 });
                 const docDefinition = { pageSize: 'A4', pageMargins: [20, 20, 20, 20], defaultStyle: { font: 'Tajawal', fontSize: 10, direction: 'rtl' }, styles: { tableHeader: { bold: true, fillColor: '#eeeeee', alignment: 'center' } }, content: [ { text: this.state.name, fontSize: 14, bold: true, alignment: 'center', margin: [0,0,0,5] }, { text: this.t('rep_det_title'), fontSize: 12, alignment: 'center', margin: [0,0,0,20] }, { table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto'], body: bodyData }, layout: 'lightHorizontalLines' } ] }; pdfMake.createPdf(docDefinition).open();
