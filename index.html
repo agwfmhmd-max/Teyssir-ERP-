@@ -268,7 +268,7 @@
                 adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف",
                 pay_supp: "سداد مورد", supp_bal: "ديون الموردين", purchase: "شراء مخزون",
                 th_supp: "المورد", new_supp: "مورد جديد", supp_type: "نوع الشراء", supp_direct: "شراء مباشر (مصروف)", supp_credit: "شراء من مورد (آجل/جزئي)", toggle_new: "مورد جديد",
-                down_pdf: "تحميل كشف PDF", btn_save: "حفظ", op_bal: "رصيد افتتاحي",
+                down_pdf: "تحميل كشف PDF", wa_share: "مشاركة عبر واتساب", btn_save: "حفظ", op_bal: "رصيد افتتاحي",
                 pay_now_opt: "دفع الراتب الآن", pay_later_opt: "تراكم الراتب (دين)", pay_sal: "دفع راتب",
                 pay_cash: "كاش", pay_bank: "بنك", rep_cash: "كاش فقط", rep_bank: "بنك فقط", rep_all: "الكل",
                 sal_mng: "إدارة الرواتب", sal_new: "موظف جديد", sal_search: "بحث عن موظف...",
@@ -364,7 +364,7 @@
                 adm_stop: "Stop", adm_start: "Start", adm_del: "Del",
                 pay_supp: "Payer Fournisseur", supp_bal: "Dettes Fournisseurs", purchase: "Achat Stock",
                 th_supp: "Fournisseur", new_supp: "Nouveau Fourn.", supp_type: "Type Achat", supp_direct: "Achat Direct (Dépense)", supp_credit: "Achat Fournisseur (Crédit)", toggle_new: "Nouveau Fournisseur",
-                down_pdf: "Télécharger PDF", btn_save: "Enregistrer", op_bal: "Solde Initial",
+                down_pdf: "Télécharger PDF", wa_share: "Partager via WhatsApp", btn_save: "Enregistrer", op_bal: "Solde Initial",
                 pay_now_opt: "Payer maintenant", pay_later_opt: "Ne pas payer (Dette)", pay_sal: "Payer Salaire",
                 pay_cash: "Espèces", pay_bank: "Banque", rep_cash: "Espèces", rep_bank: "Banque", rep_all: "Tout",
                 sal_mng: "Gestion Salaires", sal_new: "Nouv. Employé", sal_search: "Chercher...",
@@ -1206,16 +1206,36 @@
             },
 
             // ====== دوال الواتساب والطباعة =======
-            sendWa: function(phone, msg, pdfName) {
-                let p = phone;
-                if(!p || p === '-' || p === 'undefined' || p.trim() === '') {
-                    p = prompt(`لم يتم العثور على رقم مسجل. أدخل رقم الواتساب لإرسال (${pdfName}) (بدون أصفار، مثال: 3XXXXXXX):`);
+            // مشاركة موحّدة: تنزيل الملف أولاً ثم فتح واتساب بالرسالة المناسبة للغة الحالية.
+            sendWa: function(phone, msg, pdfName, downloadFn) {
+                let p = String(phone || '').trim();
+                const isAr = this.state.lang === 'ar';
+                if(!p || p === '-' || p === 'undefined') {
+                    p = prompt(isAr
+                        ? `لم يتم العثور على رقم مسجل. أدخل رقم الواتساب لإرسال ${pdfName} (8 أرقام، مثال: 3XXXXXXX):`
+                        : `Aucun numéro enregistré. Saisissez le numéro WhatsApp pour envoyer ${pdfName} (8 chiffres, exemple : 3XXXXXXX) :`);
                     if(!p) return;
                 }
-                p = p.replace(/\s+/g, ''); 
-                if(p.length === 8) p = '222' + p; 
-                alert(`الخطوة 1: سيتم تنزيل ملف (${pdfName}) على جهازك الآن.\nالخطوة 2: سيتم فتح الواتساب تلقائياً.\nالخطوة 3: قم بإرفاق الملف 📎 في المحادثة.`);
-                window.open(`https://wa.me/${p}?text=${encodeURIComponent(msg)}`, '_blank');
+                p = p.replace(/[^\d+]/g, '');
+                if(p.startsWith('+')) p = p.slice(1);
+                if(p.startsWith('00')) p = p.slice(2);
+                if(p.length === 8) p = '222' + p;
+                if(p.length < 10) {
+                    alert(isAr ? 'رقم الواتساب غير صالح.' : 'Le numéro WhatsApp est invalide.');
+                    return;
+                }
+                // فتح نافذة مباشرة يحافظ على السماح بها من المتصفح، ثم نوجّهها بعد بدء التنزيل.
+                const waWindow = window.open('about:blank', '_blank');
+                try { if (typeof downloadFn === 'function') downloadFn(); } catch (error) { console.error('PDF download failed', error); }
+                const text = encodeURIComponent(msg);
+                const waUrl = `https://wa.me/${p}?text=${text}`;
+                setTimeout(() => {
+                    if (waWindow && !waWindow.closed) waWindow.location.href = waUrl;
+                    else window.open(waUrl, '_blank');
+                }, 450);
+                alert(isAr
+                    ? `تم تنزيل ${pdfName}، وسيتم فتح واتساب الآن. أرفق الملف في المحادثة.`
+                    : `${pdfName} a été téléchargé. WhatsApp va s’ouvrir ; joignez le fichier à la conversation.`);
             },
 
             downloadInvoicePdf: function(invNum, customer, total, items, paid, debt) {
@@ -1255,24 +1275,30 @@
                     } catch(e){}
                 }
                 const items = JSON.parse(decodeURIComponent(itemsStr));
-                this.downloadInvoicePdf(invNum, customer, total, items, paid, debt);
-                let msg = `🧾 *فاتورة مبيعات*\nالشركة: ${this.state.name}\nرقم الفاتورة: ${invNum}\nالعميل: ${customer}\nالتاريخ: ${new Date().toLocaleDateString()}\n\n💰 *الإجمالي:* ${total.toLocaleString()} MRU\n✅ *المدفوع:* ${paid.toLocaleString()} MRU\n⏳ *المتبقي:* ${debt.toLocaleString()} MRU\n\n(مرفق لكم الفاتورة بصيغة PDF)\nشكراً لتعاملكم معنا! 🤝`;
-                this.sendWa(phone, msg, 'الفاتورة');
+                const isAr = this.state.lang === 'ar';
+                const msg = isAr
+                    ? `🧾 *فاتورة مبيعات*\nالشركة: ${this.state.name}\nرقم الفاتورة: ${invNum}\nالعميل: ${customer}\nالتاريخ: ${new Date().toLocaleDateString('ar-MA')}\n\n💰 *الإجمالي:* ${total.toLocaleString()} MRU\n✅ *المدفوع:* ${paid.toLocaleString()} MRU\n⏳ *المتبقي:* ${debt.toLocaleString()} MRU\n\nمرفق لكم الفاتورة بصيغة PDF.\nشكراً لتعاملكم معنا!`
+                    : `🧾 *Facture de vente*\nSociété : ${this.state.name}\nN° facture : ${invNum}\nClient : ${customer}\nDate : ${new Date().toLocaleDateString('fr-FR')}\n\n💰 *Total :* ${total.toLocaleString()} MRU\n✅ *Payé :* ${paid.toLocaleString()} MRU\n⏳ *Reste :* ${debt.toLocaleString()} MRU\n\nVeuillez trouver la facture PDF en pièce jointe.\nMerci pour votre confiance !`;
+                this.sendWa(phone, msg, isAr ? 'الفاتورة' : 'la facture', () => this.downloadInvoicePdf(invNum, customer, total, items, paid, debt));
             },
 
             sendStatementWaBtn: function(type, name, phone, bal, pdfDataStr) {
                 const pdfData = JSON.parse(decodeURIComponent(pdfDataStr));
-                this.createPdfStatement(pdfData, type, name);
-                let msgType = type === 'customer' ? 'عميل' : 'مورد';
-                let msg = `📄 *كشف حساب ${msgType}*\nالاسم: ${name}\nالشركة: ${this.state.name}\nالتاريخ: ${new Date().toLocaleDateString()}\n\n💳 *الرصيد الحالي المستحق:* ${bal.toLocaleString()} MRU\n\n(مرفق لكم كشف الحساب بالتفصيل بصيغة PDF)\nنرجو مراجعة الكشف للتأكيد. 🌹`;
-                this.sendWa(phone, msg, 'كشف الحساب');
+                const isAr = this.state.lang === 'ar';
+                const msgType = isAr ? (type === 'customer' ? 'عميل' : 'مورد') : (type === 'customer' ? 'client' : 'fournisseur');
+                const msg = isAr
+                    ? `📄 *كشف حساب ${msgType}*\nالاسم: ${name}\nالشركة: ${this.state.name}\nالتاريخ: ${new Date().toLocaleDateString('ar-MA')}\n\n💳 *الرصيد الحالي المستحق:* ${bal.toLocaleString()} MRU\n\nمرفق لكم كشف الحساب بالتفصيل بصيغة PDF.\nنرجو مراجعته للتأكيد.`
+                    : `📄 *Relevé de compte — ${msgType}*\nNom : ${name}\nSociété : ${this.state.name}\nDate : ${new Date().toLocaleDateString('fr-FR')}\n\n💳 *Solde actuel :* ${bal.toLocaleString()} MRU\n\nVeuillez trouver le relevé détaillé en pièce jointe PDF.\nMerci de le vérifier.`;
+                this.sendWa(phone, msg, isAr ? 'كشف الحساب' : 'le relevé de compte', () => this.createPdfStatement(pdfData, type, name));
             },
 
             sendSalaryWaBtn: function(empName, phone, baseSalary, totalPaid, histStr) {
                 const history = JSON.parse(decodeURIComponent(histStr));
-                this.downloadEmpPdf(empName, baseSalary, histStr);
-                let msg = `💼 *كشف رواتب ومستحقات*\nالموظف: ${empName}\nالشركة: ${this.state.name}\nالتاريخ: ${new Date().toLocaleDateString()}\n\nالراتب الأساسي: ${baseSalary.toLocaleString()} MRU\n✅ *إجمالي ما تم دفعه لك:* ${totalPaid.toLocaleString()} MRU\n\n(مرفق لكم ملف الرواتب بصيغة PDF)\nتمنياتنا لك بالتوفيق! 🌟`;
-                this.sendWa(phone, msg, 'ملف الرواتب');
+                const isAr = this.state.lang === 'ar';
+                const msg = isAr
+                    ? `💼 *كشف رواتب ومستحقات*\nالموظف: ${empName}\nالشركة: ${this.state.name}\nالتاريخ: ${new Date().toLocaleDateString('ar-MA')}\n\nالراتب الأساسي: ${baseSalary.toLocaleString()} MRU\n✅ *إجمالي ما تم دفعه لك:* ${totalPaid.toLocaleString()} MRU\n\nمرفق لكم ملف الرواتب بصيغة PDF.\nتمنياتنا لك بالتوفيق!`
+                    : `💼 *Relevé de salaire et droits*\nEmployé : ${empName}\nSociété : ${this.state.name}\nDate : ${new Date().toLocaleDateString('fr-FR')}\n\nSalaire de base : ${baseSalary.toLocaleString()} MRU\n✅ *Total déjà payé :* ${totalPaid.toLocaleString()} MRU\n\nVeuillez trouver le relevé de salaire PDF en pièce jointe.\nBonne continuation !`;
+                this.sendWa(phone, msg, isAr ? 'ملف الرواتب' : 'le relevé de salaire', () => this.downloadEmpPdf(empName, baseSalary, histStr));
             },
             // ===================================
 
@@ -3547,7 +3573,7 @@
                 let waBtn = '';
                 if (type === 'customer' || type === 'supplier') {
                     const pdfDataStr = encodeURIComponent(JSON.stringify(pdfData));
-                    waBtn = `<button onclick="app.sendStatementWaBtn('${type}', '${name}', '${phone||''}', ${runningBal}, '${pdfDataStr}')" class="btn btn-prim" style="background:#25D366; border:none; padding:5px 15px; width:auto;"><i class="fa-brands fa-whatsapp"></i> إرسال واتساب</button>`;
+                    waBtn = `<button onclick="app.sendStatementWaBtn('${type}', '${name}', '${phone||''}', ${runningBal}, '${pdfDataStr}')" class="btn btn-prim wa-share" title="${this.t('wa_share')}"><i class="fa-brands fa-whatsapp"></i> ${this.t('wa_share')}</button>`;
                 }
                 h = `<div style="display:flex; gap:10px; margin-bottom:15px;"><button onclick='app.createPdfStatement(${JSON.stringify(pdfData)}, "${type}", "${name}")' class="btn btn-sec" style="background:var(--primary); width:auto; padding:5px 15px;"><i class="fa-solid fa-file-pdf"></i> ${this.t('down_pdf')}</button> ${waBtn}</div>` + h;
                 
@@ -3764,7 +3790,7 @@
                         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
                             <button onclick="app.payEmployeeModal('${empId}', '${empName}', ${baseSalary})" class="btn btn-prim" style="flex:1;"><i class="fa-solid fa-hand-holding-dollar"></i> دفع راتب</button>
                             <button onclick="app.downloadEmpPdf('${empName}', ${baseSalary}, '${histStr}')" class="btn btn-sec" style="background:#dc2626; flex:1;"><i class="fa-solid fa-file-pdf"></i> PDF</button> 
-                            <button onclick="app.sendSalaryWaBtn('${empName}', '${phone||''}', ${baseSalary}, ${totalPaid}, '${histStr}')" class="btn btn-prim" style="background:#25D366; border:none; flex:1;"><i class="fa-brands fa-whatsapp"></i> واتساب</button>
+                            <button onclick="app.sendSalaryWaBtn('${empName}', '${phone||''}', ${baseSalary}, ${totalPaid}, '${histStr}')" class="btn btn-prim wa-share"><i class="fa-brands fa-whatsapp"></i> ${this.t('wa_share')}</button>
                         </div>
                         <div class="card">
                             <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">سجل الدفعات</h3>
@@ -4027,7 +4053,7 @@
                                 <td>${(d.paid || 0).toLocaleString()}</td>
                                 <td style="display:flex; gap:5px; justify-content:center;">
                                     <button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${displayNum}','${d.customer}',${d.total},'${str}',${d.paid},${d.debt},'${pm}','${bn}')"><i class="fa-solid fa-print"></i></button> 
-                                    <button class="btn btn-prim" style="padding:5px 10px; background:#25D366; border:none;" onclick="app.sendInvoiceWa('${displayNum}', '${d.customer}', '${d.customerId||''}', ${d.total}, ${d.paid || 0}, ${d.debt || 0}, '${str}')"><i class="fa-brands fa-whatsapp"></i> واتساب</button>
+                                    <button class="btn btn-prim wa-share" onclick="app.sendInvoiceWa('${displayNum}', '${d.customer}', '${d.customerId||''}', ${d.total}, ${d.paid || 0}, ${d.debt || 0}, '${str}')" title="${this.t('wa_share')}"><i class="fa-brands fa-whatsapp"></i> ${this.t('wa_share')}</button>
                                 </td>
                             </tr>`; 
                         }); 

@@ -352,3 +352,34 @@ tr.row-salary-due { background: rgba(245, 158, 11, .12); }
   border-radius: 12px; font-size: 13px; font-weight: 600;
   color: #0c4a6e; background: #e0f2fe; border: 1px solid #bae6fd;
 }
+
+
+/* ---------- Professional sharing actions ---------- */
+.wa-share {
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%) !important;
+  color: #fff !important;
+  border: 0 !important;
+  min-width: 148px;
+  white-space: nowrap;
+  box-shadow: 0 7px 18px rgba(18, 140, 126, .22) !important;
+}
+.wa-share:hover { filter: brightness(1.06) saturate(1.08); box-shadow: 0 10px 24px rgba(18, 140, 126, .3) !important; }
+.wa-share i { font-size: 1.05em; }
+#modalContent > div:first-child {
+  align-items: stretch !important;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+#modalContent > div:first-child .btn { min-height: 42px; }
+@media (max-width: 640px) {
+  #modalContent > div:first-child { flex-direction: column; }
+  #modalContent > div:first-child .btn { width: 100% !important; }
+  .wa-share { min-width: 0; }
+  .table-scroll table td:last-child { min-width: 150px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .auth-card, .modal-box, .welcome-content, .salary-due-alert { animation: none !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
