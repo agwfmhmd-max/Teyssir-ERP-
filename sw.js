@@ -14,7 +14,7 @@
      With relative URLs the precache works on any hosting path (root,
      subfolder, GitHub Pages, etc.) and the app loads fully offline.
 */
-const VERSION       = 'teyssir-v6-2026-06-12';
+const VERSION       = 'teyssir-v7-2026-09-17';
 const SHELL_CACHE   = `shell-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 
