@@ -71,6 +71,7 @@
         .nav-item.disabled-link { opacity: 0.3; pointer-events: none; display: none !important; }
         
         .promo-box { display:flex; gap:5px; margin-bottom:15px; }
+        .finance-details-hidden { display:none; }
         .promo-input { flex:1; padding:10px; border:1px solid #ccc; border-radius:5px; }
         .promo-btn { padding:10px 15px; background:var(--primary); color:white; border:none; border-radius:5px; cursor:pointer; }
     </style>
@@ -321,11 +322,11 @@
                 tr_bank_title: "تحويل أموال بين البنوك", tr_bank_from: "من بنك (المرسل - يُخصم منه)", tr_bank_to: "إلى بنك (المستلم - يُضاف إليه)",
                 tr_bank_amt: "المبلغ المراد تحويله", tr_bank_btn: "تحويل بين البنوك", err_bank_min: "يجب أن يكون لديك بنكين على الأقل.", err_bank_same: "لا يمكن التحويل لنفس البنك!", err_amt_zero: "المبلغ يجب أن يكون أكبر من صفر.",
                 
-                adm_mng_codes: "إدارة الأكواد", adm_pay_reqs: "${this.t('adm_requests')}", adm_promos: "التخفيضات", adm_search_comp: "بحث عن شركة أو هاتف...",
+                adm_mng_codes: "إدارة الأكواد", adm_pay_reqs: "طلبات الدفع", adm_promos: "التخفيضات", adm_search_comp: "بحث عن شركة أو هاتف...",
                 promo_add_title: "إضافة كود تخفيض", promo_code_lbl: "الكود (مثال: KSA2024)", promo_perc_lbl: "النسبة %", promo_limit_lbl: "مرات الاستخدام",
                 promo_exp_lbl: "تاريخ الانتهاء", promo_btn_add: "إضافة الكود", promo_list_title: "الأكواد الفعالة", promo_usage: "الاستخدام",
                 promo_err_fields: "يرجى تعبئة جميع الحقول", promo_err_exist: "هذا الكود موجود مسبقاً!", promo_del_conf: "حذف هذا الكود نهائياً؟",
-                req_pend_title: "${this.t('adm_requests')} المعلقة", th_req_type: "النوع", th_wa: "الواتساب", th_disc: "الخصم", th_dur_usr: "مدة/مستخدمين", th_receipt: "الإيصال",
+                req_pend_title: "طلبات الدفع المعلقة", th_req_type: "النوع", th_wa: "الواتساب", th_disc: "الخصم", th_dur_usr: "مدة/مستخدمين", th_receipt: "الإيصال",
                 req_empty: "لا توجد طلبات معلقة", req_btn_acc: "قبول", req_btn_rej: "رفض",
 
                 rep_detailed: "تقرير مفصل (يومي/شهري/سنوي)", rep_type_period: "اختر نوع التقرير والفترة",
@@ -333,17 +334,17 @@
                 net_period: "الصافي للفترة", empty_report: "اختر الفترة واضغط عرض...", no_txs: "لا توجد أي حركات في هذه الفترة.",
                 total_final: "الإجمالي النهائي", rep_tr_custom: "كشف الخزينة المخصص", rep_bank_custom: "كشف حساب للبنك",
                 pdf_all: "PDF شامل",
-                adm_dashboard: "لوحة المشرف", adm_companies: "${this.t('adm_companies')}", adm_requests: "${this.t('adm_requests')}",
-                adm_loading: "${this.t('adm_loading')}", adm_codes: "إدارة الأكواد", adm_payments: "${this.t('adm_requests')}", adm_settings: "${this.t('adm_settings')}",
+                adm_dashboard: "لوحة المشرف", adm_companies: "الشركات المسجلة", adm_requests: "طلبات الدفع",
+                adm_loading: "جاري جلب الإحصائيات الدقيقة...", adm_codes: "إدارة الأكواد", adm_payments: "طلبات الدفع", adm_settings: "الأسعار والبنوك",
                 adm_bank: "البنك", adm_limit: "حد الأجهزة/المستخدمين", adm_expires: "تاريخ الانتهاء", adm_view: "عرض", adm_renew_btn: "تجديد",
                 adm_disable: "تعطيل", adm_enable: "تفعيل", adm_copy: "نسخ", adm_action: "الإجراء", adm_status: "الحالة",
                 adm_accepted: "مقبول", adm_rejected: "مرفوض", adm_archive_accepted: "أرشيف الطلبات المقبولة", adm_archive_rejected: "أرشيف الطلبات المرفوضة",
-                adm_no_archive: "${this.t('adm_no_archive')}", adm_no_company: "هذه الشركة لم تقم بتسجيل الدخول بعد. لا يوجد مستخدمون لعرضهم.",
+                adm_no_archive: "لا توجد طلبات في الأرشيف", adm_no_company: "هذه الشركة لم تقم بتسجيل الدخول بعد. لا يوجد مستخدمون لعرضهم.",
                 adm_employee: "الموظف", adm_pin: "الرمز (PIN)", adm_permissions_count: "عدد الصلاحيات", adm_no_employees: "لا يوجد موظفون مسجلون في هذه الشركة",
-                adm_company_name: "اسم الشركة", adm_account_number: "رقم الحساب", adm_delete: "حذف", adm_save_settings: "${this.t('adm_save_settings')}",
+                adm_company_name: "اسم الشركة", adm_account_number: "رقم الحساب", adm_delete: "حذف", adm_save_settings: "حفظ الإعدادات",
                 adm_prices: "أسعار الاشتراك", adm_banks: "بنوك الدفع وأرقامها", adm_banks_hint: "هذه البنوك تظهر للعملاء في نافذة الدفع المباشر مع رقم الحساب المرتبط بكل بنك.",
-                adm_add_bank: "إضافة بنك", adm_bank_name: "اسم البنك", adm_bank_number: "رقم الحساب", adm_no_banks: "${this.t('adm_no_banks')}",
-                adm_valid_prices: "الرجاء إدخال أسعار صحيحة أكبر من صفر.", adm_need_bank: "${this.t('adm_need_bank')}", adm_saved: "تم ${this.t('adm_save_settings')} بنجاح. سيراها العملاء عند فتح نافذة الدفع.",
+                adm_add_bank: "إضافة بنك", adm_bank_name: "اسم البنك", adm_bank_number: "رقم الحساب", adm_no_banks: "لا توجد بنوك مضافة.",
+                adm_valid_prices: "الرجاء إدخال أسعار صحيحة أكبر من صفر.", adm_need_bank: "يجب إضافة بنك واحد على الأقل.", adm_saved: "تم حفظ الإعدادات بنجاح. سيراها العملاء عند فتح نافذة الدفع.",
                 device_limit_error: "عذراً، تم الوصول إلى الحد الأقصى للأجهزة المسموح به لهذا الاشتراك. الرجاء تسجيل الخروج من جهاز آخر أولاً.",
                 renewal_lookup_error: "رمز التفعيل غير موجود أو لا يحتوي على بيانات شركة صالحة.", renewal_autofilled: "تم ملء بيانات الشركة تلقائياً من رمز التفعيل."
             },
@@ -1864,10 +1865,12 @@
                                 <option value="day">${this.t('rep_day')}</option>
                                 <option value="month">${this.t('rep_month')}</option>
                                 <option value="year">${this.t('rep_year')}</option>
+                                <option value="range">${this.t('f_range')}</option>
                             </select>
                             <div id="rbDayDiv"><input type="date" id="rbDate" class="inp" value="${today}" style="margin:0;"></div>
                             <div id="rbMonthDiv" style="display:none;"><input type="month" id="rbMonth" class="inp" value="${thisMonth}" style="margin:0;"></div>
                             <div id="rbYearDiv" style="display:none;"><input type="number" id="rbYear" class="inp" value="${thisYear}" style="margin:0; width:100px;"></div>
+                            <div id="rbRangeDiv" style="display:none; gap:5px; align-items:center;"><input type="date" id="rbStart" class="inp" style="margin:0;"><span>—</span><input type="date" id="rbEnd" class="inp" style="margin:0;"></div>
                             <button onclick="app.calcReportBank('${bankId}')" class="btn btn-prim" style="width:auto; padding:10px;"><i class="fa-solid fa-search"></i> ${this.t('btn_show')}</button>
                             <button onclick="app.printReportBankPdf('${bankName}')" class="btn btn-sec" style="width:auto; padding:10px; background:#ef4444; color:white; border:none;"><i class="fa-solid fa-file-pdf"></i> ${this.t('btn_pdf')}</button>
                         </div>
@@ -1896,6 +1899,7 @@
                 document.getElementById('rbDayDiv').style.display = type === 'day' ? 'block' : 'none';
                 document.getElementById('rbMonthDiv').style.display = type === 'month' ? 'block' : 'none';
                 document.getElementById('rbYearDiv').style.display = type === 'year' ? 'block' : 'none';
+                document.getElementById('rbRangeDiv').style.display = type === 'range' ? 'flex' : 'none';
             },
 
             calcReportBank: async function(bankId) { 
@@ -1919,7 +1923,7 @@
                     dEnd = new Date(y, m, 0); 
                     dEnd.setHours(23,59,59,999); 
                     displayDateText = v; 
-                } else { 
+                } else if (type === 'year') { 
                     const v = document.getElementById('rbYear').value; 
                     if(!v) return; 
                     dStart = new Date(v, 0, 1); 
@@ -1927,6 +1931,16 @@
                     dEnd = new Date(v, 11, 31); 
                     dEnd.setHours(23,59,59,999); 
                     displayDateText = v; 
+                } else {
+                    const start = document.getElementById('rbStart').value;
+                    const end = document.getElementById('rbEnd').value;
+                    if (!start || !end) return alert(this.state.lang === 'ar' ? 'يرجى تحديد تاريخ البداية والنهاية.' : 'Veuillez sélectionner les dates de début et de fin.');
+                    dStart = new Date(start);
+                    dStart.setHours(0,0,0,0);
+                    dEnd = new Date(end);
+                    dEnd.setHours(23,59,59,999);
+                    if (dStart > dEnd) return alert(this.state.lang === 'ar' ? 'تاريخ البداية يجب أن يسبق تاريخ النهاية.' : 'La date de début doit précéder la date de fin.');
+                    displayDateText = `${start} — ${end}`;
                 } 
 
                 try { 
@@ -4167,17 +4181,34 @@
                                 <td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer"><i class="fa-solid fa-trash"></i></td>
                             </tr>`; 
                         }); 
-                    } else { 
-                        th=`<tr><th>${this.t('th_name')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_del')}</th></tr>`; 
-                        if(docs.length === 0) h = '<tr><td colspan="5">-</td></tr>'; 
-                        else docs.forEach(d=>{ 
-                            h+=`<tr>
-                                <td>${d.val1}</td>
-                                <td>${d.val2}</td>
-                                <td>${(d.val3 || 0).toLocaleString()}</td>
-                                <td onclick="app.del('${d.id}','${type}')" style="color:var(--danger);cursor:pointer"><i class="fa-solid fa-trash"></i></td>
-                            </tr>`; 
-                        }); 
+                    } else if (type === 'expenses' || type === 'revenues') {
+                        // تنظيم مالي: كل بند في خانة مستقلة وبداخله جميع مدفوعاته.
+                        th = `<tr><th>${this.t('th_name')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_note')}</th><th>${this.t('th_del')}</th></tr>`;
+                        if (docs.length === 0) h = '<tr><td colspan="4">-</td></tr>';
+                        else {
+                            const groups = {};
+                            docs.forEach(d => {
+                                const key = String(d.val1 || this.t('exp_other'));
+                                if (!groups[key]) groups[key] = [];
+                                groups[key].push(d);
+                            });
+                            Object.keys(groups).sort((a, b) => a.localeCompare(b)).forEach(groupName => {
+                                const items = groups[groupName];
+                                const total = items.reduce((sum, d) => sum + Number(d.val3 || 0), 0);
+                                const detailRows = items.map((d, idx) => `<tr>
+                                    <td>${idx + 1}</td><td>${this.formatDate(d.createdAt)}</td><td>${d.val2 || '-'}</td>
+                                    <td style="font-weight:bold;">${Number(d.val3 || 0).toLocaleString()}</td>
+                                    <td><button onclick="app.del('${d.id}','${type}')" class="btn btn-dan" style="width:auto;padding:3px 8px;"><i class="fa-solid fa-trash"></i></button></td>
+                                </tr>`).join('');
+                                h += `<tr class="finance-group-row">
+                                    <td style="font-weight:800;color:var(--primary);">${groupName}<br><small>${items.length} ${this.state.lang === 'ar' ? 'دفعة' : 'paiement(s)'}</small></td>
+                                    <td style="font-weight:900;color:${type === 'expenses' ? 'var(--danger)' : 'var(--success)'};">${total.toLocaleString()}</td>
+                                    <td>${this.state.lang === 'ar' ? 'إجمالي المدفوعات' : 'Total des paiements'}</td>
+                                    <td><button class="btn btn-sec" style="width:auto;padding:4px 10px;" onclick="this.closest('tr').nextElementSibling.classList.toggle('finance-details-hidden')">${this.state.lang === 'ar' ? 'عرض التفاصيل' : 'Détails'}</button></td>
+                                </tr>
+                                <tr class="finance-details-row"><td colspan="4"><div class="table-scroll"><table style="margin:0;"><thead><tr><th>#</th><th>${this.t('th_date')}</th><th>${this.t('th_note')}</th><th>${this.t('th_amount')}</th><th>${this.t('th_del')}</th></tr></thead><tbody>${detailRows}</tbody></table></div></td></tr>`;
+                            });
+                        }
                     }
                     
                     html += `</thead><tbody>${h}</tbody></table></div></div>`; 
@@ -4320,14 +4351,13 @@
                     const hasCompany = this.state.cid && this.state.cid !== 'ADMIN';
                     const code = (sess && sess.code) ? sess.code : '';
                     const isTrial = code && code.indexOf('TRIAL-') === 0;
-                    if (hasCompany) {
+                    if (hasCompany || code) {
                         const sel = document.getElementById('dpReqCategory');
                         // For trial users → "new" (need a real code). For paid users → "renew"
                         sel.value = isTrial ? 'new' : 'renew';
                         this.toggleRenewInput();
                         const fName = document.getElementById('dpName');
                         const fPhone = document.getElementById('dpPhone');
-                        const fWa = document.getElementById('dpWa');
                         const fCode = document.getElementById('dpExistingCode');
                         if (fName && this.state.name) fName.value = this.state.name;
                         if (fPhone && this.state.phone) fPhone.value = this.state.phone;
@@ -4791,8 +4821,8 @@
                 const area = document.getElementById('adminWorkArea');
                 area.innerHTML = `
                     <div class="card">
-                        <input id="an" class="inp" placeholder="Name">
-                        <input id="ap" class="inp" placeholder="Phone">
+                        <input id="an" class="inp" placeholder="${this.t('dp_comp')}">
+                        <input id="ap" class="inp" placeholder="${this.t('dp_phone')}">
                         <select id="adur" class="select-box">
                             <option value="day">${this.t('sub_day')}</option>
                             <option value="week">${this.t('sub_week')}</option>
@@ -4852,7 +4882,7 @@
                 const status = statusFilter || 'pending';
                 const area = document.getElementById('adminWorkArea');
 
-                const titles = { pending: this.t('req_pend_title'), approved: 'أرشيف الطلبات المقبولة ✅', rejected: 'أرشيف الطلبات المرفوضة ❌' };
+                const titles = { pending: this.t('req_pend_title'), approved: `${this.t('adm_archive_accepted')} ✅`, rejected: `${this.t('adm_archive_rejected')} ❌` };
 
                 // هيكل أولي مع مؤشر تحميل
                 area.innerHTML = `
@@ -4873,7 +4903,7 @@
                                         <th>${this.t('th_disc')}</th>
                                         <th>${this.t('th_dur_usr')}</th>
                                         <th>${this.t('th_receipt')}</th>
-                                        <th>${status === 'pending' ? this.t('adm_act') : 'الحالة'}</th>
+                                        <th>${status === 'pending' ? this.t('adm_act') : this.t('adm_status')}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reqBody"><tr><td colspan="11" style="text-align:center">${this.t('wait')}</td></tr></tbody>
@@ -4943,10 +4973,10 @@
                     filtered.forEach(r => {
                         // عرض التوقيت الدقيق (تاريخ + ساعة + دقيقة + ثانية)
                         const dateStr = this.formatDate(r.created_at);
-                        const sub = r.sub_type === 'year' ? 'Yearly' : 'Monthly';
+                        const sub = r.sub_type === 'year' ? (this.state.lang === 'ar' ? 'سنوي' : 'Annuel') : (this.state.lang === 'ar' ? 'شهري' : 'Mensuel');
                         const reqCatStr = r.request_category === 'renew' ?
-                            `<span style="color:#d97706; font-weight:bold; font-size:11px; background:#fef3c7; padding:2px 5px; border-radius:4px;">Renew<br><small>${r.existing_code||'-'}</small></span>` :
-                            `<span style="color:#166534; font-weight:bold; font-size:11px; background:#dcfce7; padding:2px 5px; border-radius:4px;">New</span>`;
+                            `<span style="color:#d97706; font-weight:bold; font-size:11px; background:#fef3c7; padding:2px 5px; border-radius:4px;">${this.state.lang === 'ar' ? 'تجديد' : 'Renouvellement'}<br><small>${r.existing_code||'-'}</small></span>` :
+                            `<span style="color:#166534; font-weight:bold; font-size:11px; background:#dcfce7; padding:2px 5px; border-radius:4px;">${this.state.lang === 'ar' ? 'جديد' : 'Nouveau'}</span>`;
                         const promoStr = r.promo_applied ? `<span style="color:var(--primary); font-size:10px; font-weight:bold;">${r.promo_applied}%</span>` : '-';
 
                         let actionCell = '';
@@ -4971,7 +5001,7 @@
                             <td style="color:green;font-weight:bold">${r.total_amount || 0}</td>
                             <td>${promoStr}</td>
                             <td style="font-size:12px;">${sub} / ${Number(r.users_count) || 1}</td>
-                            <td><a href="${safeUrl(r.receipt_url)}" target="_blank" style="color:blue; text-decoration:underline; font-size:12px;">View</a></td>
+                            <td><a href="${safeUrl(r.receipt_url)}" target="_blank" style="color:blue; text-decoration:underline; font-size:12px;">${this.t('adm_view')}</a></td>
                             <td>${actionCell}</td>
                         </tr>`;
                     });
