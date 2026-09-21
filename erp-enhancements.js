@@ -207,13 +207,12 @@
       enhanceBlockScreen(reason);
     };
 
-    app.openRenewalForm = function () {
+    app.openRenewalForm = async function () {
       this.directPayModal();
       const session = safeJson("mda_session", {});
       const values = {
         dpName: this.state.name || session.name || "",
         dpPhone: this.state.phone || session.phone || "",
-        dpWa: this.state.phone || session.phone || "",
         dpExistingCode: session.code || "",
       };
       Object.entries(values).forEach(([id, value]) => {

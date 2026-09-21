@@ -321,18 +321,31 @@
                 tr_bank_title: "تحويل أموال بين البنوك", tr_bank_from: "من بنك (المرسل - يُخصم منه)", tr_bank_to: "إلى بنك (المستلم - يُضاف إليه)",
                 tr_bank_amt: "المبلغ المراد تحويله", tr_bank_btn: "تحويل بين البنوك", err_bank_min: "يجب أن يكون لديك بنكين على الأقل.", err_bank_same: "لا يمكن التحويل لنفس البنك!", err_amt_zero: "المبلغ يجب أن يكون أكبر من صفر.",
                 
-                adm_mng_codes: "إدارة الأكواد", adm_pay_reqs: "طلبات الدفع", adm_promos: "التخفيضات", adm_search_comp: "بحث عن شركة أو هاتف...",
+                adm_mng_codes: "إدارة الأكواد", adm_pay_reqs: "${this.t('adm_requests')}", adm_promos: "التخفيضات", adm_search_comp: "بحث عن شركة أو هاتف...",
                 promo_add_title: "إضافة كود تخفيض", promo_code_lbl: "الكود (مثال: KSA2024)", promo_perc_lbl: "النسبة %", promo_limit_lbl: "مرات الاستخدام",
                 promo_exp_lbl: "تاريخ الانتهاء", promo_btn_add: "إضافة الكود", promo_list_title: "الأكواد الفعالة", promo_usage: "الاستخدام",
                 promo_err_fields: "يرجى تعبئة جميع الحقول", promo_err_exist: "هذا الكود موجود مسبقاً!", promo_del_conf: "حذف هذا الكود نهائياً؟",
-                req_pend_title: "طلبات الدفع المعلقة", th_req_type: "النوع", th_wa: "الواتساب", th_disc: "الخصم", th_dur_usr: "مدة/مستخدمين", th_receipt: "الإيصال",
+                req_pend_title: "${this.t('adm_requests')} المعلقة", th_req_type: "النوع", th_wa: "الواتساب", th_disc: "الخصم", th_dur_usr: "مدة/مستخدمين", th_receipt: "الإيصال",
                 req_empty: "لا توجد طلبات معلقة", req_btn_acc: "قبول", req_btn_rej: "رفض",
 
                 rep_detailed: "تقرير مفصل (يومي/شهري/سنوي)", rep_type_period: "اختر نوع التقرير والفترة",
                 rep_day: "يومي", rep_month: "شهري", rep_year: "سنوي", btn_show: "عرض", btn_pdf: "تحميل PDF",
                 net_period: "الصافي للفترة", empty_report: "اختر الفترة واضغط عرض...", no_txs: "لا توجد أي حركات في هذه الفترة.",
                 total_final: "الإجمالي النهائي", rep_tr_custom: "كشف الخزينة المخصص", rep_bank_custom: "كشف حساب للبنك",
-                pdf_all: "PDF شامل"
+                pdf_all: "PDF شامل",
+                adm_dashboard: "لوحة المشرف", adm_companies: "${this.t('adm_companies')}", adm_requests: "${this.t('adm_requests')}",
+                adm_loading: "${this.t('adm_loading')}", adm_codes: "إدارة الأكواد", adm_payments: "${this.t('adm_requests')}", adm_settings: "${this.t('adm_settings')}",
+                adm_bank: "البنك", adm_limit: "حد الأجهزة/المستخدمين", adm_expires: "تاريخ الانتهاء", adm_view: "عرض", adm_renew_btn: "تجديد",
+                adm_disable: "تعطيل", adm_enable: "تفعيل", adm_copy: "نسخ", adm_action: "الإجراء", adm_status: "الحالة",
+                adm_accepted: "مقبول", adm_rejected: "مرفوض", adm_archive_accepted: "أرشيف الطلبات المقبولة", adm_archive_rejected: "أرشيف الطلبات المرفوضة",
+                adm_no_archive: "${this.t('adm_no_archive')}", adm_no_company: "هذه الشركة لم تقم بتسجيل الدخول بعد. لا يوجد مستخدمون لعرضهم.",
+                adm_employee: "الموظف", adm_pin: "الرمز (PIN)", adm_permissions_count: "عدد الصلاحيات", adm_no_employees: "لا يوجد موظفون مسجلون في هذه الشركة",
+                adm_company_name: "اسم الشركة", adm_account_number: "رقم الحساب", adm_delete: "حذف", adm_save_settings: "${this.t('adm_save_settings')}",
+                adm_prices: "أسعار الاشتراك", adm_banks: "بنوك الدفع وأرقامها", adm_banks_hint: "هذه البنوك تظهر للعملاء في نافذة الدفع المباشر مع رقم الحساب المرتبط بكل بنك.",
+                adm_add_bank: "إضافة بنك", adm_bank_name: "اسم البنك", adm_bank_number: "رقم الحساب", adm_no_banks: "${this.t('adm_no_banks')}",
+                adm_valid_prices: "الرجاء إدخال أسعار صحيحة أكبر من صفر.", adm_need_bank: "${this.t('adm_need_bank')}", adm_saved: "تم ${this.t('adm_save_settings')} بنجاح. سيراها العملاء عند فتح نافذة الدفع.",
+                device_limit_error: "عذراً، تم الوصول إلى الحد الأقصى للأجهزة المسموح به لهذا الاشتراك. الرجاء تسجيل الخروج من جهاز آخر أولاً.",
+                renewal_lookup_error: "رمز التفعيل غير موجود أو لا يحتوي على بيانات شركة صالحة.", renewal_autofilled: "تم ملء بيانات الشركة تلقائياً من رمز التفعيل."
             },
             fr: {
                 title: "Teyssir ERP", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
@@ -427,13 +440,26 @@
                 rep_day: "Jour", rep_month: "Mois", rep_year: "Année", btn_show: "Afficher", btn_pdf: "Télécharger PDF",
                 net_period: "Net Période", empty_report: "Sélectionnez et affichez...", no_txs: "Aucune transaction.",
                 total_final: "Total Final", rep_tr_custom: "Rapport Personnalisé", rep_bank_custom: "Relevé Bancaire",
-                pdf_all: "PDF Complet"
+                pdf_all: "PDF Complet",
+                adm_dashboard: "Tableau de l’administrateur", adm_companies: "Sociétés enregistrées", adm_requests: "Demandes de paiement",
+                adm_loading: "Chargement des statistiques précises...", adm_codes: "Gestion des codes", adm_payments: "Demandes de paiement", adm_settings: "Prix et banques",
+                adm_bank: "Banque", adm_limit: "Limite appareils/utilisateurs", adm_expires: "Expiration", adm_view: "Voir", adm_renew_btn: "Renouveler",
+                adm_disable: "Désactiver", adm_enable: "Activer", adm_copy: "Copier", adm_action: "Action", adm_status: "Statut",
+                adm_accepted: "Acceptée", adm_rejected: "Refusée", adm_archive_accepted: "Archive des demandes acceptées", adm_archive_rejected: "Archive des demandes refusées",
+                adm_no_archive: "Aucune demande dans l’archive", adm_no_company: "Cette société ne s’est pas encore connectée. Aucun utilisateur à afficher.",
+                adm_employee: "Employé", adm_pin: "Code PIN", adm_permissions_count: "Nombre de permissions", adm_no_employees: "Aucun employé enregistré dans cette société",
+                adm_company_name: "Nom de la société", adm_account_number: "Numéro de compte", adm_delete: "Supprimer", adm_save_settings: "Enregistrer les paramètres",
+                adm_prices: "Prix d’abonnement", adm_banks: "Banques de paiement et numéros", adm_banks_hint: "Ces banques apparaissent aux clients dans la fenêtre de paiement avec le numéro associé.",
+                adm_add_bank: "Ajouter une banque", adm_bank_name: "Nom de la banque", adm_bank_number: "Numéro de compte", adm_no_banks: "Aucune banque ajoutée.",
+                adm_valid_prices: "Veuillez saisir des prix valides supérieurs à zéro.", adm_need_bank: "Ajoutez au moins une banque.", adm_saved: "Paramètres enregistrés. Les clients les verront à l’ouverture du paiement.",
+                device_limit_error: "Désolé, la limite d’appareils autorisée par cet abonnement est atteinte. Déconnectez un autre appareil d’abord.",
+                renewal_lookup_error: "Code d’activation introuvable ou sans données valides.", renewal_autofilled: "Les informations de la société ont été remplies automatiquement."
             }
         };
 
         const app = {
             state: { 
-                cid:null, name:'', phone:'', admin:false, lang:'ar', codeDocId: null, expiryDate: null, currentView: 'home', cashBalance: 0, inventoryLocked: false, userRole: 'admin', currentUser: null, permissions: [], currentPromo: null, currentDailyData: null, currentBankReport: null, currentTreasuryReport: null 
+                cid:null, name:'', phone:'', admin:false, lang: localStorage.getItem('teyssir_lang') || 'ar', codeDocId: null, expiryDate: null, currentView: 'home', cashBalance: 0, inventoryLocked: false, userRole: 'admin', currentUser: null, permissions: [], currentPromo: null, currentDailyData: null, currentBankReport: null, currentTreasuryReport: null 
             },
             cart: [], 
             cachedProducts: [], 
@@ -743,13 +769,15 @@
                         expiryDate: expiry.toISOString(), 
                         subscriptionType: 'trial', 
                         isTrial: true, 
-                        maxEmployees: 2 
+                        maxEmployees: 2,
+                        maxDevices: 2
                     }); 
                     const compRef = await db.collection('companies').add({ 
                         name: n, 
                         phone: p, 
                         code: tCode, 
-                        maxEmployees: 2, 
+                        maxEmployees: 2,
+                        maxDevices: 2,
                         createdAt: now.toISOString() 
                     }); 
                     await codeRef.update({ companyId: compRef.id, actualName: n, actualPhone: p }); 
@@ -873,6 +901,10 @@
                     throw new Error(`${baseMsg} | ${rpcRes.error.message}`);
                 }
             },
+            getDeviceLimit: function(record) {
+                const value = Number(record && (record.maxDevices ?? record.maxEmployees ?? record.maxUsers));
+                return Number.isFinite(value) && value > 0 ? Math.floor(value) : 2;
+            },
             randomStr: function(l) { 
                 const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'; 
                 let r=''; 
@@ -885,6 +917,7 @@
             },
             toggleLang: function() { 
                 this.state.lang = this.state.lang==='ar'?'fr':'ar'; 
+                localStorage.setItem('teyssir_lang', this.state.lang);
                 const l = this.state.lang; 
                 const d = dict[l]; 
                 document.documentElement.dir = l==='ar'?'rtl':'ltr'; 
@@ -953,13 +986,13 @@
 
                         let activeDevices = d.activeDevices || [];
                         if (!activeDevices.includes(deviceId)) {
-                            if (activeDevices.length >= 2) throw new Error("عذراً، تم الوصول للحد الأقصى للأجهزة (2). الرجاء تسجيل الخروج من جهاز آخر أولاً.");
+                            if (activeDevices.length >= this.getDeviceLimit(d)) throw new Error(this.t('device_limit_error'));
                             await db.collection('activation_codes').doc(doc.id).update({ activeDevices: firebase.firestore.FieldValue.arrayUnion(deviceId) });
                         }
 
                         let cid=d.companyId;
                         if(!d.used) {
-                            const r = await db.collection('companies').add({name:n, phone:p, code:c, maxEmployees: d.maxEmployees || 5, createdAt:new Date().toISOString()});
+                            const r = await db.collection('companies').add({name:n, phone:p, code:c, maxEmployees: d.maxEmployees || 5, maxDevices: d.maxDevices || d.maxEmployees || 5, createdAt:new Date().toISOString()});
                             cid=r.id; 
                             const expiry = this.addDuration(now, d.subscriptionType || 'month');
                             await db.collection('activation_codes').doc(doc.id).update({ 
@@ -970,7 +1003,8 @@
                                 status:'active', 
                                 usedAt:now.toISOString(), 
                                 expiryDate: expiry, 
-                                activeDevices: [deviceId] 
+                                activeDevices: [deviceId],
+                                maxDevices: d.maxDevices || d.maxEmployees || 5
                             });
                         }
                         this.state.cid=cid; 
@@ -1021,7 +1055,7 @@
 
                         let empDevices = empData.activeDevices || [];
                         if (!empDevices.includes(deviceId)) {
-                            if (empDevices.length >= 2) throw new Error("عذراً، تم الوصول للحد الأقصى للأجهزة (2) لهذا المستخدم.");
+                            if (empDevices.length >= this.getDeviceLimit(Object.assign({}, activeCodeData, targetCompData))) throw new Error(this.t('device_limit_error'));
                             await db.collection('companies').doc(targetCompId).collection('employees').doc(foundEmployee.id).update({ 
                                 activeDevices: firebase.firestore.FieldValue.arrayUnion(deviceId) 
                             });
@@ -3124,7 +3158,7 @@
                     const permCount = d.permissions ? d.permissions.length : 0;
                     h += `<tr>
                         <td>${d.name}</td>
-                        <td>${d.pinCode} <i class="fa-regular fa-copy" onclick="app.copyToClipboard('${d.pinCode}')" style="cursor:pointer; margin-right:5px; color:var(--primary)" title="Copy"></i></td>
+                        <td>${d.pinCode} <i class="fa-regular fa-copy" onclick="app.copyToClipboard('${d.pinCode}')" style="cursor:pointer; margin-right:5px; color:var(--primary)" title="${this.t('adm_copy')}"></i></td>
                         <td>${permCount}</td>
                         <td><button onclick="app.delUser('${doc.id}')" class="btn btn-dan" style="padding:5px 10px; font-size:12px; display:inline-block; width:auto;"><i class="fa-solid fa-trash"></i></button></td>
                     </tr>`;
@@ -4068,7 +4102,7 @@
                                 <div class="table-scroll">
                                     <table id="lst">
                                         <thead>
-                                            <tr><th>${this.t('th_name')}</th><th>الهاتف</th><th>${this.t('sal_fixed')}</th><th>تاريخ الاستحقاق</th><th>${this.t('sal_total')}</th><th>${this.t('adm_act')}</th></tr>
+                                            <tr><th>${this.t('th_name')}</th><th>الهاتف</th><th>${this.t('sal_fixed')}</th><th>تاريخ الاستحقاق</th><th>${this.t('sal_total')}</th><th>${this.t('adm_action')}</th></tr>
                                         </thead>
                                         <tbody id="empListBody"></tbody>
                                     </table>
@@ -4233,7 +4267,7 @@
 
                         <div id="dpExistingCodeDiv" style="display:none; background:#fef3c7; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #fde68a;">
                             <label style="font-size:13px; color:#92400e;">${this.t('dp_ext_code')}</label>
-                            <input id="dpExistingCode" type="text" class="inp" placeholder="${this.t('dp_ext_code')}" style="margin-bottom:0;">
+                            <input id="dpExistingCode" type="text" class="inp" placeholder="${this.t('dp_ext_code')}" style="margin-bottom:0;" onblur="app.autofillRenewalByCode()" onchange="app.autofillRenewalByCode()"><small id="renewalAutofillMsg" style="display:none;color:#15803d;font-weight:bold;"></small>
                         </div>
 
                         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
@@ -4297,8 +4331,7 @@
                         const fCode = document.getElementById('dpExistingCode');
                         if (fName && this.state.name) fName.value = this.state.name;
                         if (fPhone && this.state.phone) fPhone.value = this.state.phone;
-                        if (fWa && this.state.phone) fWa.value = this.state.phone;
-                        if (fCode && code && !isTrial) fCode.value = code;
+                        if (fCode && code && !isTrial) { fCode.value = code; this.autofillRenewalByCode(); }
                     }
                 } catch(e) { console.warn('auto-fill renewal failed', e); }
 
@@ -4308,6 +4341,26 @@
             toggleRenewInput: function() {
                 const type = document.getElementById('dpReqCategory').value;
                 document.getElementById('dpExistingCodeDiv').style.display = type === 'renew' ? 'block' : 'none';
+                if (type === 'renew') this.autofillRenewalByCode();
+            },
+            autofillRenewalByCode: async function() {
+                const codeEl = document.getElementById('dpExistingCode');
+                const code = codeEl ? codeEl.value.trim() : '';
+                if (!code || !document.getElementById('dpReqCategory') || document.getElementById('dpReqCategory').value !== 'renew') return;
+                try {
+                    const snap = await db.collection('activation_codes').where('code', '==', code).limit(1).get();
+                    if (snap.empty) return;
+                    const data = snap.docs[0].data();
+                    const name = data.actualName || data.targetCompanyName || '';
+                    const phone = data.actualPhone || data.targetPhone || '';
+                    const nameEl = document.getElementById('dpName');
+                    const phoneEl = document.getElementById('dpPhone');
+                    const waEl = document.getElementById('dpWa');
+                    if (name && nameEl) nameEl.value = name;
+                    if (phone && phoneEl) phoneEl.value = phone;
+                    const msg = document.getElementById('renewalAutofillMsg');
+                    if (msg && name) { msg.textContent = this.t('renewal_autofilled'); msg.style.display = 'block'; }
+                } catch (e) { console.warn('renewal autofill failed', e); }
             },
 
             applyPromoCode: async function() {
@@ -4494,7 +4547,7 @@
 
             // ====== دوال الإدارة المركزية =======
             admin: async function(div) { 
-                div.innerHTML = `<div style="text-align:center; padding:50px;"><div class="spinner"></div><p style="margin-top:10px; color:var(--primary); font-weight:bold;">جاري جلب الإحصائيات الدقيقة...</p></div>`;
+                div.innerHTML = `<div style="text-align:center; padding:50px;"><div class="spinner"></div><p style="margin-top:10px; color:var(--primary); font-weight:bold;">${this.t('adm_loading')}</p></div>`;
 
                 try {
                     const codesSnap = await db.collection('activation_codes').get(); 
@@ -4508,11 +4561,11 @@
                     div.innerHTML = `
                         <div style="display:flex; gap:10px; margin-bottom:15px;">
                             <div style="flex:1; background:white; border:1px solid var(--border); border-radius:10px; padding:15px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
-                                <h4 style="margin:0 0 5px 0; color:var(--text-light); font-size:14px; font-weight:bold;">الشركات المسجلة</h4>
+                                <h4 style="margin:0 0 5px 0; color:var(--text-light); font-size:14px; font-weight:bold;">${this.t('adm_companies')}</h4>
                                 <span style="font-size:26px; font-weight:900; color:var(--primary);">${exactCompaniesCount}</span>
                             </div>
                             <div style="flex:1; background:white; border:1px solid var(--border); border-radius:10px; padding:15px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
-                                <h4 style="margin:0 0 5px 0; color:var(--text-light); font-size:14px; font-weight:bold;">طلبات الدفع</h4>
+                                <h4 style="margin:0 0 5px 0; color:var(--text-light); font-size:14px; font-weight:bold;">${this.t('adm_requests')}</h4>
                                 <span style="font-size:26px; font-weight:900; color:#10b981;">${exactRequestsCount}</span>
                             </div>
                         </div>
@@ -4521,7 +4574,7 @@
                             <button onclick="app.adminViewCodes()" class="btn btn-prim" style="flex:1; min-width:100px;">${this.t('adm_mng_codes')}</button>
                             <button onclick="app.adminPaymentRequests()" class="btn btn-sec" style="flex:1; background:#28a745; color:white; border:none; min-width:100px;"><i class="fa-solid fa-bell"></i> ${this.t('adm_pay_reqs')}</button>
                             <button onclick="app.adminViewPromoCodes()" class="btn btn-sec" style="flex:1; background:#8b5cf6; color:white; border:none; min-width:100px;"><i class="fa-solid fa-tags"></i> ${this.t('adm_promos')}</button>
-                            <button onclick="app.adminAppSettings()" class="btn btn-sec" style="flex:1; background:#0ea5e9; color:white; border:none; min-width:100px;"><i class="fa-solid fa-sliders"></i> الأسعار والبنوك</button>
+                            <button onclick="app.adminAppSettings()" class="btn btn-sec" style="flex:1; background:#0ea5e9; color:white; border:none; min-width:100px;"><i class="fa-solid fa-sliders"></i> ${this.t('adm_settings')}</button>
                         </div>
                         <div id="adminWorkArea"></div>
                     `; 
@@ -4529,43 +4582,43 @@
                     this.adminViewCodes();
 
                 } catch (e) {
-                    div.innerHTML = `<div style="padding:20px; text-align:center; color:red;">حدث خطأ في تحميل لوحة التحكم: ${e.message}</div>`;
+                    div.innerHTML = `<div style="padding:20px; text-align:center; color:red;">${this.t('adm_loading')}: ${e.message}</div>`;
                 }
             },
 
             // ====== إدارة الأسعار وأرقام البنوك (المشرف فقط) =======
             adminAppSettings: async function() {
                 const area = document.getElementById('adminWorkArea');
-                area.innerHTML = `<div style="text-align:center; padding:30px;"><div class="spinner"></div><p style="margin-top:10px;">جاري تحميل الإعدادات...</p></div>`;
+                area.innerHTML = `<div style="text-align:center; padding:30px;"><div class="spinner"></div><p style="margin-top:10px;">${this.t('adm_loading')}</p></div>`;
                 await this.loadAppConfig();
                 const cfg = this.getAppConfig();
                 area.innerHTML = `
                     <div class="card">
-                        <h3 style="margin:0 0 15px; color:var(--primary);"><i class="fa-solid fa-tags"></i> أسعار الاشتراك (MRU)</h3>
-                        <label style="font-size:12px; font-weight:bold;">السعر الشهري</label>
+                        <h3 style="margin:0 0 15px; color:var(--primary);"><i class="fa-solid fa-tags"></i> ${this.t('adm_prices')} (MRU)</h3>
+                        <label style="font-size:12px; font-weight:bold;">${this.t('dp_month')}</label>
                         <input id="cfgMonthly" type="number" min="0" class="inp" value="${cfg.monthlyPrice}">
-                        <label style="font-size:12px; font-weight:bold;">السعر السنوي</label>
+                        <label style="font-size:12px; font-weight:bold;">${this.t('dp_year')}</label>
                         <input id="cfgYearly" type="number" min="0" class="inp" value="${cfg.yearlyPrice}">
                     </div>
                     <div class="card">
-                        <h3 style="margin:0 0 15px; color:var(--primary);"><i class="fa-solid fa-building-columns"></i> بنوك الدفع وأرقامها</h3>
-                        <p style="font-size:12px; color:var(--text-light); margin-top:0;">هذه البنوك تظهر للعملاء في نافذة الدفع المباشر مع رقم الحساب المرتبط بكل بنك.</p>
+                        <h3 style="margin:0 0 15px; color:var(--primary);"><i class="fa-solid fa-building-columns"></i> ${this.t('adm_banks')}</h3>
+                        <p style="font-size:12px; color:var(--text-light); margin-top:0;">${this.t('adm_banks_hint')}</p>
                         <div id="cfgBanksList"></div>
                         <div style="display:flex; gap:5px; margin-top:10px;">
-                            <input id="cfgNewBankName" class="inp" placeholder="اسم البنك" style="flex:2; margin:0;">
-                            <input id="cfgNewBankNumber" class="inp" placeholder="رقم الحساب" style="flex:2; margin:0;">
+                            <input id="cfgNewBankName" class="inp" placeholder="${this.t('adm_bank_name')}" style="flex:2; margin:0;">
+                            <input id="cfgNewBankNumber" class="inp" placeholder="${this.t('adm_account_number')}" style="flex:2; margin:0;">
                             <button onclick="app.adminAddBankRow()" class="btn btn-prim" style="width:auto; margin:0;"><i class="fa-solid fa-plus"></i></button>
                         </div>
                     </div>
-                    <button onclick="app.adminSaveAppSettings()" class="btn btn-prim" style="background:#16a34a; margin-top:10px;"><i class="fa-solid fa-floppy-disk"></i> حفظ الإعدادات</button>
+                    <button onclick="app.adminSaveAppSettings()" class="btn btn-prim" style="background:#16a34a; margin-top:10px;"><i class="fa-solid fa-floppy-disk"></i> ${this.t('adm_save_settings')}</button>
                 `;
                 this.adminRenderBanksList(cfg.banks);
             },
             adminRenderBanksList: function(banks) {
                 const wrap = document.getElementById('cfgBanksList');
                 if (!wrap) return;
-                if (!banks || !banks.length) { wrap.innerHTML = `<p style="color:var(--text-light); text-align:center;">لا توجد بنوك مضافة.</p>`; return; }
-                let h = `<div class="table-scroll"><table><thead><tr><th>اسم البنك</th><th>رقم الحساب</th><th>حذف</th></tr></thead><tbody>`;
+                if (!banks || !banks.length) { wrap.innerHTML = `<p style="color:var(--text-light); text-align:center;">${this.t('adm_no_banks')}</p>`; return; }
+                let h = `<div class="table-scroll"><table><thead><tr><th>${this.t('adm_bank_name')}</th><th>${this.t('adm_account_number')}</th><th>${this.t('adm_delete')}</th></tr></thead><tbody>`;
                 banks.forEach((b, i) => {
                     h += `<tr>
                         <td><input class="inp cfg-bank-name" data-idx="${i}" value="${(b.name||'').replace(/"/g,'&quot;')}" style="margin:0;"></td>
@@ -4611,11 +4664,11 @@
                 const yearly = Number(document.getElementById('cfgYearly').value);
                 if (!(monthly > 0) || !(yearly > 0)) return alert('الرجاء إدخال أسعار صحيحة أكبر من صفر.');
                 const banks = this._cfgBanksWorking || [];
-                if (!banks.length) return alert('يجب إضافة بنك واحد على الأقل.');
+                if (!banks.length) return alert(this.t('adm_need_bank'));
                 this.showLoader();
                 try {
                     await this.saveAppConfig({ monthlyPrice: monthly, yearlyPrice: yearly, banks: banks });
-                    alert('✅ تم حفظ الإعدادات بنجاح. سيراها العملاء عند فتح نافذة الدفع.');
+                    alert('✅ ' + this.t('adm_saved'));
                 } catch(e) {
                     alert('خطأ أثناء الحفظ: ' + e.message);
                 }
@@ -4641,7 +4694,7 @@
                         <h4>${this.t('promo_list_title')}</h4>
                         <div class="table-scroll">
                             <table id="promoTable">
-                                <thead><tr><th>${this.t('promo_code')}</th><th>${this.t('promo_perc_lbl')}</th><th>${this.t('promo_usage')}</th><th>${this.t('promo_exp_lbl')}</th><th>${this.t('adm_act')}</th></tr></thead>
+                                <thead><tr><th>${this.t('promo_code')}</th><th>${this.t('promo_perc_lbl')}</th><th>${this.t('promo_usage')}</th><th>${this.t('promo_exp_lbl')}</th><th>${this.t('adm_action')}</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>
@@ -4764,19 +4817,19 @@
                 
                 try {
                     const s = await db.collection('activation_codes').orderBy('createdAt','desc').limit(50).get(); 
-                    let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>Limit</th><th>Expires</th><th>${this.t('adm_act')}</th></tr>`, b=''; 
+                    let h=`<tr><th>${this.t('adm_time')}</th><th>${this.t('adm_code')}</th><th>${this.t('adm_comp')}</th><th>${this.t('adm_phone')}</th><th>${this.t('adm_limit')}</th><th>${this.t('adm_expires')}</th><th>${this.t('adm_action')}</th></tr>`, b=''; 
                     
                     s.forEach(d=>{ 
                         const v=d.data(); 
                         const comp = v.actualName || v.targetCompanyName || '-'; 
                         const ph = v.actualPhone || v.targetPhone || '-'; 
                         const expDate = v.expiryDate ? this.formatDate(v.expiryDate) : '-'; 
-                        const stopBtnText = v.status === 'active' ? 'Disable' : 'Enable'; 
+                        const stopBtnText = v.status === 'active' ? this.t('adm_disable') : this.t('adm_enable'); 
                         const maxE = v.maxEmployees || 5; 
                         
                         b+=`<tr>
                             <td>${this.formatDate(v.createdAt)}</td>
-                            <td style="font-family:monospace;font-weight:bold">${v.code} <i class="fa-regular fa-copy" onclick="app.copyToClipboard('${v.code}')" style="cursor:pointer; margin-right:5px; color:var(--primary)" title="Copy"></i></td>
+                            <td style="font-family:monospace;font-weight:bold">${v.code} <i class="fa-regular fa-copy" onclick="app.copyToClipboard('${v.code}')" style="cursor:pointer; margin-right:5px; color:var(--primary)" title="${this.t('adm_copy')}"></i></td>
                             <td class="admin-comp">${comp}</td>
                             <td class="admin-phone" style="color:var(--primary);font-weight:bold">${ph}</td>
                             <td>${maxE} <i class="fa-solid fa-pen" style="cursor:pointer;color:blue;font-size:10px" onclick="app.editLimit('${d.id}', '${v.companyId}', ${maxE})"></i></td>
@@ -4815,7 +4868,7 @@
                                         <th>${this.t('adm_comp')}</th>
                                         <th>${this.t('adm_phone')}</th>
                                         <th>${this.t('th_wa')}</th>
-                                        <th>Bank</th>
+                                        <th>${this.t('adm_bank')}</th>
                                         <th>${this.t('th_amount')}</th>
                                         <th>${this.t('th_disc')}</th>
                                         <th>${this.t('th_dur_usr')}</th>
@@ -4882,7 +4935,7 @@
 
                     const tbody = document.getElementById('reqBody');
                     if(filtered.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="11" style="text-align:center">${status==='pending' ? this.t('req_empty') : 'لا توجد طلبات في الأرشيف'}</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="11" style="text-align:center">${status==='pending' ? this.t('req_empty') : this.t('adm_no_archive')}</td></tr>`;
                         return;
                     }
 
@@ -4903,9 +4956,9 @@
                                 <button onclick="app.rejectPayment('${r.id}')" class="btn btn-dan" style="padding:5px; font-size:11px; width:auto;">${this.t('req_btn_rej')}</button>
                             `;
                         } else if (status === 'approved') {
-                            actionCell = `<span style="color:#16a34a; font-weight:bold;">✅ مقبول</span>`;
+                            actionCell = `<span style="color:#16a34a; font-weight:bold;">✅ ${this.t('adm_accepted')}</span>`;
                         } else {
-                            actionCell = `<span style="color:#dc2626; font-weight:bold;">❌ مرفوض</span>`;
+                            actionCell = `<span style="color:#dc2626; font-weight:bold;">❌ ${this.t('adm_rejected')}</span>`;
                         }
 
                         rows += `<tr>
@@ -4951,8 +5004,12 @@
 
                         await codesRef.doc(doc.id).update({
                             expiryDate: newExpiry,
-                            maxEmployees: users
+                            maxEmployees: users,
+                            maxDevices: users
                         });
+                        if (data.companyId) {
+                            await db.collection('companies').doc(data.companyId).set({ maxEmployees: users, maxDevices: users }, { merge: true });
+                        }
 
                         msg = encodeURIComponent(`مرحباً بك مجدداً من Teyssir ERP\nتم استلام دفعتك وتجديد اشتراكك بنجاح ✅\n\n🏢 الشركة: ${name}\n⏳ تم تمديد صلاحية نظامك.\n🔑 الرمز الخاص بك كما هو: ${existingCode}\nرابط الدخول: ${window.location.href}`);
 
@@ -4966,7 +5023,8 @@
                             used: false, 
                             createdAt: new Date().toISOString(), 
                             subscriptionType: type, 
-                            maxEmployees: users 
+                            maxEmployees: users,
+                            maxDevices: users
                         });
 
                         msg = encodeURIComponent(`أهلاً بك في Teyssir ERP\nتم استلام دفعتك وتفعيل اشتراكك بنجاح ✅\n\n🏢 الشركة: ${name}\n🔑 كود التفعيل الجديد: ${newCode}\nرابط الدخول: ${window.location.href}`);
@@ -5007,9 +5065,9 @@
                 this.showLoader();
                 try {
                     const batch = db.batch();
-                    batch.update(db.collection('activation_codes').doc(codeId), { maxEmployees: newLimit });
+                    batch.update(db.collection('activation_codes').doc(codeId), { maxEmployees: newLimit, maxDevices: newLimit });
                     if (companyId && companyId !== 'undefined') {
-                        batch.update(db.collection('companies').doc(companyId), { maxEmployees: newLimit });
+                        batch.update(db.collection('companies').doc(companyId), { maxEmployees: newLimit, maxDevices: newLimit });
                     }
                     await batch.commit();
                     this.adminViewCodes(); 
@@ -5021,7 +5079,7 @@
 
             adminViewUsers: async function(companyId, companyName) {
                 if (!companyId || companyId === 'undefined') {
-                    return alert("هذه الشركة لم تقم بتسجيل الدخول بعد. لا يوجد مستخدمين لعرضهم.");
+                    return alert(this.t('adm_no_company'));
                 }
                 
                 this.showLoader();
@@ -5033,16 +5091,16 @@
                             <table style="width:100%; text-align:center; font-size:14px;">
                                 <thead>
                                     <tr style="background:#eee;">
-                                        <th>اسم الموظف</th>
-                                        <th>الرمز (PIN)</th>
-                                        <th>عدد الصلاحيات</th>
+                                        <th>${this.t('adm_employee')}</th>
+                                        <th>${this.t('adm_pin')}</th>
+                                        <th>${this.t('adm_permissions_count')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                     `;
                     
                     if (snap.empty) {
-                        html += `<tr><td colspan="3" style="padding:15px; color:red;">لا يوجد موظفين مسجلين في هذه الشركة</td></tr>`;
+                        html += `<tr><td colspan="3" style="padding:15px; color:red;">${this.t('adm_no_employees')}</td></tr>`;
                     } else {
                         snap.forEach(doc => {
                             const d = doc.data();
