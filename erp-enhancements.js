@@ -361,7 +361,8 @@
         // Save/Close buttons. The notification center is display-only.
         const modal = document.getElementById('genericModal');
         document.getElementById('modalTitle').innerText = this.state.lang === 'fr' ? 'Notifications' : 'الإشعارات';
-        document.getElementById('modalContent').innerHTML = `<div class="notifications-list">${body}</div>`;
+        const closeLabel = this.state.lang === 'fr' ? 'Fermer' : 'إغلاق';
+        document.getElementById('modalContent').innerHTML = `<div class="notifications-list">${body}</div><button type="button" id="notificationCloseBtn" class="btn btn-sec" style="display:block;width:100%;margin-top:16px;" onclick="document.getElementById('genericModal').style.display='none'">${closeLabel}</button>`;
         const footer = document.getElementById('modalActionBtn')?.parentElement;
         if (footer) footer.style.display = 'none';
         modal.style.display = 'flex';

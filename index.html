@@ -460,7 +460,7 @@
 
         const app = {
             state: { 
-                cid:null, name:'', phone:'', admin:false, lang: localStorage.getItem('teyssir_lang') || 'ar', codeDocId: null, expiryDate: null, currentView: 'home', cashBalance: 0, inventoryLocked: false, userRole: 'admin', currentUser: null, permissions: [], currentPromo: null, currentDailyData: null, currentBankReport: null, currentTreasuryReport: null 
+                cid:null, name:'', phone:'', admin:false, subscriptionStartDate:null, lang: localStorage.getItem('teyssir_lang') || 'ar', codeDocId: null, expiryDate: null, currentView: 'home', cashBalance: 0, inventoryLocked: false, userRole: 'admin', currentUser: null, permissions: [], currentPromo: null, currentDailyData: null, currentBankReport: null, currentTreasuryReport: null 
             },
             cart: [], 
             cachedProducts: [], 
@@ -804,6 +804,7 @@
                     if (!doc.exists) { this.showBlockScreen('suspended'); return; } 
                     const data = doc.data(); 
                     this.state.expiryDate = data.expiryDate; 
+                    this.state.subscriptionStartDate = data.usedAt || data.createdAt || data.created_at || null;
                     if(data.status === 'suspended') { this.showBlockScreen('suspended'); return; } 
                     this.checkTimeBasedStatus(); 
                 }); 
@@ -2923,8 +2924,29 @@
 
             // ====== دوال التقارير =======
             reports: async function(div) {
+                const nowYear = new Date().getFullYear();
+                let startDate = null;
+                // The company's createdAt remains the original subscription start
+                // even when a later activation code renews the subscription.
+                try {
+                    if (this.state.cid && this.state.cid !== 'ADMIN') {
+                        const companySnap = await db.collection('companies').doc(this.state.cid).get();
+                        const companyData = companySnap.exists ? companySnap.data() : {};
+                        this.state.subscriptionStartDate = companyData.createdAt || companyData.created_at || null;
+                    }
+                } catch (_) {}
+                if (!this.state.subscriptionStartDate && this.state.codeDocId) {
+                    try {
+                        const codeSnap = await db.collection('activation_codes').doc(this.state.codeDocId).get();
+                        const codeData = codeSnap.exists ? codeSnap.data() : {};
+                        this.state.subscriptionStartDate = codeData.usedAt || codeData.createdAt || codeData.created_at || null;
+                    } catch (_) {}
+                }
+                startDate = this.state.subscriptionStartDate ? new Date(this.state.subscriptionStartDate) : null;
+                const startYear = startDate && !Number.isNaN(startDate.getTime()) ? startDate.getFullYear() : nowYear;
+                const firstYear = Math.min(startYear, nowYear);
                 let yearOpts = ''; 
-                for(let y=2026; y<=2036; y++) { yearOpts += `<option value="${y}" ${y===2026?'selected':''}>${y}</option>`; }
+                for(let y=firstYear; y<=nowYear; y++) { yearOpts += `<option value="${y}" ${y===nowYear?'selected':''}>${y}</option>`; }
                 div.innerHTML = `
                     <h3>${this.t('rep')}</h3>
                     <div class="card">
@@ -2967,8 +2989,8 @@
                         </div>
                     </div>
                 `; 
-                document.getElementById('repYear').value = "2026"; 
-                this.setReportYear(2026); 
+                document.getElementById('repYear').value = String(nowYear); 
+                this.setReportYear(nowYear); 
             },
 
             setReportYear: function(y) { 
@@ -3415,42 +3437,51 @@
             },
 
             processCashTransaction: async function(batch, amount, type, note, refId, relatedEntity, bankId = null) {
-                const currentBal = this.state.cashBalance || 0;
-                if (type === 'out' && currentBal < amount) { 
-                    throw new Error(this.t('err_no_cash') + " (" + currentBal + " MRU)"); 
+                const numericAmount = Number(amount);
+                if (!Number.isFinite(numericAmount) || numericAmount <= 0) throw new Error(this.t('err_no_cash'));
+                // Always read the authoritative balance: the local cache may lag after a commit.
+                let currentBal = Number(this.state.cashBalance || 0);
+                try {
+                    const treasuryDoc = await db.collection('treasury').doc(this.state.cid).get();
+                    if (treasuryDoc.exists && treasuryDoc.data() && treasuryDoc.data().balance != null) {
+                        currentBal = Number(treasuryDoc.data().balance) || 0;
+                    }
+                } catch (error) {
+                    console.warn('Treasury refresh before transaction failed; using cached balance.', error);
                 }
-                
-                let newBal = type === 'in' ? (currentBal + amount) : (currentBal - amount);
+                const tolerance = 0.000001;
+                if (type === 'out' && currentBal + tolerance < numericAmount) {
+                    this.state.cashBalance = currentBal;
+                    localStorage.setItem('teyssir_cash_balance', String(currentBal));
+                    throw new Error(this.t('err_no_cash') + " (" + currentBal + " MRU)");
+                }
+                const newBal = type === 'in' ? currentBal + numericAmount : currentBal - numericAmount;
                 const nowStr = new Date().toISOString();
-                this.state.cashBalance = newBal; 
-                localStorage.setItem('teyssir_cash_balance', newBal); 
+                this.state.cashBalance = newBal;
+                localStorage.setItem('teyssir_cash_balance', newBal);
                 localStorage.setItem('teyssir_cash_time', nowStr);
-                
                 const treasuryRef = db.collection('treasury').doc(this.state.cid);
-                const incrementVal = type === 'in' ? amount : -amount;
-                
-                batch.set(treasuryRef, { 
-                    balance: firebase.firestore.FieldValue.increment(incrementVal), 
-                    updatedAt: nowStr 
+                const incrementVal = type === 'in' ? numericAmount : -numericAmount;
+                batch.set(treasuryRef, {
+                    balance: firebase.firestore.FieldValue.increment(incrementVal),
+                    updatedAt: nowStr
                 }, { merge: true });
-
                 const tRef = db.collection('transactions').doc();
-                batch.set(tRef, { 
-                    companyId: this.state.cid, 
-                    type: type === 'in' ? 'cash_in' : 'cash_out', 
-                    isTreasury: true, 
-                    amount: amount, 
-                    balanceBefore: currentBal, 
-                    balanceAfter: newBal, 
-                    note: note, 
-                    refId: refId || tRef.id, 
-                    relatedEntity: relatedEntity || 'General', 
-                    bankId: bankId, 
-                    createdAt: nowStr 
+                batch.set(tRef, {
+                    companyId: this.state.cid,
+                    type: type === 'in' ? 'cash_in' : 'cash_out',
+                    isTreasury: true,
+                    amount: numericAmount,
+                    balanceBefore: currentBal,
+                    balanceAfter: newBal,
+                    note: note,
+                    refId: refId || tRef.id,
+                    relatedEntity: relatedEntity || 'General',
+                    bankId: bankId,
+                    createdAt: nowStr
                 });
                 return tRef.id;
             },
-
             // ====== دوال العملاء =======
             listCustomers: async function(div) {
                 div.innerHTML = `
