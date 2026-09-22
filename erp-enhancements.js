@@ -291,52 +291,98 @@
       }
     };
 
-    app.notifySupervisor = async function (type, message) {
-      if (!this.state.cid || this.state.cid === 'ADMIN' || !message) return;
+    // The notification center is intentionally limited to actionable
+    // salary-due and subscription-expired notices.
+    const allowedNotificationTypes = new Set(['salary_due', 'subscription_expired']);
+    app.notifySupervisor = async function (type, message, notificationKey) {
+      if (!this.state.cid || this.state.cid === 'ADMIN' || !allowedNotificationTypes.has(type) || !message) return;
       try {
         const payload = {
-          companyId: this.state.cid,
           targetRole: 'admin',
-          type: type || 'activity',
+          type,
           message,
+          notificationKey: notificationKey || `${type}_${new Date().toISOString().slice(0, 10)}`,
           read: false,
           actor: this.state.currentUser ? this.state.currentUser.name : (this.state.name || 'مدير'),
           createdAt: new Date().toISOString()
         };
-        await db.collection('companies').doc(this.state.cid).collection('notifications').add(payload);
-        await db.collection('admin_notifications').add(payload);
+        const collection = db.collection('companies').doc(this.state.cid).collection('notifications');
+        const existing = await collection.where('notificationKey', '==', payload.notificationKey).limit(1).get();
+        if (existing.empty) {
+          await collection.add({ ...payload, companyId: this.state.cid });
+          const globalExisting = await db.collection('admin_notifications').where('notificationKey', '==', payload.notificationKey).limit(1).get();
+          if (globalExisting.empty) await db.collection('admin_notifications').add({ ...payload, companyId: this.state.cid });
+        }
       } catch (error) {
-        // Notification failure must never block or roll back the financial operation.
-        console.warn('Supervisor notification skipped:', error);
+        // Notification failure must never block or roll back any operation.
+        console.warn('Notification skipped:', error);
       }
     };
-
+    app.syncSpecialNotifications = async function () {
+      if (this.state.userRole !== 'admin' || !this.state.cid || this.state.cid === 'ADMIN') return;
+      try {
+        const dueSalaries = await this.getDueSalaries();
+        for (const employee of dueSalaries) {
+          const payDate = employee.payDate || 'due';
+          await this.notifySupervisor(
+            'salary_due',
+            this.state.lang === 'fr'
+              ? `Salaire dû : ${employee.name || 'Employé'} (${payDate})`
+              : `حان موعد دفع راتب ${employee.name || 'الموظف'} بتاريخ ${payDate}`,
+            `salary_due_${employee.id}_${payDate}`
+          );
+        }
+        const expiry = this.state.expiryDate ? new Date(this.state.expiryDate) : null;
+        if (expiry && !Number.isNaN(expiry.getTime()) && new Date() >= expiry) {
+          await this.notifySupervisor(
+            'subscription_expired',
+            this.state.lang === 'fr' ? 'Votre abonnement a expiré.' : 'انتهى اشتراكك.',
+            `subscription_expired_${expiry.toISOString()}`
+          );
+        }
+      } catch (error) {
+        console.warn('Special notification sync skipped:', error);
+      }
+    };
     app.renderSupervisorNotifications = function () {
       if (this.state.userRole !== 'admin' || !this.state.cid) return;
       const button = document.getElementById('supervisorNotifications');
       if (!button) return;
-      button.onclick = async () => {
+      const open = async () => {
         await this.requestRealNotifications();
-        const entries = Array.isArray(this._supervisorNotifications) ? this._supervisorNotifications : [];
+        const entries = (Array.isArray(this._supervisorNotifications) ? this._supervisorNotifications : [])
+          .filter((item) => allowedNotificationTypes.has(item.type));
         const body = entries.length ? entries.map((item) => `
           <div class="notification-item ${item.read ? '' : 'unread'}">
-            <i class="fa-solid ${item.type === 'salary_payment' ? 'fa-money-check-dollar' : item.type === 'expense' ? 'fa-arrow-trend-down' : item.type === 'revenue' ? 'fa-arrow-trend-up' : 'fa-bell'}"></i>
+            <i class="fa-solid ${item.type === 'salary_due' ? 'fa-money-check-dollar' : 'fa-calendar-xmark'}"></i>
             <div><strong>${this.escapeNotificationText(item.message)}</strong><small>${this.escapeNotificationText(item.actor || '')} · ${this.formatDate(item.createdAt)}</small></div>
           </div>`).join('') : `<p class="notifications-empty">${this.state.lang === 'fr' ? 'Aucune notification.' : 'لا توجد إشعارات جديدة.'}</p>`;
-        this.showModal(this.state.lang === 'fr' ? 'Notifications' : 'الإشعارات', `<div class="notifications-list">${body}</div>`, null);
+        // Do not use showModal here: it requires an action callback and creates
+        // Save/Close buttons. The notification center is display-only.
+        const modal = document.getElementById('genericModal');
+        document.getElementById('modalTitle').innerText = this.state.lang === 'fr' ? 'Notifications' : 'الإشعارات';
+        document.getElementById('modalContent').innerHTML = `<div class="notifications-list">${body}</div>`;
+        const footer = document.getElementById('modalActionBtn')?.parentElement;
+        if (footer) footer.style.display = 'none';
+        modal.style.display = 'flex';
         const notificationCollection = this.state.cid === 'ADMIN' ? db.collection('admin_notifications') : db.collection('companies').doc(this.state.cid).collection('notifications');
         entries.filter((item) => !item.read).slice(0, 30).forEach((item) => {
           notificationCollection.doc(item.id).update({ read: true }).catch(() => {});
         });
       };
+      button.onclick = async () => {
+        const modal = document.getElementById('genericModal');
+        if (modal && modal.style.display === 'flex') modal.style.display = 'none';
+        else await open();
+      };
     };
-
     app.subscribeSupervisorNotifications = function () {
       if (this._notificationUnsub || this.state.userRole !== 'admin' || !this.state.cid) return;
       const notificationCollection = this.state.cid === 'ADMIN' ? db.collection('admin_notifications') : db.collection('companies').doc(this.state.cid).collection('notifications');
-      this._notificationUnsub = notificationCollection.limit(50).onSnapshot((snapshot) => {
+      this.syncSpecialNotifications();
+      this._notificationUnsub = notificationCollection.limit(100).onSnapshot((snapshot) => {
         this._supervisorNotifications = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-          .filter((item) => item.targetRole === 'admin')
+          .filter((item) => item.targetRole === 'admin' && allowedNotificationTypes.has(item.type))
           .sort((a, b) => {
             const time = (item) => {
               const value = Date.parse(item.createdAt || '');
@@ -347,9 +393,8 @@
         const unread = this._supervisorNotifications.filter((item) => !item.read).length;
         const badge = document.querySelector('#supervisorNotifications .notification-count');
         if (badge) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.hidden = unread === 0; }
-      }, (error) => console.warn('Supervisor notifications unavailable:', error));
+      }, (error) => console.warn('Notifications unavailable:', error));
     };
-
     app.ensureNotificationButton = function () {
       if (this.state.userRole !== 'admin' || document.getElementById('supervisorNotifications')) return;
       const header = document.querySelector('.top-header');
@@ -359,12 +404,12 @@
       button.className = 'supervisor-notifications';
       button.type = 'button';
       button.title = this.state.lang === 'fr' ? 'Notifications' : 'الإشعارات';
+      button.setAttribute('aria-label', this.state.lang === 'fr' ? 'Notifications' : 'الإشعارات');
       button.innerHTML = '<i class="fa-solid fa-bell"></i><span class="notification-count" hidden>0</span>';
       header.appendChild(button);
       this.renderSupervisorNotifications();
       this.subscribeSupervisorNotifications();
     };
-
     const originalStart = app.start.bind(app);
     app.start = function (name, phone) {
       originalStart(name, phone);
@@ -373,7 +418,6 @@
         this.subscribeSupervisorNotifications();
       }, 0);
     };
-
     // منع إشعارات المتصفح الخاصة باستحقاق الرواتب؛ لا يؤثر ذلك على عمليات الدفع.
     app.renderSalaryDueAlert = async function (div) {
       const host = div || document.getElementById('workspace');
