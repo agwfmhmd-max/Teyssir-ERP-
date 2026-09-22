@@ -315,7 +315,7 @@
                 dp_bank_info: "يرجى تحويل المبلغ إلى الرقم:",
 
                 exp_new: "إضافة مصروف جديد", exp_type: "نوع المصروف", exp_tax_type: "نوع الضريبة", exp_other_name: "اسم المصروف / الضريبة",
-                exp_water: "الماء", exp_elec: "الكهرباء", exp_tax: "الضريبة", exp_rent: "الإيجار", exp_bank_com: "عمولة التحويلات البنكية", exp_draw_com: "عمولة السحب", exp_other: "أخرى",
+                exp_water: "SNDE (الماء)", exp_elec: "SOMELEC (الكهرباء)", exp_tax: "الضريبة", exp_rent: "الإيجار", exp_bank_com: "عمولة التحويلات البنكية", exp_draw_com: "عمولة السحب", exp_other: "أخرى",
                 tax_net: "الضريبة على صافي الأرباح", tax_vat: "الضريبة على القيمة المضافة (TVA)", tax_bank: "الضريبة على التحويلات البنكية",
                 err_exp_fields: "يرجى إدخال نوع المصروف والمبلغ!", err_tax_fields: "يرجى اختيار نوع الضريبة!",
                 
@@ -423,7 +423,7 @@
                 dp_bank_info: "Numéro de transfert :",
 
                 exp_new: "Nouvelle Dépense", exp_type: "Type de Dépense", exp_tax_type: "Type de Taxe", exp_other_name: "Nom Dépense/Taxe",
-                exp_water: "Eau", exp_elec: "Électricité", exp_tax: "Taxe", exp_rent: "Loyer", exp_bank_com: "Frais Bancaires", exp_draw_com: "Frais de Retrait", exp_other: "Autre",
+                exp_water: "SNDE (Eau)", exp_elec: "SOMELEC (Électricité)", exp_tax: "Taxe", exp_rent: "Loyer", exp_bank_com: "Frais Bancaires", exp_draw_com: "Frais de Retrait", exp_other: "Autre",
                 tax_net: "Impôt sur les Bénéfices", tax_vat: "TVA", tax_bank: "Taxe sur Virements Bancaires",
                 err_exp_fields: "Veuillez saisir le type et le montant!", err_tax_fields: "Veuillez choisir la taxe!",
                 
@@ -2564,7 +2564,7 @@
                             const increment = type === 'revenues' ? amt : -amt; 
                             batch.update(db.collection('banks').doc(bid), { balance: firebase.firestore.FieldValue.increment(increment) }); 
                         } 
-                        batch.commit().catch(e=>console.error(e)); 
+                        batch.commit().then(() => this.notifySupervisor && this.notifySupervisor('revenue', `تم تسجيل إيراد ${val1} بمبلغ ${amt.toLocaleString()} MRU`)).catch(e=>console.error(e)); 
                         this.clearCache(type); 
                         this.clearCache('transactions'); 
                         this.clearCache('banks'); 
@@ -3980,7 +3980,7 @@
                             salUpdate.lastPaidAt = now;
                         }
                         batch.update(db.collection('salaries').doc(empId), salUpdate); 
-                        batch.commit().catch(e=>console.error(e)); 
+                        batch.commit().then(() => this.notifySupervisor && this.notifySupervisor('salary_payment', `تم دفع راتب ${empName} بمبلغ ${total.toLocaleString()} MRU`)).catch(e=>console.error(e)); 
                         this.clearCache('transactions'); 
                         this.clearCache('banks'); 
                         this.clearCache('salaries'); 
@@ -4056,6 +4056,7 @@
                     let docs = await this.getData(type); 
                     let addBtn = ''; 
                     let topHtml = '';
+                    let financeSummaryHtml = '';
                     if(type === 'products') { 
                         let invStart = localStorage.getItem('teyssir_inv_start'); 
                         if(!invStart) { 
@@ -4075,9 +4076,14 @@
                     } else if(type!=='invoices' && type!=='salaries') { 
                         addBtn = `<button onclick="app.addTransactionModal('${type}')" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>`; 
                     }
-                    let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div>` + topHtml;
+                    if (['expenses', 'revenues'].includes(type)) {
+                        const financeTotal = docs.reduce((sum, item) => sum + Number(item.val3 || 0), 0);
+                        const financeLabel = type === 'expenses' ? (this.state.lang === 'ar' ? 'إجمالي المصروفات' : 'Total dépenses') : (this.state.lang === 'ar' ? 'إجمالي الإيرادات' : 'Total revenus');
+                        financeSummaryHtml = `<div class="finance-summary-grid"><div class="finance-summary-card ${type === 'expenses' ? 'expense' : 'revenue'}"><span class="summary-label">${financeLabel}</span><span class="summary-value">${financeTotal.toLocaleString()} MRU</span></div><div class="finance-summary-card balance"><span class="summary-label">${this.state.lang === 'ar' ? 'عدد البنود' : 'Nombre de catégories'}</span><span class="summary-value">${new Set(docs.map(item => this.normalizeFinanceCategory ? this.normalizeFinanceCategory(item.val1) : item.val1)).size}</span></div><div class="finance-summary-card"><span class="summary-label">${this.state.lang === 'ar' ? 'عدد العمليات' : 'Nombre d’opérations'}</span><span class="summary-value">${docs.length}</span></div></div>`;
+                    }
+                    let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div>` + topHtml + financeSummaryHtml;
                     if (['expenses', 'revenues'].includes(type)) { 
-                        html += `<input id="searchGen" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchGen', 'lst')">`; 
+                        html += `<div class="finance-filter-bar"><i class="fa-solid fa-filter" style="color:var(--primary)"></i><input id="searchGen" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchGen', 'lst')"><span style="font-size:12px;color:var(--text-light)">${this.state.lang === 'ar' ? 'تجميع حسب البند' : 'Groupé par catégorie'}</span></div>`; 
                     } else if (type === 'products') { 
                         html += `<input id="searchProd" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchProd', 'lst')">`; 
                     }
@@ -4193,7 +4199,7 @@
                         else {
                             const groups = {};
                             docs.forEach(d => {
-                                const key = String(d.val1 || this.t('exp_other'));
+                                const key = this.normalizeFinanceCategory ? this.normalizeFinanceCategory(d.val1) : String(d.val1 || this.t('exp_other'));
                                 if (!groups[key]) groups[key] = [];
                                 groups[key].push(d);
                             });
@@ -5289,8 +5295,8 @@
                     <label style="font-size:12px; font-weight:bold;">${this.t('exp_type')}</label>
                     <select id="expCategory" class="select-box" onchange="app.handleExpenseCategoryChange()">
                         <option value="">-- ${this.t('exp_type')} --</option>
-                        <option value="الماء">${this.t('exp_water')}</option>
-                        <option value="الكهرباء">${this.t('exp_elec')}</option>
+                        <option value="SNDE">${this.t('exp_water')}</option>
+                        <option value="SOMELEC">${this.t('exp_elec')}</option>
                         <option value="الضريبة">${this.t('exp_tax')}</option>
                         <option value="الإيجار">${this.t('exp_rent')}</option>
                         <option value="عمولة التحويلات البنكية">${this.t('exp_bank_com')}</option>
@@ -5341,6 +5347,8 @@
                     if(cat === 'الضريبة' && !taxCat) return alert(this.t('err_tax_fields'));
 
                     let finalName = cat;
+                    if (cat === 'الماء') finalName = 'SNDE';
+                    if (cat === 'الكهرباء') finalName = 'SOMELEC';
                     if(cat === 'الضريبة') {
                         finalName += ' - ' + taxCat;
                         if(taxCat === 'أخرى' && otherName) finalName += ' (' + otherName + ')';
@@ -5389,6 +5397,7 @@
                     }
 
                     await batch.commit();
+                    if (this.notifySupervisor) this.notifySupervisor('expense', `تم تسجيل مصروف ${finalName} بمبلغ ${amt.toLocaleString()} MRU`);
                     this.clearCache('expenses');
                     this.clearCache('transactions');
                     this.clearCache('banks');

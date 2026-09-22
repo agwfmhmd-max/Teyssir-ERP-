@@ -266,3 +266,154 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installEnhancements);
   else installEnhancements();
 })();
+
+
+/* =========================================================
+   Teyssir ERP — Finance labels + real notifications v12
+   - Canonical SNDE/SOMELEC labels (including legacy records)
+   - Browser notifications with explicit permission
+   - Firestore notification inbox for the company supervisor
+   ========================================================= */
+(function installFinanceAndNotifications() {
+  function boot() {
+    if (typeof app === 'undefined' || typeof db === 'undefined') {
+      setTimeout(boot, 80);
+      return;
+    }
+    if (app.__financeNotificationsReady) return;
+    app.__financeNotificationsReady = true;
+
+    app.normalizeFinanceCategory = function (value) {
+      const raw = String(value || '').trim();
+      const normalized = raw.toLowerCase();
+      if (['snde', 'الماء', 'ماء', 'eau', 'water', 'snde (الماء)', 'snde (eau)'].includes(normalized)) {
+        return this.state.lang === 'fr' ? 'SNDE (Eau)' : 'SNDE (الماء)';
+      }
+      if (['somelec', 'الكهرباء', 'كهرباء', 'électricité', 'electricite', 'electricity', 'somelec (الكهرباء)', 'somelec (électricité)'].includes(normalized)) {
+        return this.state.lang === 'fr' ? 'SOMELEC (Électricité)' : 'SOMELEC (الكهرباء)';
+      }
+      return raw || this.t('exp_other');
+    };
+
+    app.escapeNotificationText = function (value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+    };
+
+    app.requestRealNotifications = async function () {
+      if (!('Notification' in window)) {
+        return alert(this.state.lang === 'fr' ? 'Les notifications du navigateur ne sont pas disponibles.' : 'إشعارات المتصفح غير متاحة في هذا الجهاز.');
+      }
+      if (Notification.permission === 'granted') return true;
+      if (Notification.permission === 'denied') {
+        return alert(this.state.lang === 'fr' ? 'Les notifications sont bloquées dans les paramètres du navigateur.' : 'تم منع الإشعارات. فعّلها من إعدادات المتصفح.');
+      }
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    };
+
+    app.pushRealNotification = function (title, body, key) {
+      const dedupeKey = `teyssir_notification_${this.state.cid || 'local'}_${key || title}_${new Date().toISOString().slice(0, 10)}`;
+      if (localStorage.getItem(dedupeKey)) return;
+      localStorage.setItem(dedupeKey, '1');
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try { new Notification(title, { body, icon: './icon-192.png', tag: dedupeKey }); } catch (_) {}
+      }
+    };
+
+    app.notifySupervisor = async function (type, message) {
+      if (!this.state.cid || this.state.cid === 'ADMIN' || !message) return;
+      try {
+        const payload = {
+          companyId: this.state.cid,
+          targetRole: 'admin',
+          type: type || 'activity',
+          message,
+          read: false,
+          actor: this.state.currentUser ? this.state.currentUser.name : (this.state.name || 'مدير'),
+          createdAt: new Date().toISOString()
+        };
+        await db.collection('companies').doc(this.state.cid).collection('notifications').add(payload);
+        await db.collection('admin_notifications').add(payload);
+      } catch (error) {
+        // Notification failure must never block or roll back the financial operation.
+        console.warn('Supervisor notification skipped:', error);
+      }
+    };
+
+    app.renderSupervisorNotifications = function () {
+      if (this.state.userRole !== 'admin' || !this.state.cid) return;
+      const button = document.getElementById('supervisorNotifications');
+      if (!button) return;
+      button.onclick = async () => {
+        await this.requestRealNotifications();
+        const entries = Array.isArray(this._supervisorNotifications) ? this._supervisorNotifications : [];
+        const body = entries.length ? entries.map((item) => `
+          <div class="notification-item ${item.read ? '' : 'unread'}">
+            <i class="fa-solid ${item.type === 'salary_payment' ? 'fa-money-check-dollar' : item.type === 'expense' ? 'fa-arrow-trend-down' : item.type === 'revenue' ? 'fa-arrow-trend-up' : 'fa-bell'}"></i>
+            <div><strong>${this.escapeNotificationText(item.message)}</strong><small>${this.escapeNotificationText(item.actor || '')} · ${this.formatDate(item.createdAt)}</small></div>
+          </div>`).join('') : `<p class="notifications-empty">${this.state.lang === 'fr' ? 'Aucune notification.' : 'لا توجد إشعارات جديدة.'}</p>`;
+        this.showModal(this.state.lang === 'fr' ? 'Notifications du superviseur' : 'إشعارات المشرف الرئيسي', `<div class="notifications-list">${body}</div>`, null);
+        const notificationCollection = this.state.cid === 'ADMIN' ? db.collection('admin_notifications') : db.collection('companies').doc(this.state.cid).collection('notifications');
+        entries.filter((item) => !item.read).slice(0, 30).forEach((item) => {
+          notificationCollection.doc(item.id).update({ read: true }).catch(() => {});
+        });
+      };
+    };
+
+    app.subscribeSupervisorNotifications = function () {
+      if (this._notificationUnsub || this.state.userRole !== 'admin' || !this.state.cid) return;
+      const notificationCollection = this.state.cid === 'ADMIN' ? db.collection('admin_notifications') : db.collection('companies').doc(this.state.cid).collection('notifications');
+      this._notificationUnsub = notificationCollection.limit(50).onSnapshot((snapshot) => {
+        this._supervisorNotifications = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((item) => item.targetRole === 'admin')
+          .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+        const unread = this._supervisorNotifications.filter((item) => !item.read).length;
+        const badge = document.querySelector('#supervisorNotifications .notification-count');
+        if (badge) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.hidden = unread === 0; }
+      }, (error) => console.warn('Supervisor notifications unavailable:', error));
+    };
+
+    app.ensureNotificationButton = function () {
+      if (this.state.userRole !== 'admin' || document.getElementById('supervisorNotifications')) return;
+      const header = document.querySelector('.top-header');
+      if (!header) return;
+      const button = document.createElement('button');
+      button.id = 'supervisorNotifications';
+      button.className = 'supervisor-notifications';
+      button.type = 'button';
+      button.title = this.state.lang === 'fr' ? 'Notifications' : 'إشعارات المشرف الرئيسي';
+      button.innerHTML = '<i class="fa-solid fa-bell"></i><span class="notification-count" hidden>0</span>';
+      header.appendChild(button);
+      this.renderSupervisorNotifications();
+      this.subscribeSupervisorNotifications();
+    };
+
+    const originalStart = app.start.bind(app);
+    app.start = function (name, phone) {
+      originalStart(name, phone);
+      setTimeout(() => {
+        this.ensureNotificationButton();
+        this.subscribeSupervisorNotifications();
+      }, 0);
+    };
+
+    const originalSalaryAlert = app.renderSalaryDueAlert.bind(app);
+    app.renderSalaryDueAlert = async function (div) {
+      await originalSalaryAlert(div);
+      try {
+        const due = await this.getDueSalaries();
+        due.forEach((employee) => this.pushRealNotification(
+          this.state.lang === 'fr' ? 'Salaire à payer' : 'إشعار راتب مستحق',
+          `${employee.name} — ${Number(employee.baseSalary || 0).toLocaleString()} MRU`,
+          `salary_${employee.id}_${employee.payDate || 'due'}`
+        ));
+      } catch (error) { console.warn('Salary notification skipped:', error); }
+    };
+
+    // Ask only when the supervisor intentionally opens the notification center.
+    window.addEventListener('online', () => setTimeout(() => app.ensureNotificationButton(), 300));
+  }
+  boot();
+})();
