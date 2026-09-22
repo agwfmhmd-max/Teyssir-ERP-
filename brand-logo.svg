@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="g" x1="120" y1="80" x2="900" y2="940" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#173f7a"/><stop offset="0.58" stop-color="#2563a9"/><stop offset="1" stop-color="#12a7a3"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="210" fill="#f7faff"/>
+  <rect x="92" y="92" width="840" height="840" rx="190" fill="url(#g)"/>
+  <path d="M92 390C250 180 474 112 700 156c92 18 169 57 232 111v-175c0-110-90-200-200-200H292C182 0 92 90 92 200z" fill="url(#shine)" opacity=".7"/>
+  <path d="M286 335h452v112H595v272H429V447H286z" fill="#fff"/>
+  <path d="M278 710c90 65 177 97 260 97 111 0 202-59 284-172" fill="none" stroke="#8be5df" stroke-width="34" stroke-linecap="round"/>
+  <circle cx="775" cy="716" r="38" fill="#f0c46b"/>
+  <text x="512" y="890" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#173f7a">TEYSSIR</text>
+</svg>

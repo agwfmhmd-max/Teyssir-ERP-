@@ -941,8 +941,8 @@
                 e.preventDefault(); 
                 this.showLoader();
                 const n=document.getElementById('logName').value.trim(); 
-                const p=document.getElementById('logPhone').value; 
-                const c=document.getElementById('logCode').value;
+                const p=document.getElementById('logPhone').value.trim(); 
+                const c=document.getElementById('logCode').value.trim();
                 
                 let deviceId = localStorage.getItem('teyssir_device_id');
                 if(!deviceId) { 
@@ -1024,19 +1024,24 @@
                         let targetCompId = null; 
                         let targetCompData = null; 
                         let activeCodeId = null;
+                        let activeCodeData = null;
 
                         for (const compDoc of comps.docs) {
                             const compData = compDoc.data();
                             const codes = await db.collection('activation_codes').where('companyId','==',compDoc.id).get();
                             if(codes.empty) continue; 
                             
-                            const activeCodeDoc = codes.docs[0];
-                            const activeCodeData = activeCodeDoc.data();
+                            const activeCodeDoc = codes.docs.find((codeDoc) => {
+                                const codeData = codeDoc.data();
+                                return codeData.status !== 'suspended' &&
+                                    (!codeData.expiryDate || new Date() < new Date(codeData.expiryDate));
+                            });
+                            if (!activeCodeDoc) continue;
+                            const codeData = activeCodeDoc.data();
                             
-                            if (activeCodeData.status === 'suspended') continue;
-                            if (activeCodeData.expiryDate && new Date() >= new Date(activeCodeData.expiryDate)) continue;
+                            activeCodeData = codeData;
 
-                            if (compData.name.trim() !== n) continue;
+                            if (String(compData.name || '').trim() !== n) continue;
 
                             const empSnap = await db.collection('companies').doc(compDoc.id).collection('employees').where('pinCode', '==', c).get();
                             if (!empSnap.empty) {
@@ -1054,9 +1059,9 @@
                         
                         const empData = foundEmployee.data();
 
-                        let empDevices = empData.activeDevices || [];
+                        let empDevices = Array.isArray(empData.activeDevices) ? empData.activeDevices : [];
                         if (!empDevices.includes(deviceId)) {
-                            if (empDevices.length >= this.getDeviceLimit(Object.assign({}, activeCodeData, targetCompData))) throw new Error(this.t('device_limit_error'));
+                            if (empDevices.length >= this.getDeviceLimit(Object.assign({}, activeCodeData || {}, targetCompData || {}))) throw new Error(this.t('device_limit_error'));
                             await db.collection('companies').doc(targetCompId).collection('employees').doc(foundEmployee.id).update({ 
                                 activeDevices: firebase.firestore.FieldValue.arrayUnion(deviceId) 
                             });
@@ -3203,13 +3208,13 @@
                     `;
                     
                     this.showModal(this.t('add_user'), html, async () => {
-                        const n = document.getElementById('un').value; 
-                        const c = document.getElementById('uc').value;
+                        const n = document.getElementById('un').value.trim(); 
+                        const c = document.getElementById('uc').value.trim();
                         const checkboxes = document.querySelectorAll('input[name="uperm"]:checked'); 
                         const selectedPerms = Array.from(checkboxes).map(cb => cb.value);
 
                         if(!n || !c) return alert("Missing fields"); 
-                        if(c.length < 4) return alert("PIN too short (Min 4)");
+                        if(!/^\d{4,6}$/.test(c)) return alert("PIN يجب أن يتكون من 4 إلى 6 أرقام فقط");
                         if (/^(\d)\1+$/.test(c)) return alert("الرمز ضعيف: لا يمكن استخدام أرقام مكررة (مثل 1111)");
                         const seq = "01234567890123456789"; 
                         const revSeq = "98765432109876543210";

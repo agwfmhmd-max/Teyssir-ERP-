@@ -383,3 +383,114 @@ tr.row-salary-due { background: rgba(245, 158, 11, .12); }
   .card, .auth-card, .modal-box, .welcome-content, .salary-due-alert { animation: none !important; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+
+/* ---------- Teyssir visual refinement v11 ---------- */
+:root {
+  --brand-ink: #173f7a;
+  --brand-teal: #12a7a3;
+  --brand-gold: #f0c46b;
+  --focus-ring: 0 0 0 4px rgba(18,167,163,.18);
+}
+
+/* Clean, consistent brand mark treatment */
+.auth-card > img[src*="logo"],
+.welcome-content > img[src*="logo"] {
+  width: min(118px, 34vw) !important;
+  aspect-ratio: 1;
+  object-fit: cover;
+  padding: 7px;
+  background: linear-gradient(145deg, #f7fbff, #eaf6f6);
+  border: 1px solid rgba(37,99,169,.12);
+  border-radius: 28px !important;
+  box-shadow: 0 14px 30px rgba(23,63,122,.15);
+}
+.sidebar > div:first-child {
+  background: linear-gradient(180deg, var(--surface), var(--primary-50)) !important;
+  padding: 22px 18px !important;
+}
+.sidebar > div:first-child img[src*="logo"] {
+  width: 64px !important;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 20px !important;
+  box-shadow: 0 8px 18px rgba(23,63,122,.14);
+}
+
+/* Easier-to-scan actions and controls */
+.btn, .nav-item, .home-card, .theme-toggle, .lang-btn-style {
+  -webkit-touch-callout: none;
+}
+.btn:focus-visible, .inp:focus-visible, .select-box:focus-visible,
+.nav-item:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 3px solid rgba(18,167,163,.34);
+  outline-offset: 2px;
+}
+.auth-card {
+  position: relative;
+  overflow: hidden;
+}
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  background: linear-gradient(90deg, var(--brand-ink), var(--brand-teal), var(--brand-gold));
+}
+.auth-card h2 { letter-spacing: -.3px; }
+.auth-card .inp { min-height: 48px; }
+.auth-card .btn { min-height: 46px; }
+
+/* More legible compact icon tiles */
+.home-grid { gap: 14px !important; }
+.home-card {
+  min-height: 112px !important;
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
+}
+.home-card::after {
+  content: "";
+  position: absolute;
+  width: 70px; height: 70px;
+  inset-inline-end: -25px; inset-block-start: -25px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--primary) 7%, transparent);
+}
+.home-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md) !important; border-color: color-mix(in oklab, var(--primary) 28%, var(--border)) !important; }
+.home-card i {
+  width: 46px; height: 46px;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-bottom: 9px !important;
+  border-radius: 15px;
+  color: var(--primary) !important;
+  background: var(--primary-50);
+  font-size: 21px !important;
+}
+.home-card.full-width i { background: rgba(255,255,255,.16); }
+.nav-item i { width: 22px; text-align: center; opacity: .9; }
+.nav-item.active i { opacity: 1; }
+
+/* Small, polished status pills */
+.conn-status { backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.22); }
+.lang-btn-style { background: linear-gradient(145deg, #0b8f79, #059669) !important; border-radius: 13px !important; }
+
+/* Responsive polish for dialogs and tables */
+.modal-box { padding: 24px !important; }
+.modal-box h3 { font-size: 1.16rem; }
+.perm-grid { gap: 8px !important; }
+.perm-item { min-height: 40px; }
+.table-scroll { box-shadow: inset 0 0 0 1px rgba(23,63,122,.02); }
+
+@media (max-width: 560px) {
+  .auth-wrap { padding: 14px !important; }
+  .auth-card { padding: 34px 20px 22px !important; }
+  .home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-card { min-height: 100px !important; padding: 12px 8px !important; }
+  .home-card h3 { font-size: 13px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
