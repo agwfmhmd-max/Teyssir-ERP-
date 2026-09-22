@@ -1239,6 +1239,12 @@
                 }
             },
             
+            setFinanceSort: function(type, order) {
+                if (!['expenses', 'revenues'].includes(type)) return;
+                const selected = order === 'oldest' ? 'oldest' : 'newest';
+                localStorage.setItem(`teyssir_finance_sort_${type}`, selected);
+                this.nav(type);
+            },
             clearCache: function(collection) { 
                 if (collection) delete this.cache[collection]; 
                 else this.cache = {}; 
@@ -4034,6 +4040,19 @@
                 try {
                     const titleKey = type==='invoices'?'inv':(type==='products'?'stock':(type==='revenues'?'rev':(type==='salaries'?'sal':(type==='suppliers'?'suppliers':'exp')))); 
                     let docs = await this.getData(type); 
+                    // Keep financial records in a deterministic date order. The user can
+                    // switch between newest-first and oldest-first without changing data.
+                    if (['expenses', 'revenues'].includes(type)) {
+                        const sortKey = localStorage.getItem(`teyssir_finance_sort_${type}`) || 'newest';
+                        const dateValue = (item) => {
+                            const parsed = Date.parse(item && item.createdAt ? item.createdAt : '');
+                            return Number.isNaN(parsed) ? 0 : parsed;
+                        };
+                        docs = docs.slice().sort((a, b) => {
+                            const difference = dateValue(a) - dateValue(b);
+                            return sortKey === 'oldest' ? difference : -difference;
+                        });
+                    }
                     let addBtn = ''; 
                     let topHtml = '';
                     let financeSummaryHtml = '';
@@ -4063,7 +4082,11 @@
                     }
                     let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div>` + topHtml + financeSummaryHtml;
                     if (['expenses', 'revenues'].includes(type)) { 
-                        html += `<div class="finance-filter-bar"><i class="fa-solid fa-filter" style="color:var(--primary)"></i><input id="searchGen" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchGen', 'lst')"><span style="font-size:12px;color:var(--text-light)">${this.state.lang === 'ar' ? 'تجميع حسب البند' : 'Groupé par catégorie'}</span></div>`; 
+                        const financeSort = localStorage.getItem(`teyssir_finance_sort_${type}`) || 'newest';
+                        const sortLabel = this.state.lang === 'ar' ? 'ترتيب التاريخ' : 'Ordre des dates';
+                        const newestLabel = this.state.lang === 'ar' ? 'الأحدث أولاً' : 'Plus récent';
+                        const oldestLabel = this.state.lang === 'ar' ? 'الأقدم أولاً' : 'Plus ancien';
+                        html += `<div class="finance-filter-bar"><i class="fa-solid fa-filter" style="color:var(--primary)"></i><input id="searchGen" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchGen', 'lst')"><label style="font-size:12px;color:var(--text-light);display:flex;align-items:center;gap:6px;white-space:nowrap;"><span>${sortLabel}</span><select class="select-box" style="width:auto;min-width:125px;padding:7px 9px;" aria-label="${sortLabel}" onchange="app.setFinanceSort('${type}', this.value)"><option value="newest" ${financeSort === 'newest' ? 'selected' : ''}>${newestLabel}</option><option value="oldest" ${financeSort === 'oldest' ? 'selected' : ''}>${oldestLabel}</option></select></label><span style="font-size:12px;color:var(--text-light)">${this.state.lang === 'ar' ? 'تجميع حسب البند' : 'Groupé par catégorie'}</span></div>`; 
                     } else if (type === 'products') { 
                         html += `<input id="searchProd" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchProd', 'lst')">`; 
                     }
@@ -4183,7 +4206,9 @@
                                 if (!groups[key]) groups[key] = [];
                                 groups[key].push(d);
                             });
-                            Object.keys(groups).sort((a, b) => a.localeCompare(b)).forEach(groupName => {
+                            // `docs` is already ordered by the selected date direction;
+                            // preserving insertion order keeps groups aligned with that order.
+                            Object.keys(groups).forEach(groupName => {
                                 const items = groups[groupName];
                                 const total = items.reduce((sum, d) => sum + Number(d.val3 || 0), 0);
                                 const detailRows = items.map((d, idx) => `<tr>

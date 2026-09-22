@@ -323,7 +323,7 @@
             <i class="fa-solid ${item.type === 'salary_payment' ? 'fa-money-check-dollar' : item.type === 'expense' ? 'fa-arrow-trend-down' : item.type === 'revenue' ? 'fa-arrow-trend-up' : 'fa-bell'}"></i>
             <div><strong>${this.escapeNotificationText(item.message)}</strong><small>${this.escapeNotificationText(item.actor || '')} · ${this.formatDate(item.createdAt)}</small></div>
           </div>`).join('') : `<p class="notifications-empty">${this.state.lang === 'fr' ? 'Aucune notification.' : 'لا توجد إشعارات جديدة.'}</p>`;
-        this.showModal(this.state.lang === 'fr' ? 'Notifications du superviseur' : 'إشعارات المشرف الرئيسي', `<div class="notifications-list">${body}</div>`, null);
+        this.showModal(this.state.lang === 'fr' ? 'Notifications' : 'الإشعارات', `<div class="notifications-list">${body}</div>`, null);
         const notificationCollection = this.state.cid === 'ADMIN' ? db.collection('admin_notifications') : db.collection('companies').doc(this.state.cid).collection('notifications');
         entries.filter((item) => !item.read).slice(0, 30).forEach((item) => {
           notificationCollection.doc(item.id).update({ read: true }).catch(() => {});
@@ -337,7 +337,13 @@
       this._notificationUnsub = notificationCollection.limit(50).onSnapshot((snapshot) => {
         this._supervisorNotifications = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
           .filter((item) => item.targetRole === 'admin')
-          .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+          .sort((a, b) => {
+            const time = (item) => {
+              const value = Date.parse(item.createdAt || '');
+              return Number.isNaN(value) ? 0 : value;
+            };
+            return time(b) - time(a);
+          });
         const unread = this._supervisorNotifications.filter((item) => !item.read).length;
         const badge = document.querySelector('#supervisorNotifications .notification-count');
         if (badge) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.hidden = unread === 0; }
@@ -352,7 +358,7 @@
       button.id = 'supervisorNotifications';
       button.className = 'supervisor-notifications';
       button.type = 'button';
-      button.title = this.state.lang === 'fr' ? 'Notifications' : 'إشعارات المشرف الرئيسي';
+      button.title = this.state.lang === 'fr' ? 'Notifications' : 'الإشعارات';
       button.innerHTML = '<i class="fa-solid fa-bell"></i><span class="notification-count" hidden>0</span>';
       header.appendChild(button);
       this.renderSupervisorNotifications();
