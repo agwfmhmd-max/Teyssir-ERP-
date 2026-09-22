@@ -37,44 +37,13 @@
   }
 
   function subscriptionReminderHtml() {
-    const info = subscriptionInfo();
-    if (!info.valid || info.days > 7) return "";
-    const urgent = info.days <= 1;
-    const priority = info.days <= 3;
-    const tone = urgent ? "urgent" : priority ? "priority" : "notice";
-    const trial = app.state.subscriptionType === "trial";
-    const title = trial ? "Période d’essai" : "Abonnement";
-    return `<section class="erp-reminder ${tone}">
-      <div><strong>${title} : ${info.days} jour(s) restant(s)</strong>
-      <span>Expiration : ${info.expiry.toLocaleDateString()}</span>
-      <p>Votre abonnement expire bientôt. Veuillez le renouveler afin d’éviter l’interruption du service.</p></div>
-      <button type="button" onclick="app.openRenewalForm()">Renouveler maintenant</button>
-    </section>`;
+    // تم إيقاف تنبيه قرب انتهاء الاشتراك للشركات بناءً على طلب المستخدم.
+    return "";
   }
 
   async function salaryReminderHtml() {
-    // التنبيه الجديد المعتمد على تاريخ استحقاق كل موظف يتكفل بذلك (تفادي التكرار)
-    if (typeof app.getDueSalaries === "function") return "";
-    const config = safeJson(REMINDER_KEY, { enabled: true, day: "last" });
-    if (!config.enabled || !app.state.cid || app.state.cid === "ADMIN") return "";
-    const salaries = await app.getData("salaries");
-    const active = salaries.filter((employee) => employee.active !== false);
-    const total = active.reduce((sum, employee) => sum + Number(employee.baseSalary || 0), 0);
-    const now = new Date();
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const due = config.day === "last" ? now.getDate() >= lastDay - 2 : now.getDate() >= Number(config.day || lastDay);
-    if (!due || !active.length) return "";
-    const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const history = safeJson("teyssir_salary_reminder_history", []);
-    if (!history.some((entry) => entry.period === period)) {
-      history.unshift({ period, employeeCount: active.length, total, createdAt: now.toISOString() });
-      localStorage.setItem("teyssir_salary_reminder_history", JSON.stringify(history.slice(0, 24)));
-    }
-    return `<section class="erp-reminder salary">
-      <div><strong>Rappel salaires — ${active.length} employé(s)</strong>
-      <span>Total à payer : ${total.toLocaleString()} MRU</span></div>
-      <button type="button" onclick="app.nav('salaries')">Voir les salaires</button>
-    </section>`;
+    // تم إيقاف إشعار موعد دفع الرواتب للشركات مع إبقاء شاشة إدارة الرواتب والدفع.
+    return "";
   }
 
   function enhanceBlockScreen(reason) {
@@ -399,17 +368,10 @@
       }, 0);
     };
 
-    const originalSalaryAlert = app.renderSalaryDueAlert.bind(app);
+    // منع إشعارات المتصفح الخاصة باستحقاق الرواتب؛ لا يؤثر ذلك على عمليات الدفع.
     app.renderSalaryDueAlert = async function (div) {
-      await originalSalaryAlert(div);
-      try {
-        const due = await this.getDueSalaries();
-        due.forEach((employee) => this.pushRealNotification(
-          this.state.lang === 'fr' ? 'Salaire à payer' : 'إشعار راتب مستحق',
-          `${employee.name} — ${Number(employee.baseSalary || 0).toLocaleString()} MRU`,
-          `salary_${employee.id}_${employee.payDate || 'due'}`
-        ));
-      } catch (error) { console.warn('Salary notification skipped:', error); }
+      const host = div || document.getElementById('workspace');
+      if (host) { const old = host.querySelector('#salaryDueAlert'); if (old) old.remove(); }
     };
 
     // Ask only when the supervisor intentionally opens the notification center.

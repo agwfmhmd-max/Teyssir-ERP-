@@ -818,12 +818,11 @@
                 const diff = expiry - now; 
                 const daysLeft = diff / (1000 * 60 * 60 * 24); 
                 if (now >= expiry) { 
-                    this.showBlockScreen('expired'); 
-                } else if (daysLeft <= 1 && daysLeft > 0) { 
-                    document.getElementById('subAlertBox').style.display = 'flex'; 
-                } else { 
-                    document.getElementById('subAlertBox').style.display = 'none'; 
-                } 
+                    this.showBlockScreen('expired');
+                }
+                // لا تعرض تنبيهات قرب انتهاء الاشتراك للشركات؛ تبقى حماية الانتهاء الفعلي فعالة.
+                const subscriptionAlert = document.getElementById('subAlertBox');
+                if (subscriptionAlert) subscriptionAlert.style.display = 'none';
             },
             showBlockScreen: function(reason) { 
                 this.switchScreen('blockScreen'); 
@@ -3319,8 +3318,6 @@
                 }); 
                 h += '</div>'; 
                 div.innerHTML = h; 
-                // تنبيه استحقاق رواتب الموظفين — الضغط عليه ينقل إلى صفحة الرواتب
-                this.renderSalaryDueAlert(div);
                 try { this.renderAppAnnouncement(); } catch(_){}
             },
 
@@ -3764,26 +3761,9 @@
                 return (docs || []).filter(d => this.isSalaryDue(d));
             },
             renderSalaryDueAlert: async function(div) {
-                try {
-                    const due = await this.getDueSalaries();
-                    const host = div || document.getElementById('workspace');
-                    if (!host) return;
-                    const old = host.querySelector('#salaryDueAlert');
-                    if (old) old.remove();
-                    if (!due.length) return;
-                    const total = due.reduce((sum, e) => sum + Number(e.baseSalary || 0), 0);
-                    const names = due.slice(0, 3).map(e => e.name).join('، ') + (due.length > 3 ? ` +${due.length - 3}` : '');
-                    const html = `<div id="salaryDueAlert" class="salary-due-alert" onclick="app.nav('salaries')" role="button" tabindex="0">
-                        <div class="sda-icon"><i class="fa-solid fa-money-check-dollar"></i></div>
-                        <div class="sda-body">
-                            <strong>حان موعد دفع رواتب الموظفين (${due.length})</strong>
-                            <span>${names}</span>
-                            <span>الإجمالي المستحق: ${total.toLocaleString()} MRU</span>
-                        </div>
-                        <div class="sda-go"><i class="fa-solid fa-arrow-left"></i> الرواتب</div>
-                    </div>`;
-                    host.insertAdjacentHTML('afterbegin', html);
-                } catch(e) { console.warn('renderSalaryDueAlert', e); }
+                // تم إيقاف إشعار استحقاق الراتب للشركات بناءً على طلب المستخدم.
+                const host = div || document.getElementById('workspace');
+                if (host) { const old = host.querySelector('#salaryDueAlert'); if (old) old.remove(); }
             },
             editEmployeeModal: async function(empId) {
                 const docs = await this.getData('salaries');
