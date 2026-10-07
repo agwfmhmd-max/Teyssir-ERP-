@@ -126,11 +126,6 @@ html[data-theme="dark"] select option { background: var(--surface); color: var(-
 .erp-reminder.urgent { border-inline-start:5px solid var(--danger); background:color-mix(in oklab, var(--danger) 7%, var(--surface)); }
 .erp-reminder.urgent button { background:var(--danger); }
 .erp-reminder.salary { border-inline-start:5px solid var(--success); }
-.salary-reminder-tools { display:flex; align-items:center; gap:8px; padding:12px 14px; margin-bottom:12px; border:1px solid var(--border); border-radius:14px; background:var(--surface); }
-.salary-reminder-tools > div { flex:1; }
-.salary-reminder-tools strong, .salary-reminder-tools span { display:block; }
-.salary-reminder-tools span { color:var(--text-light); font-size:12px; margin-top:2px; }
-.salary-reminder-tools button { border:1px solid var(--border); border-radius:9px; padding:8px 11px; background:var(--surface-2); color:var(--text-dark); cursor:pointer; font-weight:700; }
 .block-screen { background:radial-gradient(circle at top, #7f1d1d, #250606 70%) !important; padding:20px; }
 .block-card { max-width:620px !important; padding:32px !important; border:1px solid rgba(255,255,255,.18) !important; box-shadow:0 30px 80px rgba(0,0,0,.45) !important; }
 .block-details { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:20px 0; }
@@ -142,7 +137,7 @@ html[data-theme="dark"] select option { background: var(--surface); color: var(-
 .activation-box .inp { margin:0 !important; }
 .activation-box .btn { width:auto !important; white-space:nowrap; }
 @media (max-width:640px) {
-  .erp-reminder, .activation-box > div, .salary-reminder-tools { align-items:stretch; flex-direction:column; }
+  .erp-reminder, .activation-box > div { align-items:stretch; flex-direction:column; }
   .block-details { grid-template-columns:1fr; }
 }
 
@@ -496,7 +491,7 @@ tr.row-salary-due { background: rgba(245, 158, 11, .12); }
 }
 
 
-/* ---------- Finance workspace + notification center v12 ---------- */
+/* ---------- Finance workspace v12 ---------- */
 .finance-summary-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -529,31 +524,6 @@ tr.row-salary-due { background: rgba(245, 158, 11, .12); }
   display:inline-flex; align-items:center; gap:6px; padding:6px 9px;
   border-radius:9px; background:var(--primary-50); color:var(--primary); font-weight:800;
 }
-.supervisor-notifications {
-  position:absolute; inset-inline-start:20px; width:40px; height:40px;
-  display:flex; align-items:center; justify-content:center; border:1px solid var(--border);
-  border-radius:12px; background:var(--surface); color:var(--primary); cursor:pointer;
-  box-shadow:var(--shadow-sm); font-size:17px; transition:transform .2s, box-shadow .2s;
-}
-.supervisor-notifications:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
-.notification-count {
-  position:absolute; top:-6px; inset-inline-end:-6px; min-width:19px; height:19px;
-  display:flex; align-items:center; justify-content:center; padding:0 4px;
-  border-radius:10px; background:var(--danger); color:#fff; font-size:10px; font-weight:900;
-  border:2px solid var(--surface);
-}
-.notifications-list { display:grid; gap:8px; max-height:55vh; overflow:auto; }
-.notification-item {
-  display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--border);
-  border-radius:12px; background:var(--surface-2); text-align:start;
-}
-.notification-item.unread { border-inline-start:4px solid var(--primary); background:var(--primary-50); }
-.notification-item > i { width:28px; height:28px; display:grid; place-items:center; border-radius:9px; background:var(--surface); color:var(--primary); }
-.notification-item strong, .notification-item small { display:block; }
-.notification-item strong { font-size:13px; line-height:1.5; }
-.notification-item small { color:var(--text-light); margin-top:4px; font-size:11px; }
-.notifications-empty { text-align:center; color:var(--text-light); padding:25px 10px; }
 @media (max-width: 700px) {
   .finance-summary-grid { grid-template-columns:1fr; }
-  .supervisor-notifications { inset-inline-start:68px; }
 }

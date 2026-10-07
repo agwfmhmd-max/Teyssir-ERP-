@@ -3725,7 +3725,6 @@
                     <input type="number" id="empSalary" class="inp" placeholder="${this.t('sal_fixed')}">
                     <label style="font-size:12px;font-weight:bold;">تاريخ استحقاق الراتب</label>
                     <input type="date" id="empPayDate" class="inp" value="${this.defaultNextPayDate()}">
-                    <small style="display:block; color:var(--text-light); margin:-5px 0 10px; font-size:11px;">عند حلول هذا التاريخ سيظهر تنبيه في الصفحة الرئيسية، ويتجدد تلقائيا كل شهر بعد الدفع.</small>
                     <label style="font-size:12px;font-weight:bold;">${this.t('sal_method')}</label>
                     <select id="empMethod" class="select-box">
                         <option value="cash">${this.t('pay_cash')}</option>
@@ -3811,8 +3810,7 @@
                     <input id="edEmpPhone" class="inp" placeholder="رقم الواتساب (اختياري)" value="${(emp.phone||'').replace(/"/g,'&quot;')}">
                     <input type="number" id="edEmpSalary" class="inp" placeholder="${this.t('sal_fixed')}" value="${Number(emp.baseSalary||0)}">
                     <label style="font-size:12px;font-weight:bold;">تاريخ استحقاق الراتب</label>
-                    <input type="date" id="edEmpPayDate" class="inp" value="${emp.payDate || ''}">
-                    <small style="display:block; color:var(--text-light); margin:-5px 0 10px; font-size:11px;">اتركه فارغا لإيقاف التنبيه لهذا الموظف.</small>`,
+                    <input type="date" id="edEmpPayDate" class="inp" value="${emp.payDate || ''}">`,
                     async () => {
                         const name = document.getElementById('edEmpName').value.trim();
                         const phone = document.getElementById('edEmpPhone').value.trim();
@@ -4179,7 +4177,7 @@
                                 const paid = d.totalPaid ? Number(d.totalPaid) : 0; 
                                 const isDue = this.isSalaryDue(d);
                                 const dateCell = d.payDate
-                                    ? `<span class="pay-date-chip ${isDue ? 'due' : ''}">${d.payDate}${isDue ? ' <i class="fa-solid fa-bell"></i>' : ''}</span>`
+                                    ? `<span class="pay-date-chip ${isDue ? 'due' : ''}">${d.payDate}</span>`
                                     : '<span style="color:var(--text-light);">-</span>';
                                 rows += `<tr class="${isDue ? 'row-salary-due' : ''}">
                                     <td style="font-weight:bold;">${d.name}</td>
