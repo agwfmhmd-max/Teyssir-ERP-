@@ -238,7 +238,7 @@
 
         const dict = {
             ar: {
-                title: "Teyssir ERP", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
+                title: "Teyssir ERP", excel_import:"استيراد Excel", excel_export:"تصدير Excel", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
                 btn:"دخول", btn_trial: "تجربة (3 أيام)", wait:"جاري...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور",
                 home:"الرئيسية", pos:"نقطة البيع", inv:"أرشيف الفواتير", stock:"المخزون",
                 exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"خروج",
@@ -349,7 +349,7 @@
                 renewal_lookup_error: "رمز التفعيل غير موجود أو لا يحتوي على بيانات شركة صالحة.", renewal_autofilled: "تم ملء بيانات الشركة تلقائياً من رمز التفعيل."
             },
             fr: {
-                title: "Teyssir ERP", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
+                title: "Teyssir ERP", excel_import:"Importer Excel", excel_export:"Exporter Excel", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
                 btn:"Entrer", btn_trial: "Essai Gratuit (3 jours)", wait:"Vérification...", get:"Pour le code:", cont:"Contacter Développeur",
                 home:"Accueil", pos:"Point de Vente", inv:"Factures", stock:"Stock",
                 exp:"Dépenses", sal:"Salaires", rep:"Rapports", logout:"Déconnexion",
@@ -1796,6 +1796,7 @@
                             <button onclick="app.addBankModal()" class="btn btn-prim" style="width:auto;">+</button>
                         </div>
                     </div>
+                    ${window.TeyssirExcelImport ? window.TeyssirExcelImport.buttons('banks') : ''}
                     <input id="searchBank" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchBank', 'bnkTbl')">
                     <div class="card">
                         <div class="table-scroll">
@@ -2066,6 +2067,7 @@
                         <h3>${this.t('supp')}</h3>
                         <button onclick="app.addSuppModal()" class="btn btn-prim" style="width:auto;">+</button>
                     </div>
+                    ${window.TeyssirExcelImport ? window.TeyssirExcelImport.buttons('suppliers') : ''}
                     <input id="searchSupp" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchSupp', 'supTbl')">
                     <div class="card">
                         <div class="table-scroll">
@@ -3489,6 +3491,7 @@
                         <h3>${this.t('cust')}</h3>
                         <button onclick="app.addCustomerModal()" class="btn btn-prim" style="width:auto;">+</button>
                     </div>
+                    ${window.TeyssirExcelImport ? window.TeyssirExcelImport.buttons('customers') : ''}
                     <input id="searchCust" class="inp" placeholder="${this.t('search')}" onkeyup="app.filterTable('searchCust', 'custTbl')">
                     <div class="card">
                         <div class="table-scroll">
@@ -4098,7 +4101,7 @@
                         } else { 
                             this.state.inventoryLocked = true; 
                         } 
-                        addBtn = `<div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;"><button type="button" id="btnExcelImportInventory" onclick="window.TeyssirExcelImport && window.TeyssirExcelImport.open()" class="btn btn-prim" style="width:auto;padding:8px 12px; white-space:nowrap; background:linear-gradient(135deg,#173f7a,#127f91); color:#fff;"><i class="fa-solid fa-file-excel"></i> استيراد Excel</button><button id="btnExpired" onclick="app.toggleExpiredView()" class="btn btn-dan" style="width:auto;padding:8px 15px; font-size:12px;">${this.t('btn_exp')}</button><button onclick="app.addProductModal()" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button></div>`; 
+                        addBtn = `<div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;"><button id="btnExpired" onclick="app.toggleExpiredView()" class="btn btn-dan" style="width:auto;padding:8px 15px; font-size:12px;">${this.t('btn_exp')}</button><button onclick="app.addProductModal()" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button></div>`; 
                     } else if (type === 'expenses') { 
                         addBtn = `<button onclick="app.addExpenseModal()" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>`; 
                     } else if(type!=='invoices' && type!=='salaries') { 
@@ -4109,7 +4112,7 @@
                         const financeLabel = type === 'expenses' ? (this.state.lang === 'ar' ? 'إجمالي المصروفات' : 'Total dépenses') : (this.state.lang === 'ar' ? 'إجمالي الإيرادات' : 'Total revenus');
                         financeSummaryHtml = `<div class="finance-summary-grid"><div class="finance-summary-card ${type === 'expenses' ? 'expense' : 'revenue'}"><span class="summary-label">${financeLabel}</span><span class="summary-value">${financeTotal.toLocaleString()} MRU</span></div><div class="finance-summary-card balance"><span class="summary-label">${this.state.lang === 'ar' ? 'عدد البنود' : 'Nombre de catégories'}</span><span class="summary-value">${new Set(docs.map(item => this.normalizeFinanceCategory ? this.normalizeFinanceCategory(item.val1) : item.val1)).size}</span></div><div class="finance-summary-card"><span class="summary-label">${this.state.lang === 'ar' ? 'عدد العمليات' : 'Nombre d’opérations'}</span><span class="summary-value">${docs.length}</span></div></div>`;
                     }
-                    let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div>` + topHtml + financeSummaryHtml;
+                    let html = `<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;"><h3>${this.t(titleKey)}</h3>${addBtn}</div>` + (['products','expenses','revenues','salaries'].includes(type) ? window.TeyssirExcelImport.buttons(type==='products'?'products':type==='salaries'?'employees':type) : '') + topHtml + financeSummaryHtml;
                     if (['expenses', 'revenues'].includes(type)) { 
                         const financeSort = localStorage.getItem(`teyssir_finance_sort_${type}`) || 'newest';
                         const sortLabel = this.state.lang === 'ar' ? 'ترتيب التاريخ' : 'Ordre des dates';

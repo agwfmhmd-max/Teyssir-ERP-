@@ -93,9 +93,7 @@
     if (document.getElementById("tei-import-style")) return;
     const st=document.createElement("style"); st.id="tei-import-style";
     st.textContent = `
-      #teiImportLauncher{position:fixed;left:18px;bottom:18px;z-index:9990;border:0;border-radius:14px;padding:12px 16px;background:linear-gradient(135deg,#173f7a,#127f91);color:#fff;font:700 14px Tajawal,sans-serif;box-shadow:0 8px 24px #173f7a40;cursor:pointer}
-      #teiImportLauncher i{margin-inline-end:7px}
-      #teiImportOverlay{position:fixed;inset:0;z-index:9999;background:#0b1738a8;display:none;align-items:center;justify-content:center;padding:14px;font-family:Tajawal,sans-serif}
+        #teiImportOverlay{position:fixed;inset:0;z-index:9999;background:#0b1738a8;display:none;align-items:center;justify-content:center;padding:14px;font-family:Tajawal,sans-serif}
       #teiImportOverlay .tei-card{background:#fff;color:#1f2937;width:min(900px,100%);max-height:92vh;overflow:auto;border-radius:20px;box-shadow:0 25px 80px #07152e55}
       #teiImportOverlay .tei-head{background:linear-gradient(120deg,#173f7a,#147f89);color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}
       #teiImportOverlay .tei-head h2{margin:0;font-size:20px}
@@ -115,14 +113,9 @@
       #teiImportOverlay th{background:#f1f5f9;position:sticky;top:0}
       #teiImportOverlay .tei-status{margin-top:12px;font-weight:700;white-space:pre-wrap;line-height:1.7}
       #teiImportOverlay .tei-close{border:0;background:#ffffff20;color:white;border-radius:10px;padding:8px 12px;font-size:18px;cursor:pointer}
-      @media(max-width:600px){#teiImportOverlay .tei-grid{grid-template-columns:1fr}#teiImportLauncher{left:10px;bottom:10px;padding:10px 12px}}
+      @media(max-width:600px){#teiImportOverlay .tei-grid{grid-template-columns:1fr}}
     `;
     document.head.appendChild(st);
-  }
-  function addLauncher() {
-    if (document.getElementById("teiImportLauncher") || !window.app || !app.state || !app.state.cid) return;
-    const b=document.createElement("button"); b.id="teiImportLauncher"; b.innerHTML='<i class="fa-solid fa-file-excel"></i> استيراد بيانات Excel'; b.onclick=openModal;
-    document.body.appendChild(b);
   }
   function ensureModal() {
     if(document.getElementById("teiImportOverlay")) return;
@@ -149,21 +142,109 @@
     document.getElementById("teiImport").onclick=runImport;
     document.getElementById("teiReset").onclick=()=>{rows=[];headers=[];lastFile="";document.getElementById("teiFile").value="";document.getElementById("teiStatus").textContent="";document.getElementById("teiImport").disabled=true;renderMapping();renderPreview();};
   }
-  function openModal() {
-    if(!window.app || !app.state || !app.state.cid){alert("يرجى تسجيل الدخول إلى الشركة أولًا.");return;}
-    injectStyle();ensureModal();selectedCat=document.getElementById("teiCat").value||"products";
+  function openModal(category) {
+    if(!window.app || !app.state || !app.state.cid){alert(appText("loginFirst"));return;}
+    injectStyle();ensureModal();
+    selectedCat=CATS[category] ? category : (document.getElementById("teiCat").value||"products");
+    document.getElementById("teiCat").value=selectedCat;
+    rows=[];headers=[];validRows=[];lastFile="";
+    document.getElementById("teiFile").value="";document.getElementById("teiStatus").textContent="";
+    document.getElementById("teiImport").disabled=true;
+    applyModalLanguage();
     document.getElementById("teiImportOverlay").style.display="flex"; renderMapping(); renderPreview();
   }
-  function closeModal(){const e=document.getElementById("teiImportOverlay");if(e)e.style.display="none";}
-  function downloadTemplate(){
-    const cat=document.getElementById("teiCat").value, c=CATS[cat];
-    const csv=c.fields.map(f=>`"${f[1].replace(/"/g,'""')}"`).join(",")+"\r\n";
-    const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});
-    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`Teyssir-${cat}-template.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  function applyModalLanguage(){
+    const fr=window.app&&app.state&&app.state.lang==="fr";
+    const t=fr?{
+      aria:"Importer des données Excel",title:"Importer les données historiques",subtitle:"Teyssir ERP · aperçu et validation avant enregistrement",note:"Choisissez le type de données puis sélectionnez un classeur Excel XLSX ou XLS. Vérifiez l’aperçu et les erreurs avant l’importation. Les données historiques ne génèrent pas automatiquement de nouveaux encaissements ou paiements.",type:"Type de données",file:"Fichier Excel",template:"Télécharger le modèle Excel",validate:"Vérifier et prévisualiser",import:"Importer les lignes valides",reset:"Réinitialiser",mapping:"Correspondance des colonnes : les noms ont été reconnus automatiquement lorsque possible. Ajustez-les si nécessaire.",
+      labels:{products:"Produits et stock",customers:"Clients",suppliers:"Fournisseurs",banks:"Banques et comptes",employees:"Employés et salaires de base",expenses:"Dépenses historiques",revenues:"Revenus historiques",salaryPayments:"Paiements de salaires historiques"}
+    }:{
+      aria:"استيراد بيانات Excel",title:"استيراد البيانات السابقة",subtitle:"Teyssir ERP · معاينة وتحقق قبل الحفظ",note:"اختر نوع البيانات ثم حدد ملف Excel بصيغة XLSX أو XLS. راجع المعاينة والأخطاء قبل الاستيراد. لا تُنشأ عمليات قبض أو دفع جديدة تلقائيًا عند استيراد السجلات التاريخية.",type:"نوع البيانات",file:"ملف Excel",template:"تنزيل قالب Excel",validate:"فحص ومعاينة",import:"استيراد السجلات الصحيحة",reset:"إعادة ضبط",mapping:"مطابقة الأعمدة: تمت محاولة التعرف على أسماء الأعمدة تلقائيًا. عدّل المطابقة إذا لزم الأمر.",
+      labels:Object.fromEntries(Object.entries(CATS).map(([k,v])=>[k,v.label]))
+    };
+    const el=document.querySelector("#teiImportOverlay .tei-card");if(!el)return;
+    el.setAttribute("aria-label",t.aria);
+    const h=el.querySelector(".tei-head h2");if(h)h.innerHTML='<i class="fa-solid fa-file-excel"></i> '+t.title;
+    const sub=el.querySelector(".tei-head h2 + div");if(sub)sub.textContent=t.subtitle;
+    const note=el.querySelector(".tei-note");if(note)note.textContent=t.note;
+    const l1=el.querySelector('label[for="teiCat"]');if(l1)l1.textContent=t.type;
+    const l2=el.querySelector('label[for="teiFile"]');if(l2)l2.textContent=t.file;
+    const btns={teiTemplate:t.template,teiValidate:t.validate,teiImport:t.import,teiReset:t.reset};
+    Object.entries(btns).forEach(([id,v])=>{const b=document.getElementById(id);if(b)b.textContent=v;});
+    const sel=document.getElementById("teiCat");if(sel)Array.from(sel.options).forEach(o=>{if(t.labels[o.value])o.textContent=t.labels[o.value];});
+    const mapNote=el.querySelector("#teiMapping .tei-note");if(mapNote)mapNote.textContent=t.mapping;
+    el.dir=fr?"ltr":"rtl";
   }
-  function readFile(e){
+  function closeModal(){const e=document.getElementById("teiImportOverlay");if(e)e.style.display="none";}
+  function appText(key){
+    const fr={loginFirst:"Connectez-vous d’abord à votre entreprise.",needXlsx:"Le module Excel n’est pas encore chargé. Vérifiez la connexion puis réessayez.",exportEmpty:"Aucune donnée à exporter dans cette section.",exportFail:"L’export Excel a échoué : ",template:"Modèle Excel",import:"Importer Excel",export:"Exporter Excel",validating:"Vérification des données…"};
+    const ar={loginFirst:"يرجى تسجيل الدخول إلى الشركة أولًا.",needXlsx:"لم يتم تحميل مكتبة Excel بعد. تحقق من الاتصال ثم أعد المحاولة.",exportEmpty:"لا توجد بيانات في هذا القسم لتصديرها.",exportFail:"تعذر تصدير ملف Excel: ",template:"قالب Excel",import:"استيراد Excel",export:"تصدير Excel",validating:"جارٍ التحقق من البيانات…"};
+    return ((window.app&&app.state&&app.state.lang)==="fr"?fr:ar)[key]||key;
+  }
+  function ensureXLSX(){
+    if(window.XLSX)return Promise.resolve(window.XLSX);
+    return new Promise((resolve,reject)=>{
+      const existing=document.querySelector('script[data-tei-xlsx="1"]');
+      const script=existing||document.createElement("script");
+      if(!existing){script.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";script.async=true;script.dataset.teiXlsx="1";document.head.appendChild(script);}
+      const timer=setInterval(()=>{if(window.XLSX){clearInterval(timer);resolve(window.XLSX);}},100);
+      script.onerror=()=>{clearInterval(timer);reject(new Error(appText("needXlsx")));};
+      setTimeout(()=>{if(!window.XLSX){clearInterval(timer);reject(new Error(appText("needXlsx")));}},12000);
+    });
+  }
+  async function downloadTemplate(){
+    const cat=document.getElementById("teiCat").value, c=CATS[cat];
+    try{
+      const X=await ensureXLSX();
+      const ws=X.utils.aoa_to_sheet([c.fields.map(f=>fieldLabel(f)), c.fields.map(f=>"")]);
+      ws["!cols"]=c.fields.map(f=>({wch:Math.max(18,Math.min(34,fieldLabel(f).length+5))}));
+      const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,"Template");
+      X.writeFile(wb,`Teyssir-${cat}-template.xlsx`);
+    }catch(e){alert(e.message||appText("needXlsx"));}
+  }
+  const EXPORT_FIELDS={
+    products:[ ["name","اسم المنتج","Product name"],["buyPrice","سعر الشراء","Purchase price"],["sellPrice","سعر البيع","Selling price"],["stock","الكمية الحالية","Current quantity"],["expiryDate","تاريخ انتهاء الصلاحية","Expiry date"],["unit","وحدة القياس","Unit"],["category","التصنيف","Category"] ],
+    customers:[["name","اسم الزبون","Customer name"],["phone","الهاتف","Phone"],["balance","الرصيد","Balance"]],
+    suppliers:[["name","اسم المورد","Supplier name"],["phone","الهاتف","Phone"],["balance","الرصيد","Balance"]],
+    banks:[["name","اسم البنك أو الحساب","Bank/account name"],["accountNumber","رقم الحساب","Account number"],["balance","الرصيد","Balance"]],
+    employees:[["name","اسم الموظف","Employee name"],["phone","الهاتف","Phone"],["baseSalary","الراتب الأساسي","Base salary"],["defaultMethod","طريقة الدفع","Payment method"]],
+    expenses:[["date","التاريخ","Date"],["name","اسم المصروف","Expense"],["note","الوصف","Description"],["amount","المبلغ","Amount"],["method","طريقة الدفع","Payment method"],["bankName","اسم البنك","Bank name"]],
+    revenues:[["date","التاريخ","Date"],["name","مصدر الإيراد","Revenue source"],["note","الوصف","Description"],["amount","المبلغ","Amount"],["method","طريقة القبض","Receipt method"],["bankName","اسم البنك","Bank name"]],
+    salaryPayments:[["date","تاريخ الدفع","Payment date"],["name","اسم الموظف","Employee name"],["amount","المبلغ المدفوع","Paid amount"],["note","ملاحظات","Notes"]]
+  };
+  function exportRow(cat,d){
+    if(cat==="expenses")return {date:dateValue(d.createdAt),name:d.val1||d.name||"",note:d.val2||d.note||"",amount:d.val3??d.amount??0,method:d.method||"",bankName:d.bankName||""};
+    if(cat==="revenues")return {date:dateValue(d.createdAt),name:d.name||d.source||d.val1||d.note||"",note:d.note||d.val2||"",amount:d.amount??d.val3??0,method:d.method||"",bankName:d.bankName||""};
+    if(cat==="salaryPayments")return {date:dateValue(d.createdAt),name:d.employeeName||d.name||d.note||"",amount:d.amount??0,note:d.note||""};
+    return {date:dateValue(d.createdAt),...d};
+  }
+  async function exportExcel(category){
+    if(!window.app||!app.state||!app.state.cid){alert(appText("loginFirst"));return;}
+    try{
+      const X=await ensureXLSX();let docs=[];
+      if(category==="revenues"){
+        const [legacy,tx]=await Promise.all([app.getData("revenues"),app.getData("transactions")]);
+        docs=[...legacy,...tx.filter(x=>x.type==="revenue"||x.type==="revenues")];
+      }
+      else if(category==="salaryPayments")docs=(await app.getData("transactions")).filter(x=>x.type==="salary_payment");
+      else docs=await app.getData(category==="employees"?"salaries":category);
+      if(!Array.isArray(docs)||!docs.length){alert(appText("exportEmpty"));return;}
+      const fields=EXPORT_FIELDS[category]||EXPORT_FIELDS.products;
+      const isFr=app.state.lang==="fr";
+      const rowsOut=[fields.map(f=>isFr?(f[2]||f[1]):f[1]),...docs.map(d=>{const row=exportRow(category,d);return fields.map(f=>row[f[0]]??"");})];
+      const ws=X.utils.aoa_to_sheet(rowsOut);ws["!cols"]=fields.map(f=>({wch:Math.max(16,Math.min(32,(isFr?f[2]:f[1]).length+4))}));
+      const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,"Teyssir Data");
+      X.writeFile(wb,`Teyssir-${category}-${new Date().toISOString().slice(0,10)}.xlsx`);
+    }catch(e){alert(appText("exportFail")+(e.message||e));}
+  }
+  function actionButtons(category){
+    const isFr=window.app&&app.state&&app.state.lang==="fr";
+    const extra=category==="employees"?`<button type="button" class="btn btn-sec" style="width:auto;display:inline-flex;align-items:center;gap:7px;border:1px solid #167b62;color:#11634f;background:#eefaf5;padding:9px 13px" onclick="window.TeyssirExcelImport.open('salaryPayments')"><i class="fa-solid fa-file-import"></i><span>${isFr?"Importer les anciens salaires":"استيراد سجل الرواتب السابق"}</span></button><button type="button" class="btn btn-sec" style="width:auto;display:inline-flex;align-items:center;gap:7px;border:1px solid #245a9b;color:#174a82;background:#eef5ff;padding:9px 13px" onclick="window.TeyssirExcelImport.export('salaryPayments')"><i class="fa-solid fa-file-export"></i><span>${isFr?"Exporter les paiements":"تصدير سجل الرواتب"}</span></button>`:"";
+    return `<div class="tei-page-actions" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin:8px 0 14px;padding:10px 12px;border:1px solid var(--border,#dce3ec);border-radius:12px;background:var(--card,#fff);"><span style="font-size:12px;color:var(--text-light,#64748b);font-weight:700;margin-inline-end:3px">Excel</span><button type="button" class="btn btn-sec" style="width:auto;display:inline-flex;align-items:center;gap:7px;border:1px solid #167b62;color:#11634f;background:#eefaf5;padding:9px 13px" onclick="window.TeyssirExcelImport.open('${category}')"><i class="fa-solid fa-file-import"></i><span data-key="excel_import">${isFr?"Importer Excel":"استيراد Excel"}</span></button><button type="button" class="btn btn-sec" style="width:auto;display:inline-flex;align-items:center;gap:7px;border:1px solid #245a9b;color:#174a82;background:#eef5ff;padding:9px 13px" onclick="window.TeyssirExcelImport.export('${category}')"><i class="fa-solid fa-file-export"></i><span data-key="excel_export">${isFr?"Exporter Excel":"تصدير Excel"}</span></button>${extra}</div>`;
+  }
+  async function readFile(e){
     const file=e.target.files&&e.target.files[0]; if(!file)return;
-    if(!window.XLSX){setStatus("تعذر تحميل قارئ Excel. اتصل بالإنترنت ثم أعد المحاولة.");return;}
+    try{await ensureXLSX();}catch(err){setStatus(err.message||appText("needXlsx"));return;}
     lastFile=file.name;
     const reader=new FileReader();
     reader.onload=ev=>{
@@ -179,14 +260,19 @@
     };
     reader.readAsArrayBuffer(file);
   }
+  function fieldLabel(f){
+    if(!(window.app&&app.state&&app.state.lang==="fr"))return f[1];
+    const labels={name:"Nom / désignation",buyPrice:"Prix d’achat",sellPrice:"Prix de vente",stock:"Quantité actuelle",expiryDate:"Date d’expiration (facultatif)",unit:"Unité (facultatif)",category:"Catégorie (facultatif)",phone:"Téléphone",balance:"Solde antérieur (facultatif)",accountNumber:"Numéro de compte (facultatif)",baseSalary:"Salaire de base",defaultMethod:"Mode de paiement (facultatif)",date:"Date",note:"Description / notes (facultatif)",amount:"Montant",method:"Mode de paiement (facultatif)",bankName:"Nom de la banque (facultatif)"};
+    return labels[f[0]]||f[1];
+  }
   function renderMapping(){
     const c=CATS[document.getElementById("teiCat")?.value||selectedCat];
     const box=document.getElementById("teiMapping");if(!box)return;
     if(!headers.length){box.innerHTML="";return;}
-    box.innerHTML=`<div class="tei-note"><b>مطابقة الأعمدة:</b> حاول النظام مطابقة أسماء الأعمدة تلقائيًا. عدّل المطابقة إذا كانت عناوين ملفك مختلفة.</div><div class="tei-grid">${
+    box.innerHTML=`<div class="tei-note">${(window.app&&app.state&&app.state.lang==="fr")?"Correspondance des colonnes : les noms ont été reconnus automatiquement lorsque possible. Ajustez-les si nécessaire.":"مطابقة الأعمدة: تمت محاولة التعرف على أسماء الأعمدة تلقائيًا. عدّل المطابقة إذا لزم الأمر."}</div><div class="tei-grid">${
       c.fields.map(f=>{
         const aliases=f[2].split(",").map(norm);let idx=headers.findIndex(h=>aliases.includes(norm(h)));
-        return `<div class="tei-field"><label>${esc(f[1])}</label><select data-map="${esc(f[0])}"><option value="-1">— غير محدد —</option>${headers.map((h,i)=>`<option value="${i}" ${i===idx?"selected":""}>${esc(h||`عمود ${i+1}`)}</option>`).join("")}</select></div>`;
+        return `<div class="tei-field"><label>${esc(fieldLabel(f))}</label><select data-map="${esc(f[0])}"><option value="-1">— غير محدد —</option>${headers.map((h,i)=>`<option value="${i}" ${i===idx?"selected":""}>${esc(h||`عمود ${i+1}`)}</option>`).join("")}</select></div>`;
       }).join("")
     }</div>`;
     box.querySelectorAll("select[data-map]").forEach(x=>x.onchange=()=>validateAndPreview());
@@ -222,7 +308,7 @@
     validRows=mapped.map(r=>({...r,_errors:validateRow(cat,r)}));
     renderPreview();
     const ok=validRows.filter(r=>!r._errors.length).length, bad=validRows.length-ok;
-    setStatus(`الملف: ${lastFile||"—"}\nعدد الصفوف: ${validRows.length} | صالحة: ${ok} | تحتاج تصحيحًا: ${bad}`);
+    setStatus((window.app&&app.state&&app.state.lang==="fr"?`Fichier : ${lastFile||"—"}\nLignes : ${validRows.length} | Valides : ${ok} | À corriger : ${bad}`:`الملف: ${lastFile||"—"}\nعدد الصفوف: ${validRows.length} | صالحة: ${ok} | تحتاج تصحيحًا: ${bad}`));
     document.getElementById("teiImport").disabled=ok===0;
   }
   function renderPreview(){
@@ -230,7 +316,8 @@
     if(!rows.length){box.innerHTML="";return;}
     const list=validRows.length?validRows:mappedRows().map(r=>({...r,_errors:validateRow(document.getElementById("teiCat").value,r)}));
     const cols=CATS[document.getElementById("teiCat").value].fields;
-    box.innerHTML=`<div style="font-weight:800;margin-top:14px">معاينة أول ${Math.min(list.length,12)} صفًا من ${list.length}</div><div class="tei-tablewrap"><table><thead><tr><th>صف Excel</th>${cols.map(c=>`<th>${esc(c[1])}</th>`).join("")}<th>التحقق</th></tr></thead><tbody>${list.slice(0,12).map(r=>`<tr><td>${r._sourceRow}</td>${cols.map(c=>`<td>${esc(c[0]==="expiryDate"&&r[c[0]]?dateValue(r[c[0]]):(r[c[0]]??"—"))}</td>`).join("")}<td style="color:${r._errors.length?"#b91c1c":"#047857"}">${esc(r._errors.join("؛ ")||"صالح")}</td></tr>`).join("")}</tbody></table></div>`;
+    const fr=window.app&&app.state&&app.state.lang==="fr";
+    box.innerHTML=`<div style="font-weight:800;margin-top:14px">${fr?`Aperçu des ${Math.min(list.length,12)} premières lignes sur ${list.length}`:`معاينة أول ${Math.min(list.length,12)} صفًا من ${list.length}`}</div><div class="tei-tablewrap"><table><thead><tr><th>${fr?"Ligne Excel":"صف Excel"}</th>${cols.map(c=>`<th>${esc(fieldLabel(c))}</th>`).join("")}<th>${fr?"Validation":"التحقق"}</th></tr></thead><tbody>${list.slice(0,12).map(r=>`<tr><td>${r._sourceRow}</td>${cols.map(c=>`<td>${esc(c[0]==="expiryDate"&&r[c[0]]?dateValue(r[c[0]]):(r[c[0]]??"—"))}</td>`).join("")}<td style="color:${r._errors.length?"#b91c1c":"#047857"}">${esc(r._errors.join("؛ ")||(fr?"Valide":"صالح"))}</td></tr>`).join("")}</tbody></table></div>`;
   }
   function setStatus(t){const el=document.getElementById("teiStatus");if(el)el.textContent=t;}
   function cleanRow(cat,r){
@@ -285,13 +372,11 @@
     finally{btn.disabled=false;}
   }
   // Public entry point used by the button inside the inventory screen.
-  window.TeyssirExcelImport = { open: openModal };
+  window.TeyssirExcelImport = { open: openModal, export: exportExcel, buttons: actionButtons };
 
   function start(){
     injectStyle();
-    // SheetJS is used only to read user-selected workbooks; all writes go through the existing Firebase client.
-    if(!window.XLSX){const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";s.async=true;document.head.appendChild(s);}
-    setInterval(addLauncher,1000);
+    // Load SheetJS lazily when the user imports, exports, or downloads an XLSX template.
     window.addEventListener("online",()=>{const st=document.getElementById("teiStatus");if(st&&st.textContent.includes("غير متصل"))st.textContent+="\nعاد الاتصال بالإنترنت.";});
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
