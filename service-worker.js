@@ -14,7 +14,7 @@
      With relative URLs the precache works on any hosting path (root,
      subfolder, GitHub Pages, etc.) and the app loads fully offline.
 */
-const VERSION       = 'teyssir-v13-2026-09-22-fix4';
+const VERSION       = 'teyssir-v14-excel-import-brand';
 const SHELL_CACHE   = `shell-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 
@@ -29,6 +29,9 @@ const SHELL_FILES = [
   'style.css',
   'modern.css',
   'erp-enhancements.js',
+  'excel-import.js',
+  'brand-icon.svg',
+  'brand-logo.svg',
   'script.js',
   'manifest.json',
   'logo.png',
