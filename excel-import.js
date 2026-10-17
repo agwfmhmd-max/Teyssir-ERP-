@@ -284,6 +284,9 @@
     }catch(e){setStatus("تعذر إكمال الاستيراد: "+e.message);alert("تعذر إكمال الاستيراد: "+e.message);}
     finally{btn.disabled=false;}
   }
+  // Public entry point used by the button inside the inventory screen.
+  window.TeyssirExcelImport = { open: openModal };
+
   function start(){
     injectStyle();
     // SheetJS is used only to read user-selected workbooks; all writes go through the existing Firebase client.

@@ -458,7 +458,7 @@
             }
         };
 
-        const app = {
+        const app = window.app = {
             state: { 
                 cid:null, name:'', phone:'', admin:false, subscriptionStartDate:null, lang: localStorage.getItem('teyssir_lang') || 'ar', codeDocId: null, expiryDate: null, currentView: 'home', cashBalance: 0, inventoryLocked: false, userRole: 'admin', currentUser: null, permissions: [], currentPromo: null, currentDailyData: null, currentBankReport: null, currentTreasuryReport: null 
             },
@@ -4098,7 +4098,7 @@
                         } else { 
                             this.state.inventoryLocked = true; 
                         } 
-                        addBtn = `<div style="display:flex; gap:5px;"><button id="btnExpired" onclick="app.toggleExpiredView()" class="btn btn-dan" style="width:auto;padding:8px 15px; font-size:12px;">${this.t('btn_exp')}</button><button onclick="app.addProductModal()" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button></div>`; 
+                        addBtn = `<div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;"><button type="button" id="btnExcelImportInventory" onclick="window.TeyssirExcelImport && window.TeyssirExcelImport.open()" class="btn btn-prim" style="width:auto;padding:8px 12px; white-space:nowrap; background:linear-gradient(135deg,#173f7a,#127f91); color:#fff;"><i class="fa-solid fa-file-excel"></i> استيراد Excel</button><button id="btnExpired" onclick="app.toggleExpiredView()" class="btn btn-dan" style="width:auto;padding:8px 15px; font-size:12px;">${this.t('btn_exp')}</button><button onclick="app.addProductModal()" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button></div>`; 
                     } else if (type === 'expenses') { 
                         addBtn = `<button onclick="app.addExpenseModal()" class="btn btn-prim" style="width:auto;padding:8px 15px;">+</button>`; 
                     } else if(type!=='invoices' && type!=='salaries') { 
