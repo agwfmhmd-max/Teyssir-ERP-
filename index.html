@@ -234,7 +234,7 @@
         const auth = firebase.auth(); 
 
         window.addEventListener('online', updateStatus); window.addEventListener('offline', updateStatus);
-        function updateStatus() { const el = document.getElementById('connStatus'); if(navigator.onLine) { el.className='conn-status conn-online'; el.innerHTML='<i class="fa-solid fa-wifi"></i> Online'; } else { el.className='conn-status conn-offline'; el.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> Offline'; } }
+        function updateStatus() { const el = document.getElementById('connStatus'); if (!el) return; const ar = (window.app && app.state ? app.state.lang : localStorage.getItem('teyssir_lang') || 'ar') === 'ar'; if(navigator.onLine) { el.className='conn-status conn-online'; el.innerHTML='<i class="fa-solid fa-wifi"></i> ' + (ar ? 'متصل بالإنترنت' : 'En ligne'); } else { el.className='conn-status conn-offline'; el.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> ' + (ar ? 'بدون إنترنت' : 'Hors ligne'); } }
 
         const dict = {
             ar: {
@@ -307,7 +307,7 @@
                 
                 dp_title: "طلب اشتراك / تجديد", dp_req_type: "نوع الطلب", dp_new: "اشتراك جديد", dp_renew: "تجديد اشتراك",
                 dp_ext_code: "رمز التفعيل الحالي", dp_comp: "اسم الشركة", dp_phone: "رقم الهاتف", dp_wa: "رقم الواتساب",
-                dp_sub_type: "نوع الاشتراك", dp_month: "شهري (200 MRU)", dp_year: "سنوي (2000 MRU)",
+                dp_sub_type: "نوع الاشتراك", dp_month: "شهري (2000 أوقية قديمة)", dp_year: "سنوي (20000 أوقية قديمة)",
                 dp_users: "عدد المستخدمين (الحد الأقصى)", dp_total: "الإجمالي المطلوب:", dp_bank: "اختر بنك الدفع",
                 dp_receipt: "صورة إيصال التحويل (لقطة شاشة)", promo_code: "كود التخفيض (اختياري)", promo_apply: "تطبيق الخصم", promo_err: "كود التخفيض غير صحيح أو منتهي",
                 promo_success: "تم تطبيق التخفيض بنجاح!", invalid_renew_code: "رمز التفعيل الذي أدخلته غير موجود.",
@@ -415,7 +415,7 @@
                 
                 dp_title: "Demande de Paiement", dp_req_type: "Type de demande", dp_new: "Nouvel Abonnement", dp_renew: "Renouvellement",
                 dp_ext_code: "Code d'activation actuel", dp_comp: "Nom de la société", dp_phone: "Téléphone", dp_wa: "Numéro WhatsApp",
-                dp_sub_type: "Type d'abonnement", dp_month: "Mensuel (200 MRU)", dp_year: "Annuel (2000 MRU)",
+                dp_sub_type: "Type d'abonnement", dp_month: "Mensuel (2000 anciennes ouguiyas)", dp_year: "Annuel (20000 anciennes ouguiyas)",
                 dp_users: "Nombre d'utilisateurs max", dp_total: "Total requis:", dp_bank: "Choisir la banque",
                 dp_receipt: "Reçu de paiement", promo_code: "Code Promo", promo_apply: "Appliquer", promo_err: "Code Promo invalide",
                 promo_success: "Code promo appliqué !", invalid_renew_code: "Code introuvable.",
@@ -561,8 +561,8 @@
                 // 1) نافذة الدفع المباشر إن كانت مفتوحة
                 const dpType = document.getElementById('dpType');
                 if (dpType) {
-                    const monthLbl = isAr ? `شهري (${cfg.monthlyPrice} MRU)` : `Mensuel (${cfg.monthlyPrice} MRU)`;
-                    const yearLbl  = isAr ? `سنوي (${cfg.yearlyPrice} MRU)` : `Annuel (${cfg.yearlyPrice} MRU)`;
+                    const monthLbl = isAr ? `شهري (${Number(cfg.monthlyPrice) * 10} أوقية قديمة)` : `Mensuel (${Number(cfg.monthlyPrice) * 10} anciennes ouguiyas)`;
+                    const yearLbl  = isAr ? `سنوي (${Number(cfg.yearlyPrice) * 10} أوقية قديمة)` : `Annuel (${Number(cfg.yearlyPrice) * 10} anciennes ouguiyas)`;
                     const opts = dpType.options;
                     for (let i = 0; i < opts.length; i++) {
                         if (opts[i].value === 'month') opts[i].text = monthLbl;
@@ -931,6 +931,9 @@
                     if(d[key]) el.placeholder = d[key]; 
                 }); 
                 if(this.state.cid) this.nav(this.state.currentView); 
+                // Keep subscription labels and totals in sync when the language changes in-place.
+                try { if (document.getElementById('dpType')) this.refreshAppConfigUI(); } catch(_) {}
+                try { updateStatus(); } catch(_) {}
             },
             toggleMenu: function() { 
                 document.getElementById('sidebar').classList.toggle('open'); 
@@ -4333,8 +4336,8 @@
                 const isAr = this.state.lang === 'ar';
                 const banksOpt = `<option value="">-- ${this.t('select_bank')} --</option>` +
                     cfg.banks.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
-                const monthLbl = isAr ? `شهري (${cfg.monthlyPrice} MRU)` : `Mensuel (${cfg.monthlyPrice} MRU)`;
-                const yearLbl  = isAr ? `سنوي (${cfg.yearlyPrice} MRU)` : `Annuel (${cfg.yearlyPrice} MRU)`;
+                const monthLbl = isAr ? `شهري (${Number(cfg.monthlyPrice) * 10} أوقية قديمة)` : `Mensuel (${Number(cfg.monthlyPrice) * 10} anciennes ouguiyas)`;
+                const yearLbl  = isAr ? `سنوي (${Number(cfg.yearlyPrice) * 10} أوقية قديمة)` : `Annuel (${Number(cfg.yearlyPrice) * 10} anciennes ouguiyas)`;
                 
                 const html = `
                     <div style="text-align:${this.state.lang==='ar'?'right':'left'};">
@@ -4371,7 +4374,7 @@
 
                         <div style="background:#f0fdf4; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #bbf7d0;">
                             <span style="display:block; font-size:12px; color:#166534;">${this.t('dp_total')}</span>
-                            <span id="dpTotalDisplay" style="font-size:24px; font-weight:bold; color:#15803d;">250 ${this.state.lang==='ar'?'أوقية جديدة':'MRU'}</span>
+                            <span id="dpTotalDisplay" style="font-size:24px; font-weight:bold; color:#15803d;">250 ${this.state.lang==='ar'?'أوقية قديمة':'anciennes ouguiyas'}</span>
                         </div>
                         <label>${this.t('dp_bank')}</label>
                         <select id="dpBank" class="select-box" onchange="app.showBankNumber()">
@@ -4505,9 +4508,10 @@
                     total = total - discount;
                 }
                 
-                const currStr = this.state.lang === 'ar' ? 'أوقية جديدة' : 'MRU';
-                document.getElementById('dpTotalDisplay').innerText = total + " " + currStr;
-                document.getElementById('dpTotalDisplay').dataset.val = total;
+                const currStr = this.state.lang === 'ar' ? 'أوقية قديمة' : 'anciennes ouguiyas';
+                const totalOldOuguiya = Math.round(total * 10); // 1 MRU = 10 MRO
+                document.getElementById('dpTotalDisplay').innerText = totalOldOuguiya.toLocaleString(this.state.lang === 'ar' ? 'ar-MR' : 'fr-FR') + " " + currStr;
+                document.getElementById('dpTotalDisplay').dataset.val = totalOldOuguiya;
             },
 
             showBankNumber: function() {
@@ -4608,7 +4612,7 @@
                           user_phone: (wa ? ('WhatsApp: ' + wa + ' | ') : '') + 'Tel: ' + phone,
                           request_type: (reqCategory === 'renew' ? 'تجديد اشتراك' : 'اشتراك جديد')
                             + ' — ' + (type === 'year' ? 'سنوي' : 'شهري')
-                            + ' — المبلغ: ' + total + ' MRU'
+                            + ' — المبلغ: ' + Number(total).toLocaleString() + (this.state.lang === 'ar' ? ' أوقية قديمة (MRO)' : ' anciennes ouguiyas (MRO)')
                         });
                       }
                     } catch(e) { console.warn(e); }
@@ -4672,7 +4676,7 @@
                 const cfg = this.getAppConfig();
                 area.innerHTML = `
                     <div class="card">
-                        <h3 style="margin:0 0 15px; color:var(--primary);"><i class="fa-solid fa-tags"></i> ${this.t('adm_prices')} (MRU)</h3>
+                        <h3 style="margin:0 0 15px; color:var(--primary);"><i class="fa-solid fa-tags"></i> ${this.t('adm_prices')} (${this.state.lang === 'ar' ? 'MRU — تُعرض للعميل بالأوقية القديمة ×10' : 'MRU — affiché au client en anciennes ouguiyas ×10'})</h3>
                         <label style="font-size:12px; font-weight:bold;">${this.t('dp_month')}</label>
                         <input id="cfgMonthly" type="number" min="0" class="inp" value="${cfg.monthlyPrice}">
                         <label style="font-size:12px; font-weight:bold;">${this.t('dp_year')}</label>
@@ -5046,7 +5050,7 @@
                             <td>${safeText(r.phone)}</td>
                             <td>${safeText(r.whatsapp)}</td>
                             <td>${safeText(r.bank_name)}</td>
-                            <td style="color:green;font-weight:bold">${r.total_amount || 0}</td>
+                            <td style="color:green;font-weight:bold">${Number(r.total_amount || 0).toLocaleString()} ${this.state.lang === 'ar' ? 'أوقية قديمة (MRO)' : 'anciennes ouguiyas (MRO)'}</td>
                             <td>${promoStr}</td>
                             <td style="font-size:12px;">${sub} / ${Number(r.users_count) || 1}</td>
                             <td><a href="${safeUrl(r.receipt_url)}" target="_blank" style="color:blue; text-decoration:underline; font-size:12px;">${this.t('adm_view')}</a></td>

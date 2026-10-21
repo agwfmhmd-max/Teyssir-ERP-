@@ -14,7 +14,7 @@
      With relative URLs the precache works on any hosting path (root,
      subfolder, GitHub Pages, etc.) and the app loads fully offline.
 */
-const VERSION       = 'teyssir-v16-excel-import-export-ui';
+const VERSION       = 'teyssir-v17-offline-old-ouguiya';
 const SHELL_CACHE   = `shell-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 
@@ -37,6 +37,17 @@ const SHELL_FILES = [
   'logo.png',
   'icon-192.png',
   'icon-512.png',
+  // Core libraries used by the app: pre-cache on first successful visit for offline startup.
+  'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js',
+  'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js',
+  'https://cdn.jsdelivr.net/npm/chart.js',
+  'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+  'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap',
 ];
 const SHELL = SHELL_FILES.map((p) => new URL(p, self.location).toString());
 const INDEX_URL = new URL('index.html', self.location).toString();
@@ -58,6 +69,7 @@ const BYPASS_HOSTS = [
   'identitytoolkit.googleapis.com',
   'securetoken.googleapis.com',
   'api.emailjs.com',
+  'api.supabase.co',
 ];
 
 self.addEventListener('install', (event) => {
@@ -67,7 +79,7 @@ self.addEventListener('install', (event) => {
     await Promise.all(SHELL.map(async (url) => {
       try {
         const res = await fetch(url, { cache: 'reload' });
-        if (res && res.ok) await cache.put(url, res.clone());
+        if (res && res.ok && (res.type === 'basic' || res.type === 'cors' || res.type === 'opaque')) await cache.put(url, res.clone());
       } catch (_) { /* ignore */ }
     }));
   })());
