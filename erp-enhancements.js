@@ -15,11 +15,13 @@
   function setConnectionState(state, detail) {
     const el = document.getElementById("connStatus");
     if (!el) return;
+    const isArabic = typeof app !== "undefined" && app.state && app.state.lang === "ar";
     const labels = {
-      online: ["fa-wifi", "En ligne"],
-      offline: ["fa-cloud-slash", "Hors ligne"],
-      syncing: ["fa-rotate fa-spin", "Synchronisation…"],
-      synced: ["fa-circle-check", "Synchronisé"],
+      online: ["fa-wifi", isArabic ? "متصل بالإنترنت" : "En ligne"],
+      offline: ["fa-cloud-slash", isArabic ? "بدون إنترنت" : "Hors ligne"],
+      syncing: ["fa-rotate fa-spin", isArabic ? "جارٍ حفظ/مزامنة البيانات…" : "Synchronisation…"],
+      synced: ["fa-circle-check", isArabic ? "تمت مزامنة البيانات" : "Synchronisé"],
+      persistenceError: ["fa-triangle-exclamation", isArabic ? "التخزين المحلي غير متاح؛ تحقق من الاتصال" : "Stockage hors ligne indisponible"],
     };
     const value = labels[state] || labels.online;
     el.className = `conn-status conn-${state}`;
@@ -175,11 +177,32 @@
       }
     };
 
-    window.addEventListener("offline", () => setConnectionState("offline"));
-    window.addEventListener("online", () => {
+    // Only show "synced" after Firestore confirms that queued writes reached the backend.
+    let syncGeneration = 0;
+    const flushPendingWrites = async () => {
+      const generation = ++syncGeneration;
+      if (!navigator.onLine) { setConnectionState("offline"); return; }
       setConnectionState("syncing");
-      setTimeout(() => setConnectionState("synced"), 1800);
-    });
+      try {
+        if (window.firestorePersistenceReady) {
+          const persistenceReady = await window.firestorePersistenceReady;
+          if (!persistenceReady) { setConnectionState("persistenceError"); return; }
+        }
+        await db.waitForPendingWrites();
+        if (generation === syncGeneration && navigator.onLine) setConnectionState("synced");
+      } catch (error) {
+        console.warn("Firestore pending-write sync check failed", error);
+        if (generation === syncGeneration) setConnectionState(navigator.onLine ? "online" : "offline");
+      }
+    };
+    window.addEventListener("offline", () => { syncGeneration++; setConnectionState("offline"); });
+    window.addEventListener("online", flushPendingWrites);
+    if (window.firestorePersistenceReady) {
+      window.firestorePersistenceReady.then((ready) => {
+        if (!ready) setConnectionState("persistenceError");
+        else if (navigator.onLine) flushPendingWrites();
+      });
+    }
     setConnectionState(navigator.onLine ? "online" : "offline");
   }
 

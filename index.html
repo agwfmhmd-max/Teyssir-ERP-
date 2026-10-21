@@ -229,7 +229,7 @@
 
         const firebaseConfig = { apiKey: "AIzaSyA6glwj94Onm0r6gRtxtoyqEISpPChDcHo", authDomain: "comptabilite-e35ed.firebaseapp.com", projectId: "comptabilite-e35ed", storageBucket: "comptabilite-e35ed.firebasestorage.app", messagingSenderId: "59372022194", appId: "1:59372022194:web:22b9f70c41b1479835dcab", measurementId: "G-EEDNJXLSN6" };
         firebase.initializeApp(firebaseConfig); 
-        firebase.firestore().enablePersistence({ synchronizeTabs: true }).catch(err => console.log("Persistence:", err.code)); 
+        window.firestorePersistenceReady = firebase.firestore().enablePersistence({ synchronizeTabs: true }).then(() => true).catch(err => { console.warn("Firestore persistence unavailable:", err.code); return false; });
         const db = firebase.firestore();
         const auth = firebase.auth(); 
 
@@ -323,9 +323,9 @@
                 tr_bank_amt: "المبلغ المراد تحويله", tr_bank_btn: "تحويل بين البنوك", err_bank_min: "يجب أن يكون لديك بنكين على الأقل.", err_bank_same: "لا يمكن التحويل لنفس البنك!", err_amt_zero: "المبلغ يجب أن يكون أكبر من صفر.",
                 
                 adm_mng_codes: "إدارة الأكواد", adm_pay_reqs: "طلبات الدفع", adm_promos: "التخفيضات", adm_search_comp: "بحث عن شركة أو هاتف...",
-                promo_add_title: "إضافة كود تخفيض", promo_code_lbl: "الكود (مثال: KSA2024)", promo_perc_lbl: "النسبة %", promo_limit_lbl: "مرات الاستخدام",
-                promo_exp_lbl: "تاريخ الانتهاء", promo_btn_add: "إضافة الكود", promo_list_title: "الأكواد الفعالة", promo_usage: "الاستخدام",
-                promo_err_fields: "يرجى تعبئة جميع الحقول", promo_err_exist: "هذا الكود موجود مسبقاً!", promo_del_conf: "حذف هذا الكود نهائياً؟",
+                promo_add_title: "إضافة تخفيض", promo_code_lbl: "اسم / كود التخفيض", promo_perc_lbl: "نسبة التخفيض %", promo_limit_lbl: "مرات الاستخدام",
+                promo_exp_lbl: "تاريخ الانتهاء", promo_btn_add: "إضافة التخفيض", promo_list_title: "التخفيضات الفعالة", promo_usage: "عدد مرات الاستخدام",
+                promo_err_fields: "يرجى إدخال اسم التخفيض ونسبة صحيحة بين 1 و100", promo_err_exist: "هذا الاسم/الكود موجود مسبقاً!", promo_del_conf: "حذف هذا الكود نهائياً؟",
                 req_pend_title: "طلبات الدفع المعلقة", th_req_type: "النوع", th_wa: "الواتساب", th_disc: "الخصم", th_dur_usr: "مدة/مستخدمين", th_receipt: "الإيصال",
                 req_empty: "لا توجد طلبات معلقة", req_btn_acc: "قبول", req_btn_rej: "رفض",
 
@@ -431,9 +431,9 @@
                 tr_bank_amt: "Montant à Transférer", tr_bank_btn: "Transfert Bancaire", err_bank_min: "Il faut au moins 2 banques.", err_bank_same: "Impossible vers la même banque!", err_amt_zero: "Le montant doit être > 0.",
                 
                 adm_mng_codes: "Gérer Codes", adm_pay_reqs: "Demandes Paiement", adm_promos: "Codes Promo", adm_search_comp: "Chercher Société/Tél...",
-                promo_add_title: "Ajouter Code Promo", promo_code_lbl: "Code", promo_perc_lbl: "Pourcentage %", promo_limit_lbl: "Limite Utilisation",
-                promo_exp_lbl: "Date Expiration", promo_btn_add: "Ajouter Code", promo_list_title: "Codes Actifs", promo_usage: "Utilisation",
-                promo_err_fields: "Remplir tous les champs", promo_err_exist: "Code existe déjà!", promo_del_conf: "Supprimer ce code?",
+                promo_add_title: "Ajouter une remise", promo_code_lbl: "Nom / code de la remise", promo_perc_lbl: "Pourcentage de remise %", promo_limit_lbl: "Limite Utilisation",
+                promo_exp_lbl: "Date Expiration", promo_btn_add: "Ajouter la remise", promo_list_title: "Remises actives", promo_usage: "Nombre d’utilisations",
+                promo_err_fields: "Saisissez un nom et un pourcentage entre 1 et 100", promo_err_exist: "Ce nom/code existe déjà !", promo_del_conf: "Supprimer ce code?",
                 req_pend_title: "Demandes en attente", th_req_type: "Type", th_wa: "WhatsApp", th_disc: "Remise", th_dur_usr: "Durée/Users", th_receipt: "Reçu",
                 req_empty: "Aucune demande", req_btn_acc: "Accepter", req_btn_rej: "Refuser",
 
@@ -4763,13 +4763,10 @@
                     <div class="card">
                         <h4>${this.t('promo_add_title')}</h4>
                         <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-                            <input id="newPromoCode" class="inp" placeholder="${this.t('promo_code_lbl')}" style="flex:1; min-width:150px;">
-                            <input id="newPromoPercent" type="number" class="inp" placeholder="${this.t('promo_perc_lbl')}" style="flex:1; min-width:100px;">
+                            <input id="newPromoCode" class="inp" placeholder="${this.t('promo_code_lbl')}" aria-label="${this.t('promo_code_lbl')}" required style="flex:1; min-width:150px;">
+                            <input id="newPromoPercent" type="number" min="1" max="100" step="0.01" class="inp" placeholder="${this.t('promo_perc_lbl')}" aria-label="${this.t('promo_perc_lbl')}" required style="flex:1; min-width:100px;">
                         </div>
-                        <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-                            <input id="newPromoLimit" type="number" class="inp" placeholder="${this.t('promo_limit_lbl')}" style="flex:1; min-width:150px;">
-                            <input id="newPromoExpiry" type="date" class="inp" style="flex:1; min-width:150px;">
-                        </div>
+
                         <button onclick="app.addPromoCode()" class="btn btn-prim" style="background:#8b5cf6;">${this.t('promo_btn_add')}</button>
                     </div>
                     <div class="card">
@@ -4795,13 +4792,13 @@
                     const expDate = data.expiryDate ? new Date(data.expiryDate) : null;
                     const expStr = data.expiryDate ? expDate.toLocaleDateString('en-GB') : '-';
                     const isExpired = expDate && expDate < today;
-                    const isExhausted = currU >= maxU;
+                    const isExhausted = maxU > 0 && currU >= maxU;
                     const statusColor = (isExpired || isExhausted) ? 'red' : 'green';
 
                     rows += `<tr>
                         <td style="font-weight:bold; color:var(--primary);">${data.code}</td>
                         <td style="color:var(--primary); font-weight:bold;">${data.discountPercent}%</td>
-                        <td style="color:${isExhausted ? 'red' : 'inherit'}; font-weight:bold;">${currU} / ${maxU}</td>
+                        <td style="color:${isExhausted ? 'red' : 'inherit'}; font-weight:bold;">${currU}${maxU > 0 ? ` / ${maxU}` : ``}</td>
                         <td style="color:${statusColor}; font-weight:bold;">${expStr}</td>
                         <td>
                             <button onclick="app.editPromoCode('${doc.id}', ${maxU}, '${data.expiryDate || ''}')" class="btn btn-warn" style="padding:5px; font-size:11px; width:auto;"><i class="fa-solid fa-pen"></i></button> 
@@ -4816,10 +4813,7 @@
             addPromoCode: async function() {
                 const code = document.getElementById('newPromoCode').value.trim();
                 const percent = Number(document.getElementById('newPromoPercent').value);
-                const limit = Number(document.getElementById('newPromoLimit').value);
-                const expiry = document.getElementById('newPromoExpiry').value;
-
-                if(!code || !percent || !limit || !expiry) return alert(this.t('promo_err_fields'));
+                if(!code || !Number.isFinite(percent) || percent < 1 || percent > 100) return alert(this.t('promo_err_fields'));
                 
                 this.showLoader();
                 try {
@@ -4829,9 +4823,9 @@
                     await db.collection('promo_codes').add({
                         code: code, 
                         discountPercent: percent, 
-                        maxUsage: limit, 
+                        maxUsage: 0, // 0 means unlimited; the new offer form requires only name/code and percentage.
                         currentUsage: 0, 
-                        expiryDate: expiry, 
+                        expiryDate: '',
                         createdAt: new Date().toISOString()
                     });
                     this.adminViewPromoCodes();
