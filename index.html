@@ -11,7 +11,45 @@
     <link rel="apple-touch-icon" href="logo.png">
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="style.css">
-    
+
+    <!-- Keep Latin digits (0-9) in formatted numbers and dates, independent of device locale. -->
+    <script>
+      (function enforceLatinDigits() {
+        if (window.__teyssirLatinDigitsEnabled) return;
+        window.__teyssirLatinDigitsEnabled = true;
+        const latinize = value => String(value).replace(/[\u0660-\u0669\u06F0-\u06F9]/g, digit =>
+          String(digit.charCodeAt(0) - (digit.charCodeAt(0) >= 0x06F0 ? 0x06F0 : 0x0660))
+        );
+        const wrapLocaleMethods = (prototype, methodNames) => {
+          methodNames.forEach(methodName => {
+            const original = prototype[methodName];
+            if (typeof original !== 'function') return;
+            Object.defineProperty(prototype, methodName, {
+              configurable: true,
+              writable: true,
+              value: function(...args) { return latinize(original.apply(this, args)); }
+            });
+          });
+        };
+        wrapLocaleMethods(Number.prototype, ['toLocaleString']);
+        wrapLocaleMethods(Date.prototype, ['toLocaleString', 'toLocaleDateString', 'toLocaleTimeString']);
+
+        const numericInputSelector = 'input[type="number"], input[inputmode="numeric"], input[inputmode="decimal"]';
+        const applyLatinInputLocale = node => {
+          if (!(node instanceof Element)) return;
+          if (node.matches(numericInputSelector)) node.setAttribute('lang', 'en-US');
+          node.querySelectorAll(numericInputSelector).forEach(input => input.setAttribute('lang', 'en-US'));
+        };
+        const observeNumericInputs = () => {
+          applyLatinInputLocale(document.documentElement);
+          new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(applyLatinInputLocale)))
+            .observe(document.documentElement, { childList: true, subtree: true });
+        };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeNumericInputs, { once: true });
+        else observeNumericInputs();
+      })();
+    </script>
+
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
