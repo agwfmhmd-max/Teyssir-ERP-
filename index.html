@@ -323,8 +323,8 @@
                 tr_bank_amt: "المبلغ المراد تحويله", tr_bank_btn: "تحويل بين البنوك", err_bank_min: "يجب أن يكون لديك بنكين على الأقل.", err_bank_same: "لا يمكن التحويل لنفس البنك!", err_amt_zero: "المبلغ يجب أن يكون أكبر من صفر.",
                 
                 adm_mng_codes: "إدارة الأكواد", adm_pay_reqs: "طلبات الدفع", adm_promos: "التخفيضات", adm_search_comp: "بحث عن شركة أو هاتف...",
-                promo_add_title: "إضافة تخفيض", promo_code_lbl: "اسم / كود التخفيض", promo_perc_lbl: "نسبة التخفيض %", promo_limit_lbl: "مرات الاستخدام",
-                promo_exp_lbl: "تاريخ الانتهاء", promo_btn_add: "إضافة التخفيض", promo_list_title: "التخفيضات الفعالة", promo_usage: "عدد مرات الاستخدام",
+                promo_add_title: "إضافة تخفيض", promo_code_lbl: "اسم / كود التخفيض", promo_perc_lbl: "نسبة التخفيض %", promo_limit_lbl: "حدّ المستخدمين (اختياري)",
+                promo_exp_lbl: "تاريخ انتهاء الصلاحية (اختياري)", promo_btn_add: "إضافة التخفيض", promo_list_title: "التخفيضات الفعالة", promo_usage: "عدد مرات الاستخدام",
                 promo_err_fields: "يرجى إدخال اسم التخفيض ونسبة صحيحة بين 1 و100", promo_err_exist: "هذا الاسم/الكود موجود مسبقاً!", promo_del_conf: "حذف هذا الكود نهائياً؟",
                 req_pend_title: "طلبات الدفع المعلقة", th_req_type: "النوع", th_wa: "الواتساب", th_disc: "الخصم", th_dur_usr: "مدة/مستخدمين", th_receipt: "الإيصال",
                 req_empty: "لا توجد طلبات معلقة", req_btn_acc: "قبول", req_btn_rej: "رفض",
@@ -431,8 +431,8 @@
                 tr_bank_amt: "Montant à Transférer", tr_bank_btn: "Transfert Bancaire", err_bank_min: "Il faut au moins 2 banques.", err_bank_same: "Impossible vers la même banque!", err_amt_zero: "Le montant doit être > 0.",
                 
                 adm_mng_codes: "Gérer Codes", adm_pay_reqs: "Demandes Paiement", adm_promos: "Codes Promo", adm_search_comp: "Chercher Société/Tél...",
-                promo_add_title: "Ajouter une remise", promo_code_lbl: "Nom / code de la remise", promo_perc_lbl: "Pourcentage de remise %", promo_limit_lbl: "Limite Utilisation",
-                promo_exp_lbl: "Date Expiration", promo_btn_add: "Ajouter la remise", promo_list_title: "Remises actives", promo_usage: "Nombre d’utilisations",
+                promo_add_title: "Ajouter une remise", promo_code_lbl: "Nom / code de la remise", promo_perc_lbl: "Pourcentage de remise %", promo_limit_lbl: "Nombre maximal d’utilisations (facultatif)",
+                promo_exp_lbl: "Date d’expiration (facultative)", promo_btn_add: "Ajouter la remise", promo_list_title: "Remises actives", promo_usage: "Nombre d’utilisations",
                 promo_err_fields: "Saisissez un nom et un pourcentage entre 1 et 100", promo_err_exist: "Ce nom/code existe déjà !", promo_del_conf: "Supprimer ce code?",
                 req_pend_title: "Demandes en attente", th_req_type: "Type", th_wa: "WhatsApp", th_disc: "Remise", th_dur_usr: "Durée/Users", th_receipt: "Reçu",
                 req_empty: "Aucune demande", req_btn_acc: "Accepter", req_btn_rej: "Refuser",
@@ -4767,6 +4767,10 @@
                             <input id="newPromoPercent" type="number" min="1" max="100" step="0.01" class="inp" placeholder="${this.t('promo_perc_lbl')}" aria-label="${this.t('promo_perc_lbl')}" required style="flex:1; min-width:100px;">
                         </div>
 
+                        <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+                            <input id="newPromoLimit" type="number" min="1" step="1" class="inp" placeholder="${this.t('promo_limit_lbl')}" aria-label="${this.t('promo_limit_lbl')}" style="flex:1; min-width:150px;">
+                            <input id="newPromoExpiry" type="date" class="inp" aria-label="${this.t('promo_exp_lbl')}" title="${this.t('promo_exp_lbl')}" style="flex:1; min-width:150px;">
+                        </div>
                         <button onclick="app.addPromoCode()" class="btn btn-prim" style="background:#8b5cf6;">${this.t('promo_btn_add')}</button>
                     </div>
                     <div class="card">
@@ -4813,7 +4817,11 @@
             addPromoCode: async function() {
                 const code = document.getElementById('newPromoCode').value.trim();
                 const percent = Number(document.getElementById('newPromoPercent').value);
+                const rawLimit = document.getElementById('newPromoLimit').value.trim();
+                const maxUsage = rawLimit === '' ? 0 : Number(rawLimit);
+                const expiryDate = document.getElementById('newPromoExpiry').value || '';
                 if(!code || !Number.isFinite(percent) || percent < 1 || percent > 100) return alert(this.t('promo_err_fields'));
+                if(rawLimit !== '' && (!Number.isInteger(maxUsage) || maxUsage < 1)) return alert(this.t('promo_err_fields'));
                 
                 this.showLoader();
                 try {
@@ -4823,9 +4831,9 @@
                     await db.collection('promo_codes').add({
                         code: code, 
                         discountPercent: percent, 
-                        maxUsage: 0, // 0 means unlimited; the new offer form requires only name/code and percentage.
+                        maxUsage: maxUsage, // 0 means unlimited when the optional limit is left blank.
                         currentUsage: 0, 
-                        expiryDate: '',
+                        expiryDate: expiryDate, // Empty means no expiration date.
                         createdAt: new Date().toISOString()
                     });
                     this.adminViewPromoCodes();
