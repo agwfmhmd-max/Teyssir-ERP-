@@ -295,6 +295,7 @@
                 th_profit: "الربح", rep_profit: "تقرير الأرباح", total_profit: "إجمالي الأرباح",
                 tr_balance: "رصيد الخزينة الحالي", tr_open: "رصيد افتتاحي للخزينة", tr_dep: "إيداع في البنك (من الخزينة)",
                 tr_with: "سحب من البنك (إلى الخزينة)", tr_hist: "سجل حركات الخزينة", err_no_cash: "عذراً، رصيد الخزينة لا يكفي لهذه العملية!",
+                sale_offline_block: "لا يمكن اعتماد البيع دون إنترنت لأن المخزون مشترك بين الأجهزة. أعد الاتصال ثم أعد المحاولة؛ لم تُحفظ فاتورة أو تُخصم كمية.",
                 tr_in: "وارد (+)", tr_out: "صادر (-)", tr_desc: "البيان (التفاصيل)", tr_bal_after: "الرصيد بعد",
                 filter_by: "عرض حسب", f_day: "يوم", f_month: "شهر", f_range: "فترة", f_year: "سنة",
                 mode_exist: "منتج موجود (رصيد أول المدة)", mode_buy: "شراء بضاعة جديدة",
@@ -404,6 +405,7 @@
                 th_profit: "Profit", rep_profit: "Rapport Profits", total_profit: "Total Profits",
                 tr_balance: "Solde Caisse", tr_open: "Solde Initial", tr_dep: "Dépôt Banque",
                 tr_with: "Retrait Banque", tr_hist: "Historique Caisse", err_no_cash: "Erreur: Solde caisse insuffisant!",
+                sale_offline_block: "Vente impossible hors ligne : le stock est partagé entre appareils. Reconnectez-vous avant de réessayer. Aucune facture ni sortie de stock n’a été enregistrée.",
                 tr_in: "Entrée (+)", tr_out: "Sortie (-)", tr_desc: "Description", tr_bal_after: "Solde après",
                 filter_by: "Filtrer par", f_day: "Jour", f_month: "Mois", f_range: "Période", f_year: "Année",
                 mode_exist: "Produit Existant (Stock Initial)", mode_buy: "Nouvel Achat",
@@ -2384,140 +2386,166 @@
                     document.getElementById('posCustId').value = ref.id; 
                 } 
             },
-            getNextInvoiceNumber: async function() { 
-                const now = new Date(); 
-                const yearShort = now.getFullYear().toString().substr(-2); 
-                const storageKey = `teyssir_last_inv_${yearShort}`; 
-                let localSeq = Number(localStorage.getItem(storageKey)) || 0; 
-                let nextSeq = localSeq + 1; 
-                if (navigator.onLine) { 
-                    try { 
-                        const doc = await db.collection('counters').doc(this.state.cid).get(); 
-                        if(doc.exists) { 
-                            const data = doc.data(); 
-                            if (data.year === yearShort) { 
-                                nextSeq = Math.max(nextSeq, (data.lastSeq || 0) + 1); 
-                            } 
-                        } 
-                    } catch(e) { console.log("Counter check skipped"); } 
-                } 
-                localStorage.setItem(storageKey, nextSeq); 
-                const paddedSeq = String(nextSeq).padStart(5, '0'); 
-                return { full: `INV-${yearShort}${paddedSeq}`, seq: nextSeq, year: yearShort }; 
+            getNextInvoiceNumber: async function() {
+                const now = new Date();
+                const yearShort = now.getFullYear().toString().slice(-2);
+                let deviceId = localStorage.getItem('teyssir_device_id');
+                if (!deviceId) {
+                    deviceId = this.randomStr(32);
+                    localStorage.setItem('teyssir_device_id', deviceId);
+                }
+                const deviceCode = deviceId.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8);
+                const storageKey = `teyssir_last_inv_${yearShort}_${deviceCode}`;
+                const nextSeq = (Number(localStorage.getItem(storageKey)) || 0) + 1;
+                localStorage.setItem(storageKey, String(nextSeq));
+                return { full: `INV-${yearShort}-${deviceCode}-${String(nextSeq).padStart(5, '0')}`, seq: nextSeq, year: yearShort, deviceCode, storageKey };
             },
-
             finalizeInvoice: async function() {
+                // Firestore cannot enforce shared stock constraints while clients are disconnected.
+                // Refuse before any local or remote write; this avoids negative stock and phantom invoices.
+                if (!navigator.onLine) return alert(this.t('sale_offline_block'));
                 if(!this.cart.length) return alert(this.t('empty'));
-                for (let item of this.cart) { 
-                    const prod = this.cachedProducts.find(p => p.id === item.id); 
-                    if (!prod) return alert("Product not found: " + item.n); 
-                    if (prod.stock < item.q) { 
-                        return alert(`عذراً، الكمية غير متوفرة للمنتج: ${item.n} (المتوفر: ${prod.stock})`); 
-                    } 
+                for (let item of this.cart) {
+                    const prod = this.cachedProducts.find(p => p.id === item.id);
+                    if (!prod) return alert("Product not found: " + item.n);
+                    if (prod.stock < item.q) return alert(`عذراً، الكمية غير متوفرة للمنتج: ${item.n} (المتوفر: ${prod.stock})`);
                 }
-                let custId = document.getElementById('posCustId').value; 
-                let custName = document.getElementById('posCustName').value; 
-                const total = Number(document.getElementById('cartTotal').innerText); 
-                const cash = Number(document.getElementById('payCash').value); 
-                const bank = Number(document.getElementById('payBank').value); 
-                const bankId = document.getElementById('posBankId').value; 
-                const bankName = document.getElementById('posBankName').value; 
-                const payMethod = document.getElementById('posPayMethod').value; 
+                let custId = document.getElementById('posCustId').value;
+                let custName = document.getElementById('posCustName').value;
+                const total = Number(document.getElementById('cartTotal').innerText);
+                const cash = Number(document.getElementById('payCash').value);
+                const bank = Number(document.getElementById('payBank').value);
+                const bankId = document.getElementById('posBankId').value;
+                const bankName = document.getElementById('posBankName').value;
+                const payMethod = document.getElementById('posPayMethod').value;
                 let isWalkIn = false;
-                if(!custId) { 
-                    const debtCheck = total - (cash + bank); 
-                    if(debtCheck > 0) return alert(this.t('err_walkin_debt')); 
-                    custName = this.t('cust_walkin'); 
-                    custId = "WALK_IN"; 
-                    isWalkIn = true; 
+                if(!custId) {
+                    if(total - (cash + bank) > 0) return alert(this.t('err_walkin_debt'));
+                    custName = this.t('cust_walkin');
+                    custId = "WALK_IN";
+                    isWalkIn = true;
                 }
-                if(payMethod !== 'cash' && !bankId) return alert(this.t('select_bank')); 
-                if((cash + bank) > total) return alert("Total paid cannot exceed invoice amount");
-                const totalPaid = cash + bank; 
+                if(payMethod !== 'cash' && !bankId) return alert(this.t('select_bank'));
+                if(![total, cash, bank].every(Number.isFinite) || total <= 0 || cash < 0 || bank < 0 || cash + bank > total) return alert("Total paid cannot exceed invoice amount");
+                const totalPaid = cash + bank;
                 const debt = total - totalPaid;
-                
                 this.showLoader();
                 try {
-                    const counterData = await this.getNextInvoiceNumber(); 
-                    const invNum = counterData.full; 
-                    const batch = db.batch(); 
-                    const now = new Date().toISOString(); 
-                    const invRef = db.collection('invoices').doc();
-                    
-                    let totalCost = 0; 
-                    for(let i of this.cart) { 
-                        const pRef = db.collection('products').doc(i.id); 
-                        const currentCached = this.cachedProducts.find(p => p.id === i.id); 
-                        const isDepleted = (currentCached.stock - i.q) <= 0; 
-                        if(isDepleted && i.sourceType === 'opening') { 
-                            batch.delete(pRef); 
-                        } else { 
-                            batch.update(pRef, { stock: firebase.firestore.FieldValue.increment(-i.q) }); 
-                        } 
-                        totalCost += (i.bp * i.q); 
+                    const yearShort = new Date().getFullYear().toString().slice(-2);
+                    let deviceId = localStorage.getItem('teyssir_device_id');
+                    if (!deviceId) {
+                        deviceId = this.randomStr(32);
+                        localStorage.setItem('teyssir_device_id', deviceId);
                     }
-                    const profit = total - totalCost; 
-                    if (cash > 0) { 
-                        await this.processCashTransaction(batch, cash, 'in', `Sale ${invNum}`, invRef.id, custName); 
-                    }
-                    batch.set(invRef, { 
-                        companyId: this.state.cid, 
-                        invNum: invNum, 
-                        customer: custName, 
-                        customerId: custId, 
-                        items: this.cart, 
-                        total, 
-                        paid: totalPaid, 
-                        debt: debt, 
-                        cashAmount: cash, 
-                        bankAmount: bank, 
-                        bankId: bankId, 
-                        bankName: bankName, 
-                        profit: profit, 
-                        createdAt: now 
-                    });
-                    
-                    const counterRef = db.collection('counters').doc(this.state.cid); 
-                    batch.set(counterRef, { lastSeq: counterData.seq, year: counterData.year }, { merge: true });
-                    
-                    if(debt > 0 && !isWalkIn) { 
-                        const cRef = db.collection('customers').doc(custId); 
-                        batch.update(cRef, { balance: firebase.firestore.FieldValue.increment(debt) }); 
-                    }
-                    if(bank > 0 && bankId) { 
-                        const bRef = db.collection('banks').doc(bankId); 
-                        batch.update(bRef, { balance: firebase.firestore.FieldValue.increment(bank) }); 
-                    }
-                    const tRef = db.collection('transactions').doc(); 
-                    batch.set(tRef, { 
-                        companyId: this.state.cid, 
-                        type: 'sale', 
-                        refId: invRef.id, 
-                        invNum: invNum, 
-                        amount: total, 
-                        paid: totalPaid, 
-                        debt: debt, 
-                        cashAmount: cash, 
-                        bankAmount: bank, 
-                        bankId: bankId, 
-                        cogs: totalCost, 
-                        customerId: custId, 
-                        createdAt: now, 
-                        note: `Invoice ${invNum}` 
-                    });
-                    batch.commit().catch(e => console.error("Sync error: ", e));
-                    this.printData = { id: invNum, c: custName, t: total, items: this.cart, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
-                    this.clearCache('products'); 
-                    this.clearCache('invoices'); 
-                    this.clearCache('customers'); 
-                    this.clearCache('transactions'); 
-                    this.clearCache('banks');
-                    this.print(this.printData.id, this.printData.c, this.printData.t, this.printData.items, this.printData.p, this.printData.d, this.printData.pm, this.printData.bn); 
-                    this.nav('pos');
-                } catch(e) { console.error(e); alert(e.message); } 
-                this.hideLoader();
-            },
+                    const deviceCode = deviceId.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8);
+                    const localCounterKey = `teyssir_last_inv_${yearShort}_${deviceCode}`;
+                    const invoiceRef = db.collection('invoices').doc();
+                    const saleTransactionRef = db.collection('transactions').doc();
+                    const cashTransactionRef = db.collection('transactions').doc();
+                    const counterRef = db.collection('counters').doc(this.state.cid);
+                    const treasuryRef = db.collection('treasury').doc(this.state.cid);
+                    const customerRef = (!isWalkIn && debt > 0) ? db.collection('customers').doc(custId) : null;
+                    const bankRef = (bank > 0 && bankId) ? db.collection('banks').doc(bankId) : null;
+                    const uniqueProductIds = [...new Set(this.cart.map(item => item.id))];
+                    const productRefs = uniqueProductIds.map(id => db.collection('products').doc(id));
+                    const productData = new Map();
+                    let committedInvoice = null;
+                    let committedTreasuryBalance = null;
+                    const committedAt = new Date().toISOString();
 
+                    await db.runTransaction(async (transaction) => {
+                        // Complete all reads before writing; Firestore retries if any read document changes.
+                        const counterSnap = await transaction.get(counterRef);
+                        const treasurySnap = cash > 0 ? await transaction.get(treasuryRef) : null;
+                        const customerSnap = customerRef ? await transaction.get(customerRef) : null;
+                        const bankSnap = bankRef ? await transaction.get(bankRef) : null;
+                        const productSnaps = [];
+                        for (const ref of productRefs) productSnaps.push(await transaction.get(ref));
+
+                        productData.clear();
+                        productSnaps.forEach((snap, index) => {
+                            if (!snap.exists) throw new Error(`المنتج غير موجود أو تغير المخزون: ${uniqueProductIds[index]}`);
+                            productData.set(uniqueProductIds[index], snap.data());
+                        });
+                        const required = new Map();
+                        this.cart.forEach(item => required.set(item.id, (required.get(item.id) || 0) + Number(item.q)));
+                        for (const [productId, qty] of required) {
+                            const data = productData.get(productId);
+                            if (Number(data.stock || 0) < qty) {
+                                const available = Number(data.stock || 0);
+                                const productName = data.name || productId;
+                                throw new Error(this.state.lang === 'ar'
+                                    ? `تعارض مخزون: الكمية المتاحة للمنتج ${productName} هي ${available} فقط. لم تُسجل الفاتورة.`
+                                    : `Conflit de stock : il ne reste que ${available} unité(s) pour ${productName}. La facture n’a pas été enregistrée.`);
+                            }
+                        }
+                        if (customerRef && !customerSnap.exists) throw new Error("الزبون المحدد غير موجود حالياً؛ لم تُسجل الفاتورة.");
+                        if (bankRef && !bankSnap.exists) throw new Error("الحساب البنكي المحدد غير موجود حالياً؛ لم تُسجل الفاتورة.");
+
+                        const counterData = counterSnap.exists ? counterSnap.data() : {};
+                        const localSeq = Number(localStorage.getItem(localCounterKey)) || 0;
+                        const nextSeq = Math.max(localSeq, counterData.year === yearShort ? Number(counterData.lastSeq || 0) : 0) + 1;
+                        const invoiceNumber = `INV-${yearShort}-${deviceCode}-${String(nextSeq).padStart(5, '0')}`;
+                        let totalCost = 0;
+                        for (const [productId, qty] of required) {
+                            const current = productData.get(productId);
+                            const remaining = Number(current.stock || 0) - qty;
+                            const isOpening = current.sourceType === 'opening' || this.cart.some(item => item.id === productId && item.sourceType === 'opening');
+                            if (remaining <= 0 && isOpening) transaction.delete(db.collection('products').doc(productId));
+                            else transaction.update(db.collection('products').doc(productId), { stock: remaining });
+                        }
+                        for (const item of this.cart) totalCost += Number(item.bp || 0) * Number(item.q);
+                        const profit = total - totalCost;
+                        if (cash > 0) {
+                            const before = treasurySnap && treasurySnap.exists && treasurySnap.data().balance != null
+                                ? Number(treasurySnap.data().balance) : Number(this.state.cashBalance || 0);
+                            const after = before + cash;
+                            committedTreasuryBalance = after;
+                            transaction.set(treasuryRef, { balance: after, updatedAt: committedAt }, { merge: true });
+                            transaction.set(cashTransactionRef, {
+                                companyId: this.state.cid, type: 'cash_in', isTreasury: true, amount: cash,
+                                balanceBefore: before, balanceAfter: after, note: `Sale ${invoiceNumber}`,
+                                refId: invoiceRef.id, relatedEntity: custName, bankId: null, createdAt: committedAt
+                            });
+                        }
+                        if (customerRef) transaction.update(customerRef, { balance: Number(customerSnap.data().balance || 0) + debt });
+                        if (bankRef) transaction.update(bankRef, { balance: Number(bankSnap.data().balance || 0) + bank });
+                        const invoiceData = {
+                            companyId: this.state.cid, invNum: invoiceNumber, customer: custName, customerId: custId,
+                            items: this.cart.map(item => ({...item})), total, paid: totalPaid, debt, cashAmount: cash,
+                            bankAmount: bank, bankId, bankName, profit, createdAt: committedAt
+                        };
+                        transaction.set(invoiceRef, invoiceData);
+                        transaction.set(counterRef, { lastSeq: nextSeq, year: yearShort }, { merge: true });
+                        transaction.set(saleTransactionRef, {
+                            companyId: this.state.cid, type: 'sale', refId: invoiceRef.id, invNum: invoiceNumber,
+                            amount: total, paid: totalPaid, debt, cashAmount: cash, bankAmount: bank, bankId,
+                            cogs: totalCost, customerId: custId, createdAt: committedAt, note: `Invoice ${invoiceNumber}`
+                        });
+                        committedInvoice = { invoiceNumber, nextSeq, totalCost, profit };
+                    });
+
+                    localStorage.setItem(localCounterKey, String(committedInvoice.nextSeq));
+                    if (cash > 0) {
+                        this.state.cashBalance = Number(committedTreasuryBalance || 0);
+                        localStorage.setItem('teyssir_cash_balance', String(this.state.cashBalance));
+                    }
+                    const invoiceNumber = committedInvoice.invoiceNumber;
+                    this.printData = { id: invoiceNumber, c: custName, t: total, items: this.cart, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
+                    this.clearCache('products');
+                    this.clearCache('invoices');
+                    this.clearCache('customers');
+                    this.clearCache('transactions');
+                    this.clearCache('banks');
+                    this.print(this.printData.id, this.printData.c, this.printData.t, this.printData.items, this.printData.p, this.printData.d, this.printData.pm, this.printData.bn);
+                    this.nav('pos');
+                } catch(e) {
+                    console.error(e);
+                    alert(e.message);
+                } finally {
+                    this.hideLoader();
+                }
+            },
             // ====== دوال العمليات العامة =======
             addTransactionModal: async function(type) {
                 const banks = await this.getData('banks'); 
