@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Teyssir ERP</title>
+    <title>تسيير ERP</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a4585">
     <meta name="mobile-web-app-capable" content="yes">
@@ -184,7 +184,7 @@
     
     <div id="genericModal" class="modal-overlay" style="z-index:100000;"><div class="modal-box"><h3 id="modalTitle" style="margin-top:0; color:var(--primary);">عنوان</h3><div id="modalContent"></div><div style="display:flex; gap:10px; margin-top:20px;"><button id="modalActionBtn" class="btn btn-prim">حفظ</button><button onclick="document.getElementById('genericModal').style.display='none'" class="btn btn-sec" style="background:#ccc; color:#333">إغلاق</button></div></div></div>
     
-    <div id="welcomeModal" class="welcome-modal"><div class="welcome-content"><img src="logo.png" style="width:100px; margin-bottom:15px; border-radius:15px;"><h2 style="color:var(--primary); margin-top:0;" data-key="w_title">أهلاً بك في Teyssir ERP</h2><p style="color:#666; font-size:16px;">النظام المالي المتكامل.</p><a href="https://wa.me/22224241012" class="wa-link" style="margin-bottom:20px; justify-content:center;"><i class="fa-brands fa-whatsapp"></i> <span data-key="cont">تواصل للتفعيل</span></a><button onclick="app.closeWelcome()" class="btn btn-prim" style="width:100%;" data-key="w_btn">ابدأ الآن</button></div></div>
+    <div id="welcomeModal" class="welcome-modal"><div class="welcome-content"><img src="logo.png" style="width:100px; margin-bottom:15px; border-radius:15px;"><h2 style="color:var(--primary); margin-top:0;" data-key="w_title">أهلاً بك في تسيير ERP</h2><p data-key="w_text" style="color:#666; font-size:16px;">النظام المالي المتكامل.</p><a href="https://wa.me/22224241012" class="wa-link" style="margin-bottom:20px; justify-content:center;"><i class="fa-brands fa-whatsapp"></i> <span data-key="cont">تواصل للتفعيل</span></a><button onclick="app.closeWelcome()" class="btn btn-prim" style="width:100%;" data-key="w_btn">ابدأ الآن</button></div></div>
     
     <div id="blockScreen" class="block-screen">
         <i class="fa-solid fa-triangle-exclamation block-icon"></i>
@@ -195,9 +195,9 @@
         <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px; width:auto;"><i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">خروج</span></button>
     </div>
     
-    <div id="authScreen" class="auth-wrap"><div class="auth-card"><img src="logo.png" alt="Logo" style="width:100px; margin-bottom:20px; border-radius:15px;"><h2 style="color:var(--primary); margin-top:0; margin-bottom: 25px; font-weight: 800;" data-key="title">Teyssir ERP</h2><div id="installBtn" onclick="app.installPWA()"><i class="fa-solid fa-download"></i> <span data-key="t_install">تثبيت التطبيق</span></div><form onsubmit="app.login(event)"><input id="logName" class="inp" data-ph="comp" placeholder="اسم الشركة" required><input id="logPhone" type="tel" class="inp" data-ph="phone" placeholder="رقم الهاتف" required maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);"><input id="logCode" type="password" class="inp" data-ph="code" placeholder="رمز التفعيل / كود الموظف" required><div style="display:flex; gap:10px; margin-bottom:15px;"><button type="submit" id="logBtn" class="btn btn-prim" style="flex:1" data-key="btn">دخول</button><button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (3 أيام)</button></div><button type="button" onclick="app.directPayModal()" class="btn btn-sec" style="width:100%; background: #28a745; color: white; border: none; margin-bottom: 15px;"><i class="fa-solid fa-credit-card"></i> <span data-key="dp_direct_btn_full">الدفع المباشر (تجديد/اشتراك)</span></button></form><div style="margin-top:15px; border-top:1px solid var(--border); padding-top:20px;"><p style="margin:0 0 10px; color:var(--text-light); font-size:0.9em;" data-key="get">للحصول على الرمز:</p><a href="https://wa.me/22224241012" class="wa-link"><i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span></a></div></div></div>
+    <div id="authScreen" class="auth-wrap"><div class="auth-card"><img src="logo.png" alt="Logo" style="width:100px; margin-bottom:20px; border-radius:15px;"><h2 style="color:var(--primary); margin-top:0; margin-bottom: 25px; font-weight: 800;" data-key="title">تسيير ERP</h2><div id="installBtn" onclick="app.installPWA()"><i class="fa-solid fa-download"></i> <span data-key="t_install">تثبيت التطبيق</span></div><form onsubmit="app.login(event)"><input id="logName" class="inp" data-ph="comp" placeholder="اسم الشركة" required><input id="logPhone" type="tel" class="inp" data-ph="phone" placeholder="رقم الهاتف" required maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);"><input id="logCode" type="password" class="inp" data-ph="code" placeholder="رمز التفعيل / كود الموظف" required><div style="display:flex; gap:10px; margin-bottom:15px;"><button type="submit" id="logBtn" class="btn btn-prim" style="flex:1" data-key="btn">دخول</button><button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (3 أيام)</button></div><button type="button" onclick="app.directPayModal()" class="btn btn-sec" style="width:100%; background: #28a745; color: white; border: none; margin-bottom: 15px;"><i class="fa-solid fa-credit-card"></i> <span data-key="dp_direct_btn_full">الدفع المباشر (تجديد/اشتراك)</span></button></form><div style="margin-top:15px; border-top:1px solid var(--border); padding-top:20px;"><p style="margin:0 0 10px; color:var(--text-light); font-size:0.9em;" data-key="get">للحصول على الرمز:</p><a href="https://wa.me/22224241012" class="wa-link"><i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span></a></div></div></div>
     
-    <div id="appScreen" class="app-container"><div class="sidebar-overlay" onclick="app.toggleMenu()"></div><header class="top-header"><div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div><div class="header-title">Teyssir ERP</div></header><aside class="sidebar" id="sidebar"><div style="padding: 25px; text-align:center; background: #fcfcfc; border-bottom: 1px solid var(--border);"><img src="logo.png" style="width:70px; border-radius:10px;"><div id="h_name" style="font-weight:bold; color:var(--primary); margin-top:10px;"></div><div id="h_phone" style="font-size:12px; color:#888;"></div><div id="h_role" style="font-size:10px; background:var(--accent); color:white; padding:2px 5px; border-radius:4px; display:inline-block; margin-top:5px;"></div></div><div style="padding: 10px 0; flex:1;">
+    <div id="appScreen" class="app-container"><div class="sidebar-overlay" onclick="app.toggleMenu()"></div><header class="top-header"><div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div><div class="header-title" data-key="title">تسيير ERP</div></header><aside class="sidebar" id="sidebar"><div style="padding: 25px; text-align:center; background: #fcfcfc; border-bottom: 1px solid var(--border);"><img src="logo.png" style="width:70px; border-radius:10px;"><div id="h_name" style="font-weight:bold; color:var(--primary); margin-top:10px;"></div><div id="h_phone" style="font-size:12px; color:#888;"></div><div id="h_role" style="font-size:10px; background:var(--accent); color:white; padding:2px 5px; border-radius:4px; display:inline-block; margin-top:5px;"></div></div><div style="padding: 10px 0; flex:1;">
         <div class="nav-item active" onclick="app.nav('home')" data-perm="all"><i class="fa-solid fa-home"></i> <span data-key="home">الرئيسية</span></div>
         <div class="nav-item" onclick="app.nav('pos')" data-perm="pos"><i class="fa-solid fa-cart-shopping"></i> <span data-key="pos">نقطة البيع</span></div>
         <div class="nav-item" onclick="app.nav('customers')" data-perm="customers"><i class="fa-solid fa-users"></i> <span data-key="cust">الزبناء</span></div>
@@ -276,7 +276,7 @@
 
         const dict = {
             ar: {
-                title: "Teyssir ERP", excel_import:"استيراد Excel", excel_export:"تصدير Excel", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
+                title: "تسيير ERP", excel_import:"استيراد Excel", excel_export:"تصدير Excel", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
                 btn:"دخول", btn_trial: "تجربة (3 أيام)", wait:"جاري...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور",
                 home:"الرئيسية", pos:"نقطة البيع", inv:"أرشيف الفواتير", stock:"المخزون",
                 exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"خروج",
@@ -293,7 +293,7 @@
                 prompt_note:"ملاحظة", prompt_amount:"المبلغ", confirm_del:"هل أنت متأكد؟",
                 err_price_logic: "خطأ: سعر البيع يجب أن يكون أكبر من سعر الشراء",
                 prompt_new_price: "أدخل السعر الجديد", pay_now: "تواصل للتجديد",
-                w_title: "أهلاً بك في Teyssir ERP", w_text: "نظام متكامل.", w_btn: "ابدأ الآن",
+                w_title: "أهلاً بك في تسيير ERP", w_text: "نظام متكامل.", w_btn: "ابدأ الآن",
                 trial_used: "عذراً، لقد استخدمت التجربة المجانية من قبل.",
                 new_cust: "زبون جديد", pay_method: "طريقة الدفع", cash: "كاش", bank: "بنك", mixed: "مختلط (كاش + بنك)",
                 select_bank: "اختر البنك", paid: "المدفوع", remain: "المتبقي (دين)",
@@ -699,7 +699,7 @@
                         window.crypto.getRandomValues(challenge); 
                         const publicKey = { 
                             challenge: challenge, 
-                            rp: { name: "Teyssir ERP" }, 
+                            rp: { name: this.state.lang === 'fr' ? "Teyssir ERP" : "تسيير ERP" },
                             user: { id: new TextEncoder().encode("admin-" + Date.now()), name: "admin@teyssir", displayName: "Super Admin" }, 
                             pubKeyCredParams: [{alg: -7, type: "public-key"}], 
                             authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" }, 
@@ -961,6 +961,8 @@
                 localStorage.setItem('teyssir_lang', this.state.lang);
                 const l = this.state.lang; 
                 const d = dict[l]; 
+                document.title = d.title;
+                document.documentElement.lang = l;
                 document.documentElement.dir = l==='ar'?'rtl':'ltr'; 
                 document.querySelectorAll('[data-key]').forEach(el => { 
                     const key = el.getAttribute('data-key'); 
@@ -4386,7 +4388,7 @@
                             <span>${this.t('remain')}:</span> <span>${debt} MRU</span>
                         </div>
                         <br><div style="text-align:center; font-size:12px;">Method: ${pm} ${bankInfo}</div>
-                        <center><small>Teyssir ERP</small></center>
+                        <center><small>${this.state.lang === 'fr' ? "Teyssir ERP" : "تسيير ERP"}</small></center>
                     </div>
                 `; 
                 window.print(); 
@@ -5161,7 +5163,7 @@
                             await db.collection('companies').doc(data.companyId).set({ maxEmployees: users, maxDevices: users }, { merge: true });
                         }
 
-                        msg = encodeURIComponent(`مرحباً بك مجدداً من Teyssir ERP\nتم استلام دفعتك وتجديد اشتراكك بنجاح ✅\n\n🏢 الشركة: ${name}\n⏳ تم تمديد صلاحية نظامك.\n🔑 الرمز الخاص بك كما هو: ${existingCode}\nرابط الدخول: ${window.location.href}`);
+                        msg = encodeURIComponent(`مرحباً بك مجدداً من تسيير ERP\nتم استلام دفعتك وتجديد اشتراكك بنجاح ✅\n\n🏢 الشركة: ${name}\n⏳ تم تمديد صلاحية نظامك.\n🔑 الرمز الخاص بك كما هو: ${existingCode}\nرابط الدخول: ${window.location.href}`);
 
                     } else {
                         const newCode = this.randomStr(8);
@@ -5177,7 +5179,7 @@
                             maxDevices: users
                         });
 
-                        msg = encodeURIComponent(`أهلاً بك في Teyssir ERP\nتم استلام دفعتك وتفعيل اشتراكك بنجاح ✅\n\n🏢 الشركة: ${name}\n🔑 كود التفعيل الجديد: ${newCode}\nرابط الدخول: ${window.location.href}`);
+                        msg = encodeURIComponent(`أهلاً بك في تسيير ERP\nتم استلام دفعتك وتفعيل اشتراكك بنجاح ✅\n\n🏢 الشركة: ${name}\n🔑 كود التفعيل الجديد: ${newCode}\nرابط الدخول: ${window.location.href}`);
                     }
 
                     await this.updatePaymentRequestStatus(reqId, 'approved');

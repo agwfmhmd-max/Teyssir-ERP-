@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Teyssir ERP",
-  "short_name": "Teyssir",
+  "name": "تسيير ERP",
+  "short_name": "تسيير",
   "description": "رفيقك في التسيير",
   "start_url": "./index.html",
   "scope": "./",

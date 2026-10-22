@@ -1,4 +1,4 @@
-/* Teyssir ERP — Service Worker (offline-first)
+/* تسيير ERP — Service Worker (offline-first)
    Strategy:
    - Shell (HTML/CSS/JS/icons): cache-first with background revalidation.
    - CDN libs (fonts, font-awesome, chart.js, pdfmake, firebase SDK): cache-first.
@@ -14,7 +14,7 @@
      With relative URLs the precache works on any hosting path (root,
      subfolder, GitHub Pages, etc.) and the app loads fully offline.
 */
-const VERSION       = 'teyssir-v19-latin-digits';
+const VERSION       = 'teyssir-v20-arabic-brand';
 const SHELL_CACHE   = `shell-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 

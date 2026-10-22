@@ -212,7 +212,7 @@
 
 
 /* =========================================================
-   Teyssir ERP — Finance labels v12
+   تسيير ERP — Finance labels v12
    - Canonical SNDE/SOMELEC labels (including legacy records)
    ========================================================= */
 (function installFinanceAndNotifications() {
