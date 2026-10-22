@@ -435,7 +435,8 @@ tr.row-salary-due { background: rgba(245, 158, 11, .12); }
   height: 5px;
   background: linear-gradient(90deg, var(--brand-ink), var(--brand-teal), var(--brand-gold));
 }
-.auth-card h2 { letter-spacing: -.3px; }
+.auth-card h1, .auth-card h2 { letter-spacing: -.3px; }
+.auth-seo-description { max-width: 38ch; margin: 0 auto 18px; color: var(--text-light); font-size: .95rem; line-height: 1.7; }
 .auth-card .inp { min-height: 48px; }
 .auth-card .btn { min-height: 46px; }
 

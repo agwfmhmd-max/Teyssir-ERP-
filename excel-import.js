@@ -199,7 +199,7 @@
       const ws=X.utils.aoa_to_sheet([c.fields.map(f=>fieldLabel(f)), c.fields.map(f=>"")]);
       ws["!cols"]=c.fields.map(f=>({wch:Math.max(18,Math.min(34,fieldLabel(f).length+5))}));
       const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,"Template");
-      const brandName="تسيير";
+      const brandName=window.app&&app.state&&app.state.lang==="fr"?"TASSYIR":"تسيير";
       X.writeFile(wb,`${brandName}-${cat}-template.xlsx`);
     }catch(e){alert(e.message||appText("needXlsx"));}
   }
@@ -234,7 +234,7 @@
       const isFr=app.state.lang==="fr";
       const rowsOut=[fields.map(f=>isFr?(f[2]||f[1]):f[1]),...docs.map(d=>{const row=exportRow(category,d);return fields.map(f=>row[f[0]]??"");})];
       const ws=X.utils.aoa_to_sheet(rowsOut);ws["!cols"]=fields.map(f=>({wch:Math.max(16,Math.min(32,(isFr?f[2]:f[1]).length+4))}));
-      const brandName="تسيير";
+      const brandName=isFr?"TASSYIR":"تسيير";
       const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,brandName);
       X.writeFile(wb,`${brandName}-${category}-${new Date().toISOString().slice(0,10)}.xlsx`);
     }catch(e){alert(appText("exportFail")+(e.message||e));}

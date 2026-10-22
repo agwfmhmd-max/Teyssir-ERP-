@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://teyssir-erp.vercel.app/sitemap.xml

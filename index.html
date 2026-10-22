@@ -3,7 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تسيير ERP</title>
+    <title>TASSYIR ERP | تسيير لإدارة المبيعات والمخزون</title>
+    <meta name="description" content="TASSYIR ERP (تسيير) منصة موريتانية لإدارة المبيعات ونقطة البيع والمخزون والفواتير والخزينة والتقارير المالية للشركات والمتاجر بواجهة عربية وفرنسية.">
+    <meta name="keywords" content="TASSYIR ERP, تسيير ERP, logiciel ERP Mauritanie, gestion de stock, gestion commerciale, برنامج ERP موريتانيا, إدارة المخزون, نقاط البيع">
+    <meta name="robots" content="index,follow,max-image-preview:large">
+    <link rel="canonical" href="https://teyssir-erp.vercel.app/">
+    <link rel="alternate" hreflang="ar-MR" href="https://teyssir-erp.vercel.app/">
+    <link rel="alternate" hreflang="fr-MR" href="https://teyssir-erp.vercel.app/fr/">
+    <link rel="alternate" hreflang="x-default" href="https://teyssir-erp.vercel.app/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="TASSYIR ERP | تسيير لإدارة المبيعات والمخزون">
+    <meta property="og:description" content="TASSYIR ERP (تسيير) منصة موريتانية لإدارة المبيعات ونقطة البيع والمخزون والفواتير والخزينة والتقارير المالية للشركات والمتاجر بواجهة عربية وفرنسية.">
+    <meta property="og:url" content="https://teyssir-erp.vercel.app/">
+    <meta property="og:site_name" content="TASSYIR ERP | تسيير">
+    <meta property="og:image" content="https://teyssir-erp.vercel.app/logo.png">
+    <meta property="og:image:alt" content="واجهة TASSYIR ERP لإدارة الشركة والمبيعات والمخزون">
+    <meta property="og:locale" content="ar_MR">
+    <meta property="og:locale:alternate" content="fr_FR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="TASSYIR ERP | تسيير لإدارة المبيعات والمخزون">
+    <meta name="twitter:description" content="نظام ERP موريتاني بواجهة عربية وفرنسية لإدارة المبيعات والمخزون والفواتير والخزينة.">
+    <meta name="twitter:image" content="https://teyssir-erp.vercel.app/logo.png">
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"SoftwareApplication","name":"TASSYIR ERP","alternateName":"تسيير ERP","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":["ar","fr"],"description":"TASSYIR ERP (تسيير) منصة موريتانية لإدارة المبيعات ونقطة البيع والمخزون والفواتير والخزينة والتقارير المالية للشركات والمتاجر بواجهة عربية وفرنسية.","url":"https://teyssir-erp.vercel.app/","image":"https://teyssir-erp.vercel.app/logo.png"}
+    </script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a4585">
     <meta name="mobile-web-app-capable" content="yes">
@@ -195,7 +218,7 @@
         <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px; width:auto;"><i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">خروج</span></button>
     </div>
     
-    <div id="authScreen" class="auth-wrap"><div class="auth-card"><img src="logo.png" alt="Logo" style="width:100px; margin-bottom:20px; border-radius:15px;"><h2 style="color:var(--primary); margin-top:0; margin-bottom: 25px; font-weight: 800;" data-key="title">تسيير ERP</h2><div id="installBtn" onclick="app.installPWA()"><i class="fa-solid fa-download"></i> <span data-key="t_install">تثبيت التطبيق</span></div><form onsubmit="app.login(event)"><input id="logName" class="inp" data-ph="comp" placeholder="اسم الشركة" required><input id="logPhone" type="tel" class="inp" data-ph="phone" placeholder="رقم الهاتف" required maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);"><input id="logCode" type="password" class="inp" data-ph="code" placeholder="رمز التفعيل / كود الموظف" required><div style="display:flex; gap:10px; margin-bottom:15px;"><button type="submit" id="logBtn" class="btn btn-prim" style="flex:1" data-key="btn">دخول</button><button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (3 أيام)</button></div><button type="button" onclick="app.directPayModal()" class="btn btn-sec" style="width:100%; background: #28a745; color: white; border: none; margin-bottom: 15px;"><i class="fa-solid fa-credit-card"></i> <span data-key="dp_direct_btn_full">الدفع المباشر (تجديد/اشتراك)</span></button></form><div style="margin-top:15px; border-top:1px solid var(--border); padding-top:20px;"><p style="margin:0 0 10px; color:var(--text-light); font-size:0.9em;" data-key="get">للحصول على الرمز:</p><a href="https://wa.me/22224241012" class="wa-link"><i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span></a></div></div></div>
+    <div id="authScreen" class="auth-wrap"><div class="auth-card"><img src="logo.png" alt="شعار تسيير ERP وTASSYIR ERP" style="width:100px; margin-bottom:20px; border-radius:15px;"><h1 style="color:var(--primary); margin-top:0; margin-bottom: 12px; font-weight: 800;" data-key="title">تسيير ERP</h1><p class="auth-seo-description" data-key="seo_desc">نظام ERP موريتاني لإدارة المبيعات ونقطة البيع والمخزون والفواتير والخزينة والتقارير المالية للشركات والمتاجر.</p><div id="installBtn" onclick="app.installPWA()"><i class="fa-solid fa-download"></i> <span data-key="t_install">تثبيت التطبيق</span></div><form onsubmit="app.login(event)"><input id="logName" class="inp" data-ph="comp" placeholder="اسم الشركة" required><input id="logPhone" type="tel" class="inp" data-ph="phone" placeholder="رقم الهاتف" required maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);"><input id="logCode" type="password" class="inp" data-ph="code" placeholder="رمز التفعيل / كود الموظف" required><div style="display:flex; gap:10px; margin-bottom:15px;"><button type="submit" id="logBtn" class="btn btn-prim" style="flex:1" data-key="btn">دخول</button><button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (3 أيام)</button></div><button type="button" onclick="app.directPayModal()" class="btn btn-sec" style="width:100%; background: #28a745; color: white; border: none; margin-bottom: 15px;"><i class="fa-solid fa-credit-card"></i> <span data-key="dp_direct_btn_full">الدفع المباشر (تجديد/اشتراك)</span></button></form><div style="margin-top:15px; border-top:1px solid var(--border); padding-top:20px;"><p style="margin:0 0 10px; color:var(--text-light); font-size:0.9em;" data-key="get">للحصول على الرمز:</p><a href="https://wa.me/22224241012" class="wa-link"><i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span></a></div></div></div>
     
     <div id="appScreen" class="app-container"><div class="sidebar-overlay" onclick="app.toggleMenu()"></div><header class="top-header"><div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div><div class="header-title" data-key="title">تسيير ERP</div></header><aside class="sidebar" id="sidebar"><div style="padding: 25px; text-align:center; background: #fcfcfc; border-bottom: 1px solid var(--border);"><img src="logo.png" style="width:70px; border-radius:10px;"><div id="h_name" style="font-weight:bold; color:var(--primary); margin-top:10px;"></div><div id="h_phone" style="font-size:12px; color:#888;"></div><div id="h_role" style="font-size:10px; background:var(--accent); color:white; padding:2px 5px; border-radius:4px; display:inline-block; margin-top:5px;"></div></div><div style="padding: 10px 0; flex:1;">
         <div class="nav-item active" onclick="app.nav('home')" data-perm="all"><i class="fa-solid fa-home"></i> <span data-key="home">الرئيسية</span></div>
@@ -276,7 +299,7 @@
 
         const dict = {
             ar: {
-                title: "تسيير ERP", excel_import:"استيراد Excel", excel_export:"تصدير Excel", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
+                title: "تسيير ERP", seo_desc:"نظام ERP موريتاني لإدارة المبيعات ونقطة البيع والمخزون والفواتير والخزينة والتقارير المالية للشركات والمتاجر.", excel_import:"استيراد Excel", excel_export:"تصدير Excel", comp:"اسم الشركة", phone:"رقم الهاتف", code:"رمز التفعيل",
                 btn:"دخول", btn_trial: "تجربة (3 أيام)", wait:"جاري...", get:"للحصول على رمز التفعيل:", cont:"تواصل مع المطور",
                 home:"الرئيسية", pos:"نقطة البيع", inv:"أرشيف الفواتير", stock:"المخزون",
                 exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"خروج",
@@ -388,7 +411,7 @@
                 renewal_lookup_error: "رمز التفعيل غير موجود أو لا يحتوي على بيانات شركة صالحة.", renewal_autofilled: "تم ملء بيانات الشركة تلقائياً من رمز التفعيل."
             },
             fr: {
-                title: "تسيير ERP", excel_import:"Importer Excel", excel_export:"Exporter Excel", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
+                title: "TASSYIR ERP", seo_desc:"TASSYIR ERP est un logiciel de gestion pour commerces et entreprises en Mauritanie : ventes, point de vente, stock, facturation, trésorerie et rapports financiers.", excel_import:"Importer Excel", excel_export:"Exporter Excel", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
                 btn:"Entrer", btn_trial: "Essai Gratuit (3 jours)", wait:"Vérification...", get:"Pour le code:", cont:"Contacter Développeur",
                 home:"Accueil", pos:"Point de Vente", inv:"Factures", stock:"Stock",
                 exp:"Dépenses", sal:"Salaires", rep:"Rapports", logout:"Déconnexion",
@@ -404,7 +427,7 @@
                 prompt_name:"Nom", prompt_buy:"Prix Achat", prompt_sell:"Prix Vente", prompt_qty:"Quantité",
                 prompt_note:"Note", prompt_amount:"Montant", confirm_del:"Confirmer ?",
                 err_price_logic: "Erreur: Prix de vente < Prix d'achat", prompt_new_price: "Nouveau prix", pay_now: "Renouveler",
-                w_title: "Bienvenue", w_text: "تسيير ERP - Système complet.", w_btn: "Commencer", trial_used: "Désolé, essai gratuit déjà utilisé.",
+                w_title: "Bienvenue", w_text: "TASSYIR ERP - Système complet.", w_btn: "Commencer", trial_used: "Désolé, essai gratuit déjà utilisé.",
                 new_cust: "Nouveau Client", pay_method: "Mode Paiement", cash: "Espèces", bank: "Banque", mixed: "Mixte (Esp+Bq)",
                 select_bank: "Choisir Banque", paid: "Payé", remain: "Reste (Dette)",
                 balance: "Solde", pay_debt: "Payer Dette", stmt: "Relevé",
