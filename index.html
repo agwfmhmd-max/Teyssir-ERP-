@@ -272,7 +272,7 @@
         const auth = firebase.auth(); 
 
         window.addEventListener('online', updateStatus); window.addEventListener('offline', updateStatus);
-        function updateStatus() { const el = document.getElementById('connStatus'); if (!el) return; const ar = (window.app && app.state ? app.state.lang : localStorage.getItem('teyssir_lang') || 'ar') === 'ar'; if(navigator.onLine) { el.className='conn-status conn-online'; el.innerHTML='<i class="fa-solid fa-wifi"></i> ' + (ar ? 'متصل بالإنترنت' : 'En ligne'); } else { el.className='conn-status conn-offline'; el.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> ' + (ar ? 'بدون إنترنت' : 'Hors ligne'); } }
+        function updateStatus() { const el = document.getElementById('connStatus'); if (!el) return; const ar = (window.app && app.state ? app.state.lang : localStorage.getItem('teyssir_lang') || 'ar') === 'ar'; if(navigator.onLine) { el.setAttribute('aria-label', ar ? 'متصل بالإنترنت' : 'En ligne'); el.className='conn-status conn-online'; el.innerHTML='<i class="fa-solid fa-wifi"></i> ' + (ar ? 'متصل بالإنترنت' : 'En ligne'); } else { el.setAttribute('aria-label', ar ? 'بدون إنترنت' : 'Hors ligne'); el.className='conn-status conn-offline'; el.innerHTML='<i class="fa-solid fa-triangle-exclamation"></i> ' + (ar ? 'بدون إنترنت' : 'Hors ligne'); } }
 
         const dict = {
             ar: {
@@ -388,7 +388,7 @@
                 renewal_lookup_error: "رمز التفعيل غير موجود أو لا يحتوي على بيانات شركة صالحة.", renewal_autofilled: "تم ملء بيانات الشركة تلقائياً من رمز التفعيل."
             },
             fr: {
-                title: "Teyssir ERP", excel_import:"Importer Excel", excel_export:"Exporter Excel", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
+                title: "تسيير ERP", excel_import:"Importer Excel", excel_export:"Exporter Excel", comp:"Nom Société", phone:"Téléphone", code:"Code Activation",
                 btn:"Entrer", btn_trial: "Essai Gratuit (3 jours)", wait:"Vérification...", get:"Pour le code:", cont:"Contacter Développeur",
                 home:"Accueil", pos:"Point de Vente", inv:"Factures", stock:"Stock",
                 exp:"Dépenses", sal:"Salaires", rep:"Rapports", logout:"Déconnexion",
@@ -404,7 +404,7 @@
                 prompt_name:"Nom", prompt_buy:"Prix Achat", prompt_sell:"Prix Vente", prompt_qty:"Quantité",
                 prompt_note:"Note", prompt_amount:"Montant", confirm_del:"Confirmer ?",
                 err_price_logic: "Erreur: Prix de vente < Prix d'achat", prompt_new_price: "Nouveau prix", pay_now: "Renouveler",
-                w_title: "Bienvenue", w_text: "Teyssir ERP - Système complet.", w_btn: "Commencer", trial_used: "Désolé, essai gratuit déjà utilisé.",
+                w_title: "Bienvenue", w_text: "تسيير ERP - Système complet.", w_btn: "Commencer", trial_used: "Désolé, essai gratuit déjà utilisé.",
                 new_cust: "Nouveau Client", pay_method: "Mode Paiement", cash: "Espèces", bank: "Banque", mixed: "Mixte (Esp+Bq)",
                 select_bank: "Choisir Banque", paid: "Payé", remain: "Reste (Dette)",
                 balance: "Solde", pay_debt: "Payer Dette", stmt: "Relevé",
@@ -699,7 +699,7 @@
                         window.crypto.getRandomValues(challenge); 
                         const publicKey = { 
                             challenge: challenge, 
-                            rp: { name: this.state.lang === 'fr' ? "Teyssir ERP" : "تسيير ERP" },
+                            rp: { name: "تسيير ERP" },
                             user: { id: new TextEncoder().encode("admin-" + Date.now()), name: "admin@teyssir", displayName: "Super Admin" }, 
                             pubKeyCredParams: [{alg: -7, type: "public-key"}], 
                             authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" }, 
@@ -4388,7 +4388,7 @@
                             <span>${this.t('remain')}:</span> <span>${debt} MRU</span>
                         </div>
                         <br><div style="text-align:center; font-size:12px;">Method: ${pm} ${bankInfo}</div>
-                        <center><small>${this.state.lang === 'fr' ? "Teyssir ERP" : "تسيير ERP"}</small></center>
+                        <center><small>تسيير ERP</small></center>
                     </div>
                 `; 
                 window.print(); 

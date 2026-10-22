@@ -156,7 +156,7 @@
   function applyModalLanguage(){
     const fr=window.app&&app.state&&app.state.lang==="fr";
     const t=fr?{
-      aria:"Importer des données Excel",title:"Importer les données historiques",subtitle:"Teyssir ERP · aperçu et validation avant enregistrement",note:"Choisissez le type de données puis sélectionnez un classeur Excel XLSX ou XLS. Vérifiez l’aperçu et les erreurs avant l’importation. Les données historiques ne génèrent pas automatiquement de nouveaux encaissements ou paiements.",type:"Type de données",file:"Fichier Excel",template:"Télécharger le modèle Excel",validate:"Vérifier et prévisualiser",import:"Importer les lignes valides",reset:"Réinitialiser",mapping:"Correspondance des colonnes : les noms ont été reconnus automatiquement lorsque possible. Ajustez-les si nécessaire.",
+      aria:"Importer des données Excel",title:"Importer les données historiques",subtitle:"تسيير ERP · aperçu et validation avant enregistrement",note:"Choisissez le type de données puis sélectionnez un classeur Excel XLSX ou XLS. Vérifiez l’aperçu et les erreurs avant l’importation. Les données historiques ne génèrent pas automatiquement de nouveaux encaissements ou paiements.",type:"Type de données",file:"Fichier Excel",template:"Télécharger le modèle Excel",validate:"Vérifier et prévisualiser",import:"Importer les lignes valides",reset:"Réinitialiser",mapping:"Correspondance des colonnes : les noms ont été reconnus automatiquement lorsque possible. Ajustez-les si nécessaire.",
       labels:{products:"Produits et stock",customers:"Clients",suppliers:"Fournisseurs",banks:"Banques et comptes",employees:"Employés et salaires de base",expenses:"Dépenses historiques",revenues:"Revenus historiques",salaryPayments:"Paiements de salaires historiques"}
     }:{
       aria:"استيراد بيانات Excel",title:"استيراد البيانات السابقة",subtitle:"تسيير ERP · معاينة وتحقق قبل الحفظ",note:"اختر نوع البيانات ثم حدد ملف Excel بصيغة XLSX أو XLS. راجع المعاينة والأخطاء قبل الاستيراد. لا تُنشأ عمليات قبض أو دفع جديدة تلقائيًا عند استيراد السجلات التاريخية.",type:"نوع البيانات",file:"ملف Excel",template:"تنزيل قالب Excel",validate:"فحص ومعاينة",import:"استيراد السجلات الصحيحة",reset:"إعادة ضبط",mapping:"مطابقة الأعمدة: تمت محاولة التعرف على أسماء الأعمدة تلقائيًا. عدّل المطابقة إذا لزم الأمر.",
@@ -199,7 +199,7 @@
       const ws=X.utils.aoa_to_sheet([c.fields.map(f=>fieldLabel(f)), c.fields.map(f=>"")]);
       ws["!cols"]=c.fields.map(f=>({wch:Math.max(18,Math.min(34,fieldLabel(f).length+5))}));
       const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,"Template");
-      const brandName=window.app&&app.state&&app.state.lang==="fr"?"Teyssir":"تسيير";
+      const brandName="تسيير";
       X.writeFile(wb,`${brandName}-${cat}-template.xlsx`);
     }catch(e){alert(e.message||appText("needXlsx"));}
   }
@@ -234,7 +234,7 @@
       const isFr=app.state.lang==="fr";
       const rowsOut=[fields.map(f=>isFr?(f[2]||f[1]):f[1]),...docs.map(d=>{const row=exportRow(category,d);return fields.map(f=>row[f[0]]??"");})];
       const ws=X.utils.aoa_to_sheet(rowsOut);ws["!cols"]=fields.map(f=>({wch:Math.max(16,Math.min(32,(isFr?f[2]:f[1]).length+4))}));
-      const brandName=isFr?"Teyssir":"تسيير";
+      const brandName="تسيير";
       const wb=X.utils.book_new();X.utils.book_append_sheet(wb,ws,brandName);
       X.writeFile(wb,`${brandName}-${category}-${new Date().toISOString().slice(0,10)}.xlsx`);
     }catch(e){alert(appText("exportFail")+(e.message||e));}
