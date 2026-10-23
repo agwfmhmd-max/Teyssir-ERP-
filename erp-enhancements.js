@@ -212,7 +212,7 @@
 
 
 /* =========================================================
-   تسيير ERP — Finance labels v12
+   تيسير ERP — Finance labels v12
    - Canonical SNDE/SOMELEC labels (including legacy records)
    ========================================================= */
 (function installFinanceAndNotifications() {
