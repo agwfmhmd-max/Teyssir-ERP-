@@ -1,0 +1,212 @@
+/* =========================================================
+   تيسير ERP — هوية الإعلان (Ad Brand Theme)
+   تُحمَّل بعد modern.css وتتجاوز الألوان والخلفيات فقط.
+   لا تغيّر أي وظيفة أو بنية؛ كل القواعد بصرية بحتة.
+   الألوان مأخوذة من فيديو الإعلان:
+     أزرق عميق  #053a54 / #0a5473   (خلفية الاستوديو)
+     أزرق مخضر  #1b688a / #2797b9
+     شعاع ضوء   #6ab8d4
+     سماوي CTA  #0bb6d6              (شريط «حمل تطبيق تيسير»)
+     أخضر إبراز #59b04a              (كلمة «مؤسسة»)
+     ذهبي الشعار #f5b82e
+   ========================================================= */
+
+/* ---------- Light tokens ---------- */
+:root {
+  --ad-deep:   #053a54;
+  --ad-teal:   #0a5473;
+  --ad-blue:   #1b688a;
+  --ad-sky:    #2797b9;
+  --ad-beam:   #6ab8d4;
+  --ad-cyan:   #0bb6d6;
+  --ad-green:  #59b04a;
+  --ad-gold:   #f5b82e;
+
+  --primary:     #0a5f85;
+  --primary-600: #074a69;
+  --primary-50:  #e6f4f9;
+  --accent:      #f5b82e;
+  --accent-2:    #0bb6d6;
+  --bg:          #eef6fa;
+  --surface-2:   #f4fafc;
+  --border:      #d9e8ef;
+  --border-strong:#b9d3de;
+  --success:     #2f9e58;
+  --lang-green:  #2f9e58;
+  --grad-primary: linear-gradient(135deg, #0a5473 0%, #1b88ad 58%, #0bb6d6 100%);
+  --grad-soft:    linear-gradient(160deg, #e3f3f9 0%, #ffffff 100%);
+  --shadow-lg:    0 24px 60px -20px rgba(5, 58, 84, .38);
+  --brand-ink:  #0a5473;
+  --brand-teal: #0bb6d6;
+  --brand-gold: #f5b82e;
+  --ad-studio:
+    linear-gradient(115deg, transparent 0 14%, rgba(255,255,255,.075) 14% 27%, transparent 27% 40%, rgba(255,255,255,.06) 40% 52%, transparent 52% 66%, rgba(255,255,255,.05) 66% 76%, transparent 76%),
+    radial-gradient(120% 85% at 50% 0%, #2797b9 0%, #1b688a 38%, #0a5473 68%, #053a54 100%);
+}
+
+/* ---------- Dark tokens ---------- */
+html[data-theme="dark"], body.dark-mode {
+  --bg:        #06202e;
+  --surface:   #0b3045;
+  --surface-2: #0f3a52;
+  --white:     #0b3045;
+  --border:        #1a4d68;
+  --border-strong: #26668a;
+  --primary:     #4fc9e8;
+  --primary-600: #2eb3d6;
+  --primary-50:  #0f3a52;
+  --accent:      #f5c64d;
+  --grad-soft:   linear-gradient(160deg, #0b3045 0%, #06202e 100%);
+  --grad-primary:linear-gradient(135deg, #053a54 0%, #0a6f93 60%, #0bb6d6 100%);
+}
+
+/* ---------- Page canvas: soft studio light ---------- */
+body::before {
+  background:
+    radial-gradient(40rem 40rem at 10% 0%,   rgba(39,151,185,.14), transparent 60%),
+    radial-gradient(35rem 35rem at 100% 10%, rgba(11,182,214,.12), transparent 60%) !important;
+}
+
+/* ---------- Loader (matches ad backdrop) ---------- */
+#mainLoader { background: var(--ad-studio) !important; }
+#mainLoader .spinner, .spinner { border-top-color: var(--ad-cyan) !important; }
+#mainLoader, #mainLoader * { color: #fff; }
+
+/* =========================================================
+   Auth screen — studio backdrop + glass card
+   ========================================================= */
+.auth-wrap { background: var(--ad-studio) !important; }
+.auth-card {
+  background: color-mix(in oklab, var(--surface) 96%, transparent) !important;
+  border: 1px solid rgba(255,255,255,.35) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 30px 70px -18px rgba(2, 24, 38, .65) !important;
+}
+.auth-card::before {
+  height: 6px !important;
+  background: linear-gradient(90deg, var(--ad-cyan), var(--ad-green), var(--ad-gold)) !important;
+}
+.auth-card > img[src*="logo"],
+.welcome-content > img[src*="logo"] {
+  background: linear-gradient(145deg, #ffffff, #e3f3f9) !important;
+  border: 1px solid rgba(10,84,115,.14) !important;
+  box-shadow: 0 14px 30px rgba(5,58,84,.22) !important;
+}
+.auth-card h1 { color: var(--ad-teal) !important; }
+html[data-theme="dark"] .auth-card h1, body.dark-mode .auth-card h1 { color: #fff !important; }
+
+/* شعار فرعي مثل الإعلان: «رفيقك في التسيير» */
+.ad-tagline {
+  display: inline-block;
+  margin: -2px auto 12px;
+  padding: 4px 16px;
+  font-weight: 800; font-size: .92rem; letter-spacing: .2px;
+  color: var(--ad-green);
+  border-top: 2px solid var(--ad-cyan);
+  border-bottom: 2px solid var(--ad-gold);
+}
+
+/* زر التثبيت بشكل شريط CTA الإعلان «حمل تطبيق تيسير» */
+#installBtn {
+  background: var(--ad-cyan) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 6px 16px -6px rgba(11,182,214,.7) !important;
+}
+
+/* زرّا الدخول/التجربة بألوان الإعلان */
+.btn-prim { background: var(--grad-primary) !important; }
+.btn-sec  { background: linear-gradient(135deg, #f8cb52, #f5b82e) !important; color: #053a54 !important; }
+.btn-success { background: linear-gradient(135deg, #59b04a, #2f9e58) !important; }
+.auth-card form .btn[onclick*="directPayModal"] {
+  background: linear-gradient(135deg, #59b04a, #2f9e58) !important;
+  color: #fff !important;
+}
+
+/* رابط واتساب */
+.wa-link { box-shadow: 0 8px 20px -8px rgba(47,158,88,.6); }
+
+/* شارة الاتصال (أسفل الإعلان: دائرة هاتف زرقاء + الرقم) */
+.ad-call {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-top: 18px; padding: 6px 16px 6px 8px;
+  direction: ltr; text-decoration: none;
+  background: rgba(5, 58, 84, .06);
+  border-radius: 999px;
+  color: var(--text-dark) !important;
+  font-weight: 800; font-size: 1.15rem; letter-spacing: .5px;
+}
+.ad-call-ic {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #1e8fff; color: #fff; font-size: 16px;
+  box-shadow: 0 6px 14px -4px rgba(30,143,255,.8);
+}
+.ad-call b { color: var(--ad-cyan); text-shadow: 0 1px 0 rgba(5,58,84,.12); }
+.ad-call-wrap { text-align: center; }
+
+/* =========================================================
+   App chrome — header + sidebar in the ad gradient
+   ========================================================= */
+.top-header {
+  background: linear-gradient(100deg, var(--ad-deep) 0%, var(--ad-teal) 55%, var(--ad-sky) 100%) !important;
+  border-bottom: 0 !important;
+  box-shadow: 0 8px 24px -12px rgba(5,58,84,.55) !important;
+}
+.top-header .menu-btn, .top-header .menu-btn i { color: #fff !important; }
+.header-title {
+  background: none !important;
+  -webkit-text-fill-color: #fff !important;
+  color: #fff !important;
+  text-shadow: 0 1px 8px rgba(2,24,38,.35);
+}
+
+.sidebar > div:first-child {
+  background: linear-gradient(180deg, var(--ad-teal), var(--ad-blue)) !important;
+}
+.sidebar > div:first-child * { color: #fff; }
+.sidebar > div:first-child img[src*="logo"] {
+  background: #fff !important; border-color: rgba(255,255,255,.5) !important;
+}
+.nav-item:hover { background: var(--primary-50) !important; color: var(--ad-teal) !important; }
+html[data-theme="dark"] .nav-item:hover, body.dark-mode .nav-item:hover { color: var(--ad-cyan) !important; }
+.nav-item.active {
+  background: linear-gradient(100deg, var(--ad-teal), var(--ad-cyan)) !important;
+  box-shadow: 0 10px 22px -10px rgba(11,182,214,.8) !important;
+}
+
+/* شارة هاتف الإعلان داخل القائمة الجانبية */
+.ad-call-side {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin: 6px 14px 0; padding: 8px 10px;
+  direction: ltr; text-decoration: none;
+  border-radius: 12px; background: var(--primary-50);
+  color: var(--text-dark) !important; font-weight: 800; font-size: .98rem;
+}
+.ad-call-side .ad-call-ic { width: 26px; height: 26px; font-size: 12px; }
+.ad-call-side b { color: var(--ad-teal); }
+html[data-theme="dark"] .ad-call-side b, body.dark-mode .ad-call-side b { color: var(--ad-cyan); }
+
+/* =========================================================
+   Cards / stats / home — ad palette
+   ========================================================= */
+.treasury-card, .home-card.full-width, .promo-btn, .erp-reminder button {
+  background: var(--grad-primary) !important;
+}
+.stat-val { color: var(--ad-teal) !important; }
+html[data-theme="dark"] .stat-val, body.dark-mode .stat-val { color: var(--ad-cyan) !important; }
+.home-card i { color: var(--ad-sky) !important; }
+.home-card:hover { border-color: var(--ad-cyan) !important; }
+.home-card.full-width i { color: #fff !important; }
+
+.conn-online  { background: linear-gradient(135deg, #59b04a, #2f9e58) !important; }
+.conn-syncing, .conn-synced { background: linear-gradient(135deg, var(--ad-teal), var(--ad-cyan)) !important; }
+
+th { background: color-mix(in oklab, var(--ad-teal) 8%, var(--surface)) !important; }
+.theme-toggle { color: var(--ad-teal) !important; }
+
+/* لوحة الدفع في نقطة البيع */
+.pm-btn.active { box-shadow: 0 0 0 2px var(--ad-cyan) inset; }
+
+/* شاشة قفل الاشتراك تحتفظ بتحذيرها الأحمر عمداً */

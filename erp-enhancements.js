@@ -79,7 +79,10 @@
       const key = `${SNAPSHOT_PREFIX}${this.state.cid}_${collection}`;
       try {
         const data = await originalGetData(collection, orderBy);
-        if (data.length || navigator.onLine) localStorage.setItem(key, JSON.stringify(data));
+        if (data.length || navigator.onLine) {
+          // امتلاء التخزين المحلي لا يجب أن يُسقط البيانات الحيّة ويُرجع نسخة قديمة/فارغة.
+          try { localStorage.setItem(key, JSON.stringify(data)); } catch (storageError) { console.warn("Snapshot not stored", collection, storageError); }
+        }
         if (data.length) return data;
       } catch (error) {
         console.warn("Data cache fallback", collection, error);

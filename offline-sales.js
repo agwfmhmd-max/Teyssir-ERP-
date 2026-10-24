@@ -61,8 +61,9 @@
   }
 
   function localSequenceValue(deviceId, counter) {
-    const deviceDigits = BigInt(`0x${String(deviceId).replace(/[^0-9a-f]/gi, '').slice(0, 32) || '1'}`).toString();
-    return `${deviceDigits}${String(counter).padStart(8, '0')}`;
+    // رقم احتياطي قصير وقابل للطباعة: D + 6 خانات من معرّف الجهاز + عدّاد محلي دائم (بدل رقم من 50+ خانة).
+    const tag = String(deviceId).replace(/[^0-9a-f]/gi, '').slice(0, 6).toUpperCase().padEnd(6, '0');
+    return `D${tag}-${String(counter).padStart(5, '0')}`;
   }
 
   function consumeLocalSequence(metadata, leaseKey, onSequence) {
@@ -187,7 +188,9 @@
         return { leaseKey, companyCode, userNo, year, available, localFallback: available === 0 };
       }
       const reserve = this.__offlineLeasePromises || (this.__offlineLeasePromises = {});
-      if (reserve[leaseKey]) return reserve[leaseKey];
+      // عند ضعف الشبكة لا ننتظر حجز المدى السحابي أكثر من 5 ثوانٍ: نتابع بالأرقام المحلية المتاحة.
+      const settle = pending => Promise.race([pending, new Promise(resolve => setTimeout(() => resolve({ leaseKey, companyCode, userNo, year, available, localFallback: available === 0 }), 5000))]);
+      if (reserve[leaseKey]) return settle(reserve[leaseKey]);
       reserve[leaseKey] = (async () => {
         try {
           const deviceId = this.getOfflineDeviceId();
@@ -236,7 +239,7 @@
           return { leaseKey, companyCode, userNo, year, available: 0, localFallback: true };
         } finally { delete reserve[leaseKey]; }
       })();
-      return reserve[leaseKey];
+      return settle(reserve[leaseKey]);
     };
     app.getNextInvoiceNumber = async function() {
       const companyCode = await this.ensureInvoiceCompanyPrefix();
@@ -356,15 +359,16 @@
       const ids = [...new Set((sale.items || []).map(item => item.id))];
       const productRefs = ids.map(id => db.collection('products').doc(id));
       let treasuryAfter = null;
+      // فحص تكرار رقم الفاتورة خارج المعاملة: Transaction.get() لا يقبل الاستعلامات في Firestore Web SDK،
+      // وكان ذلك يُفشل مزامنة كل الفواتير المحلية بحالة «تعارض».
+      await this.assertInvoiceNumberFree(sale.companyId, sale.invNum, sale.localId);
       await db.runTransaction(async transaction => {
         const existingInvoice = await transaction.get(invoiceRef);
-        const sameNumber = await transaction.get(db.collection('invoices').where('companyId', '==', sale.companyId).where('invNum', '==', sale.invNum));
         if (existingInvoice.exists) {
           const existing = existingInvoice.data() || {};
           if (existing.localSaleId === sale.localId) { treasuryAfter = null; return; }
           throw new Error(this.t('offline_invoice_duplicate'));
         }
-        if (!sameNumber.empty && sameNumber.docs.some(doc => doc.id !== sale.localId)) throw new Error(this.t('offline_invoice_duplicate'));
         const treasurySnap = Number(sale.cashAmount || 0) > 0 ? await transaction.get(treasuryRef) : null;
         const customerSnap = customerRef ? await transaction.get(customerRef) : null;
         const bankSnap = bankRef ? await transaction.get(bankRef) : null;
@@ -446,7 +450,8 @@
         for (const sale of pending) {
           if (!navigator.onLine) break;
           try {
-            const result = await this.commitOfflineInvoice(sale);
+            // مهلة أمان: لا نترك المزامنة معلّقة إلى الأبد إن كانت الشبكة ميتة فعلياً.
+            const result = await this.withTimeout(this.commitOfflineInvoice(sale), 45000);
             await this.updateOfflineInvoice(sale.localId, { status: 'synced', pendingOffline: false, syncedAt: new Date().toISOString(), error: null });
             if (result.treasuryAfter != null) {
               this.state.cashBalance = Number(result.treasuryAfter);

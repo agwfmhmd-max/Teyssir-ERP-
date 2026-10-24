@@ -14,7 +14,7 @@
      With relative URLs the precache works on any hosting path (root,
      subfolder, GitHub Pages, etc.) and the app loads fully offline.
 */
-const VERSION       = 'teyssir-v26-offline-number-fallback';
+const VERSION       = 'teyssir-v27-invoice-fix-ad-theme';
 const SHELL_CACHE   = `shell-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 
@@ -29,6 +29,7 @@ const SHELL_FILES = [
   'fr/index.html',
   'style.css',
   'modern.css',
+  'brand-ad.css',
   'erp-enhancements.js',
   'offline-sales.js',
   'excel-import.js',

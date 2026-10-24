@@ -28,7 +28,7 @@
       {"@context":"https://schema.org","@type":"SoftwareApplication","name":"تيسير ERP","alternateName":"Teyssir ERP","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":["ar","fr"],"description":"تيسير ERP (Teyssir ERP) منصة موريتانية لإدارة المبيعات ونقطة البيع والمخزون والفواتير والخزينة والتقارير المالية للشركات والمتاجر بواجهة عربية وفرنسية.","url":"https://tassyir-erp.vercel.app/","image":"https://tassyir-erp.vercel.app/logo.png"}
     </script>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a4585">
+    <meta name="theme-color" content="#0a5473">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="logo.png">
@@ -221,6 +221,7 @@
     </style>
     <!-- Modern SaaS theme overlay + Dark Mode (loaded last to override) -->
     <link rel="stylesheet" href="modern.css">
+    <link rel="stylesheet" href="brand-ad.css">
     <script>
       // Theme bootstrap (runs before paint to avoid flash)
       (function(){
@@ -301,7 +302,7 @@
         <button onclick="app.logout()" class="btn btn-dan" style="margin-top:20px; width:auto;"><i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">خروج</span></button>
     </div>
     
-    <div id="authScreen" class="auth-wrap"><div class="auth-card"><img src="logo.png" alt="شعار تيسير ERP وTeyssir ERP" style="width:100px; margin-bottom:20px; border-radius:15px;"><h1 style="color:var(--primary); margin-top:0; margin-bottom: 12px; font-weight: 800;" data-key="title">تيسير ERP</h1><p class="auth-seo-description" data-key="seo_desc">نظام ERP موريتاني لإدارة المبيعات ونقطة البيع والمخزون والفواتير والخزينة والتقارير المالية للشركات والمتاجر.</p><div id="installBtn" onclick="app.installPWA()"><i class="fa-solid fa-download"></i> <span data-key="t_install">تثبيت التطبيق</span></div><form onsubmit="app.login(event)"><input id="logName" class="inp" data-ph="comp" placeholder="اسم الشركة" required><input id="logPhone" type="tel" class="inp" data-ph="phone" placeholder="رقم الهاتف" required maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);"><input id="logCode" type="password" class="inp" data-ph="code" placeholder="رمز التفعيل / كود الموظف" required><div style="display:flex; gap:10px; margin-bottom:15px;"><button type="submit" id="logBtn" class="btn btn-prim" style="flex:1" data-key="btn">دخول</button><button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (3 أيام)</button></div><button type="button" onclick="app.directPayModal()" class="btn btn-sec" style="width:100%; background: #28a745; color: white; border: none; margin-bottom: 15px;"><i class="fa-solid fa-credit-card"></i> <span data-key="dp_direct_btn_full">الدفع المباشر (تجديد/اشتراك)</span></button></form><div style="margin-top:15px; border-top:1px solid var(--border); padding-top:20px;"><p style="margin:0 0 10px; color:var(--text-light); font-size:0.9em;" data-key="get">للحصول على الرمز:</p><a href="https://wa.me/22224241012" class="wa-link"><i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span></a></div></div></div>
+    <div id="authScreen" class="auth-wrap"><div class="auth-card"><img src="logo.png" alt="شعار تيسير ERP وTeyssir ERP" style="width:100px; margin-bottom:20px; border-radius:15px;"><h1 style="color:var(--primary); margin-top:0; margin-bottom: 12px; font-weight: 800;" data-key="title">تيسير ERP</h1><div class="ad-tagline" data-key="tagline">رفيقك في التسيير</div><p class="auth-seo-description" data-key="seo_desc">نظام ERP موريتاني لإدارة المبيعات ونقطة البيع والمخزون والفواتير والخزينة والتقارير المالية للشركات والمتاجر.</p><div id="installBtn" onclick="app.installPWA()"><i class="fa-solid fa-download"></i> <span data-key="t_install">تثبيت التطبيق</span></div><form onsubmit="app.login(event)"><input id="logName" class="inp" data-ph="comp" placeholder="اسم الشركة" required><input id="logPhone" type="tel" class="inp" data-ph="phone" placeholder="رقم الهاتف" required maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 8);"><input id="logCode" type="password" class="inp" data-ph="code" placeholder="رمز التفعيل / كود الموظف" required><div style="display:flex; gap:10px; margin-bottom:15px;"><button type="submit" id="logBtn" class="btn btn-prim" style="flex:1" data-key="btn">دخول</button><button type="button" onclick="app.startTrial()" class="btn btn-sec" style="flex:1" data-key="btn_trial">تجربة (3 أيام)</button></div><button type="button" onclick="app.directPayModal()" class="btn btn-sec" style="width:100%; background: #28a745; color: white; border: none; margin-bottom: 15px;"><i class="fa-solid fa-credit-card"></i> <span data-key="dp_direct_btn_full">الدفع المباشر (تجديد/اشتراك)</span></button></form><div style="margin-top:15px; border-top:1px solid var(--border); padding-top:20px;"><p style="margin:0 0 10px; color:var(--text-light); font-size:0.9em;" data-key="get">للحصول على الرمز:</p><a href="https://wa.me/22224241012" class="wa-link"><i class="fa-brands fa-whatsapp" style="font-size:1.2em"></i> <span data-key="cont">تواصل مع المطور</span></a><div class="ad-call-wrap"><a class="ad-call" href="tel:+22224241012" dir="ltr"><span class="ad-call-ic"><i class="fa-solid fa-phone"></i></span><b>24241012</b></a></div></div></div></div>
     
     <div id="appScreen" class="app-container"><div class="sidebar-overlay" onclick="app.toggleMenu()"></div><header class="top-header"><div class="menu-btn" onclick="app.toggleMenu()"><i class="fa-solid fa-bars"></i></div><div class="header-title" data-key="title">تيسير ERP</div></header><aside class="sidebar" id="sidebar"><div style="padding: 25px; text-align:center; background: #fcfcfc; border-bottom: 1px solid var(--border);"><img src="logo.png" style="width:70px; border-radius:10px;"><div id="h_name" style="font-weight:bold; color:var(--primary); margin-top:10px;"></div><div id="h_phone" style="font-size:12px; color:#888;"></div><div id="h_role" style="font-size:10px; background:var(--accent); color:white; padding:2px 5px; border-radius:4px; display:inline-block; margin-top:5px;"></div></div><div style="padding: 10px 0; flex:1;">
         <div class="nav-item active" onclick="app.nav('home')" data-perm="all"><i class="fa-solid fa-home"></i> <span data-key="home">الرئيسية</span></div>
@@ -318,7 +319,7 @@
         <div class="nav-item" onclick="app.nav('reports')" data-perm="reports"><i class="fa-solid fa-chart-pie"></i> <span data-key="rep">التقارير</span></div>
         <div class="nav-item" onclick="app.nav('users')" data-perm="users" style="display:none;" id="navUsers"><i class="fa-solid fa-user-shield"></i> <span data-key="users">المستخدمين</span></div>
         <div class="nav-item" onclick="app.companyInfoModal()" data-perm="all"><i class="fa-solid fa-building"></i> <span data-key="comp_info">معلومات الشركة</span></div>
-        <div id="adminLink" class="nav-item" onclick="app.nav('admin')" style="color:var(--danger); border-top:1px solid var(--border); margin-top:10px;"><i class="fa-solid fa-lock"></i> Admin</div></div><div style="padding: 10px 0; border-top: 1px solid var(--border);"><div class="nav-item" onclick="app.logout()" style="color:var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">خروج</span></div></div></aside><main id="workspace" class="main-content"></main><button id="homeBtn" class="home-float-btn" onclick="app.nav('home')"><i class="fa-solid fa-house"></i></button></div>
+        <div id="adminLink" class="nav-item" onclick="app.nav('admin')" style="color:var(--danger); border-top:1px solid var(--border); margin-top:10px;"><i class="fa-solid fa-lock"></i> Admin</div></div><div style="padding: 10px 0; border-top: 1px solid var(--border);"><a class="ad-call-side" href="tel:+22224241012" dir="ltr"><span class="ad-call-ic"><i class="fa-solid fa-phone"></i></span><b>24241012</b></a><div class="nav-item" onclick="app.logout()" style="color:var(--danger);"><i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">خروج</span></div></div></aside><main id="workspace" class="main-content"></main><button id="homeBtn" class="home-float-btn" onclick="app.nav('home')"><i class="fa-solid fa-house"></i></button></div>
     <div id="printArea" class="print-box"></div>
 
     <script>
@@ -388,7 +389,7 @@
                 exp:"المصروفات", sal:"الرواتب", rep:"التقارير المالية", logout:"خروج",
                 cust:"الزبناء", banks:"البنوك", supp:"الموردين", rev:"الإيرادات", treasury:"الخزينة (الكاش)",
                 p_sel:"بحث عن منتج...", p_pr:"السعر", p_qt:"العدد", p_add:"إضافة",
-                p_cl:"الزبون", p_save:"حفظ وطباعة", p_tot:"الإجمالي", t_install: "تثبيت التطبيق",
+                p_cl:"الزبون", p_save:"حفظ وطباعة", p_tot:"الإجمالي", t_install: "تثبيت التطبيق", tagline: "رفيقك في التسيير",
                 tbl_prod:"المنتج", tbl_qty:"الكمية", tbl_tot:"المجموع", tbl_act:"حذف",
                 th_date:"التاريخ", th_client:"العميل", th_amount:"المبلغ", th_print:"طباعة",
                 th_name:"الاسم", th_buy:"شراء", th_sell:"بيع", th_stock:"المخزون", th_del:"حذف", th_edit:"تعديل",
@@ -508,7 +509,7 @@
                 exp:"Dépenses", sal:"Salaires", rep:"Rapports", logout:"Déconnexion",
                 cust:"Clients", banks:"Banques", supp:"Fournisseurs", rev:"Revenus", treasury:"Trésorerie (Caisse)",
                 p_sel:"Chercher produit...", p_pr:"Prix", p_qt:"Qté", p_add:"Ajouter",
-                p_cl:"Client", p_save:"Enregistrer", p_tot:"Total", t_install: "Installer l'app",
+                p_cl:"Client", p_save:"Enregistrer", p_tot:"Total", t_install: "Installer l'app", tagline: "Votre partenaire de gestion",
                 tbl_prod:"Produit", tbl_qty:"Qté", tbl_tot:"Total", tbl_act:"Suppr",
                 th_date:"Date", th_client:"Client", th_amount:"Montant", th_print:"Imprimer",
                 th_name:"Nom", th_buy:"Achat", th_sell:"Vente", th_stock:"Stock", th_del:"Suppr", th_edit:"Modif",
@@ -1289,9 +1290,22 @@
                     return prefix;
                 }
                 const ref = db.collection('companies').doc(cid);
+                const quickPrefix = String(localStorage.getItem(cacheKey) || this.state.invoicePrefix || '').toUpperCase();
+                if (/^[A-Z]{3}$/.test(quickPrefix)) {
+                    // بادئة الشركة ثابتة: نستعمل المحفوظة فوراً دون انتظار الشبكة، ونحدّثها بالخلفية مرة لكل جلسة.
+                    this.state.invoicePrefix = quickPrefix;
+                    if (!this.__prefixRefreshed) {
+                        this.__prefixRefreshed = true;
+                        ref.get().then(snap => {
+                            const fresh = String((snap.exists && snap.data().invoicePrefix) || '').toUpperCase();
+                            if (/^[A-Z]{3}$/.test(fresh) && fresh !== quickPrefix) { localStorage.setItem(cacheKey, fresh); this.state.invoicePrefix = fresh; }
+                        }).catch(() => {});
+                    }
+                    return quickPrefix;
+                }
                 let prefix;
                 try {
-                    prefix = await db.runTransaction(async transaction => {
+                    prefix = await this.withTimeout(db.runTransaction(async transaction => {
                         const snap = await transaction.get(ref);
                         if (!snap.exists) throw new Error('Company data not found');
                         const data = snap.data() || {};
@@ -1300,11 +1314,19 @@
                         const generated = this.companyNameToInvoicePrefix(data.name || this.state.name);
                         transaction.set(ref, { invoicePrefix: generated }, { merge: true });
                         return generated;
-                    });
+                    }), 5000);
                 } catch (error) {
                     const cachedPrefix = String(localStorage.getItem(cacheKey) || this.state.invoicePrefix || '').toUpperCase();
-                    if (!/^[A-Z]{3}$/.test(cachedPrefix)) throw error;
-                    prefix = cachedPrefix;
+                    if (/^[A-Z]{3}$/.test(cachedPrefix)) {
+                        prefix = cachedPrefix;
+                    } else if (this.isNetworkError(error)) {
+                        // الشبكة ضعيفة ولا توجد بادئة محفوظة: نستعمل البادئة المشتقة من اسم الشركة دون تثبيتها محلياً.
+                        const derived = this.companyNameToInvoicePrefix(this.state.name);
+                        this.state.invoicePrefix = derived;
+                        return derived;
+                    } else {
+                        throw error;
+                    }
                 }
                 this.state.invoicePrefix = prefix;
                 localStorage.setItem(cacheKey, prefix);
@@ -1350,8 +1372,20 @@
                 }
                 let assigned = Number(this.state.invoiceUserNo);
                 if (!Number.isInteger(assigned) || assigned < 2) {
-                    if (!navigator.onLine) throw new Error(this.t('invoice_user_online_required'));
-                    assigned = await this.ensureEmployeeInvoiceUserNo(this.state.cid, this.state.currentUser && this.state.currentUser.id);
+                    // رمز مؤقت ثابت للجهاز (حرف L + 4 خانات) يسمح بإنشاء الفاتورة دون إنترنت
+                    // لموظف لم يُخصَّص له رقم نهائي بعد؛ لا يتعارض مع الأرقام الرقمية الرسمية.
+                    const provisionalTag = () => {
+                        const rawDevice = typeof this.getOfflineDeviceId === 'function' ? this.getOfflineDeviceId() : (localStorage.getItem('teyssir_offline_device_id') || '');
+                        const dev = String(rawDevice).replace(/[^0-9a-f]/gi, '').slice(0, 4).toUpperCase().padEnd(4, '0');
+                        return `L${dev}`;
+                    };
+                    if (!navigator.onLine) return provisionalTag();
+                    try {
+                        assigned = await this.withTimeout(this.ensureEmployeeInvoiceUserNo(this.state.cid, this.state.currentUser && this.state.currentUser.id), 5000);
+                    } catch (error) {
+                        if (this.isNetworkError(error)) return provisionalTag();
+                        throw error;
+                    }
                     this.state.invoiceUserNo = assigned;
                     const session = JSON.parse(localStorage.getItem('mda_session') || '{}');
                     if (session.cid === this.state.cid && session.currentUser && session.currentUser.id === this.state.currentUser.id) {
@@ -2654,6 +2688,30 @@
                     document.getElementById('posCustId').value = ref.id; 
                 } 
             },
+            // ===== أدوات مساعدة لمسار الفواتير (إصلاح: Transaction.get لا يقبل الاستعلامات) =====
+            isNetworkError: function(e) {
+                const code = e && e.code;
+                return !navigator.onLine
+                    || ['unavailable','deadline-exceeded','network-request-failed','cancelled'].includes(code)
+                    || /client is offline|network|timed? ?out/i.test(String((e && e.message) || ''));
+            },
+            withTimeout: function(promise, ms) {
+                let timer;
+                const timeout = new Promise((_, reject) => {
+                    timer = setTimeout(() => {
+                        const err = new Error('Request timed out');
+                        err.code = 'deadline-exceeded';
+                        reject(err);
+                    }, ms);
+                });
+                return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+            },
+            // التحقق من عدم تكرار رقم الفاتورة. يتم خارج المعاملة لأن Firestore Transaction.get()
+            // لا يدعم إلا DocumentReference ولا يقبل الاستعلامات (كان سبب تعطل إنشاء الفواتير).
+            assertInvoiceNumberFree: async function(companyId, invNum, ownId) {
+                const snap = await db.collection('invoices').where('companyId', '==', companyId).where('invNum', '==', invNum).get();
+                if (!snap.empty && snap.docs.some(doc => doc.id !== ownId)) throw new Error(this.t('offline_invoice_duplicate'));
+            },
             getNextInvoiceNumber: async function() {
                 const now = new Date();
                 const yearShort = now.getFullYear().toString().slice(-2);
@@ -2662,7 +2720,8 @@
                 const storageKey = `teyssir_last_inv_${this.state.cid}_${yearShort}_${invoiceUserNo}`;
                 const nextSeq = (Number(localStorage.getItem(storageKey)) || 0) + 1;
                 localStorage.setItem(storageKey, String(nextSeq));
-                return { full: `INV-${yearShort}-${companyCode}${invoiceUserNo}-${String(nextSeq).padStart(5, '0')}`, seq: nextSeq, year: yearShort, companyCode, invoiceUserNo, storageKey };
+                const localId = (window.crypto && typeof window.crypto.randomUUID === 'function') ? window.crypto.randomUUID() : `${Date.now().toString(16)}${Math.random().toString(16).slice(2, 14)}`;
+                return { full: `INV-${yearShort}-${companyCode}${invoiceUserNo}-${String(nextSeq).padStart(5, '0')}`, seq: nextSeq, year: yearShort, companyCode, invoiceUserNo, storageKey, localId };
             },
             finalizeInvoice: async function() {
                 if (!navigator.onLine) return this.finalizeOfflineInvoice();
@@ -2691,6 +2750,8 @@
                 if(![total, cash, bank].every(Number.isFinite) || total <= 0 || cash < 0 || bank < 0 || cash + bank > total) return alert("Total paid cannot exceed invoice amount");
                 const totalPaid = cash + bank;
                 const debt = total - totalPaid;
+                // نسخة ثابتة من السلة: قد يكتمل رد الشبكة بعد أن يُفرَّغ العرض، ويجب أن تبقى الأصناف كما بيعت فعلاً.
+                const cartItems = this.cart.map(item => ({...item}));
                 this.showLoader();
                 let offlineFallbackDraft = null;
                 try {
@@ -2707,26 +2768,28 @@
                     const treasuryRef = db.collection('treasury').doc(this.state.cid);
                     const customerRef = (!isWalkIn && debt > 0) ? db.collection('customers').doc(custId) : null;
                     const bankRef = (bank > 0 && bankId) ? db.collection('banks').doc(bankId) : null;
-                    const uniqueProductIds = [...new Set(this.cart.map(item => item.id))];
+                    const uniqueProductIds = [...new Set(cartItems.map(item => item.id))];
                     const productRefs = uniqueProductIds.map(id => db.collection('products').doc(id));
                     const productData = new Map();
                     let committedInvoice = null;
                     let committedTreasuryBalance = null;
                     const committedAt = new Date().toISOString();
-                    const fallbackCost = this.cart.reduce((sum, item) => sum + Number(item.bp || 0) * Number(item.q || 0), 0);
+                    const fallbackCost = cartItems.reduce((sum, item) => sum + Number(item.bp || 0) * Number(item.q || 0), 0);
                     offlineFallbackDraft = {
                         localId: saleId, companyId: this.state.cid, customer: custName, customerId: custId,
-                        items: this.cart.map(item => ({...item})), total, paid: totalPaid, debt,
+                        items: cartItems.map(item => ({...item})), total, paid: totalPaid, debt,
                         cashAmount: cash, bankAmount: bank, bankId, bankName, payMethod,
                         invoicePrefix: companyCode, invoiceUserNo, invoiceNumberScheme: 'company-user-v1',
                         invNum: invoiceNumber, seq: nextSeq, year: yearShort, totalCost: fallbackCost,
                         profit: total - fallbackCost, createdAt: committedAt, status: 'pending'
                     };
 
-                    await db.runTransaction(async (transaction) => {
+                    // فحص تكرار الرقم قبل المعاملة (الاستعلامات غير مدعومة داخل Transaction.get).
+                    await this.withTimeout(this.assertInvoiceNumberFree(this.state.cid, invoiceNumber, saleId), 8000);
+
+                    await this.withTimeout(db.runTransaction(async (transaction) => {
                         // Complete all reads before writing; Firestore retries if any read document changes.
                         const existingInvoiceSnap = await transaction.get(invoiceRef);
-                        const sameNumberSnap = await transaction.get(db.collection('invoices').where('companyId', '==', this.state.cid).where('invNum', '==', invoiceNumber));
                         if (existingInvoiceSnap.exists) {
                             const existing = existingInvoiceSnap.data() || {};
                             if (existing.localSaleId === saleId) {
@@ -2735,7 +2798,6 @@
                             }
                             throw new Error(this.t('offline_invoice_duplicate'));
                         }
-                        if (!sameNumberSnap.empty && sameNumberSnap.docs.some(doc => doc.id !== saleId)) throw new Error(this.t('offline_invoice_duplicate'));
                         const treasurySnap = cash > 0 ? await transaction.get(treasuryRef) : null;
                         const customerSnap = customerRef ? await transaction.get(customerRef) : null;
                         const bankSnap = bankRef ? await transaction.get(bankRef) : null;
@@ -2748,7 +2810,7 @@
                             productData.set(uniqueProductIds[index], snap.data());
                         });
                         const required = new Map();
-                        this.cart.forEach(item => required.set(item.id, (required.get(item.id) || 0) + Number(item.q)));
+                        cartItems.forEach(item => required.set(item.id, (required.get(item.id) || 0) + Number(item.q)));
                         for (const [productId, qty] of required) {
                             const data = productData.get(productId);
                             if (Number(data.stock || 0) < qty) {
@@ -2766,11 +2828,11 @@
                         for (const [productId, qty] of required) {
                             const current = productData.get(productId);
                             const remaining = Number(current.stock || 0) - qty;
-                            const isOpening = current.sourceType === 'opening' || this.cart.some(item => item.id === productId && item.sourceType === 'opening');
+                            const isOpening = current.sourceType === 'opening' || cartItems.some(item => item.id === productId && item.sourceType === 'opening');
                             if (remaining <= 0 && isOpening) transaction.delete(db.collection('products').doc(productId));
                             else transaction.update(db.collection('products').doc(productId), { stock: remaining });
                         }
-                        for (const item of this.cart) totalCost += Number(item.bp || 0) * Number(item.q);
+                        for (const item of cartItems) totalCost += Number(item.bp || 0) * Number(item.q);
                         const profit = total - totalCost;
                         if (cash > 0) {
                             const before = treasurySnap && treasurySnap.exists && treasurySnap.data().balance != null
@@ -2788,7 +2850,7 @@
                         if (bankRef) transaction.update(bankRef, { balance: Number(bankSnap.data().balance || 0) + bank });
                         const invoiceData = {
                             companyId: this.state.cid, invNum: invoiceNumber, customer: custName, customerId: custId,
-                            items: this.cart.map(item => ({...item})), total, paid: totalPaid, debt, cashAmount: cash,
+                            items: cartItems.map(item => ({...item})), total, paid: totalPaid, debt, cashAmount: cash,
                             bankAmount: bank, bankId, bankName, profit, invoicePrefix: companyCode,
                             invoiceUserNo, invoiceNumberScheme: 'company-user-v1', localSaleId: saleId, createdAt: committedAt
                         };
@@ -2800,7 +2862,7 @@
                             cogs: totalCost, customerId: custId, createdAt: committedAt, note: `Invoice ${invoiceNumber}`
                         });
                         committedInvoice = { invoiceNumber, nextSeq, totalCost, profit };
-                    });
+                    }), 20000);
 
                     if (committedInvoice.alreadyCommitted) this.refreshTreasury().catch(() => {});
                     if (cash > 0 && !committedInvoice.alreadyCommitted) {
@@ -2808,7 +2870,7 @@
                         localStorage.setItem('teyssir_cash_balance', String(this.state.cashBalance));
                     }
                     invoiceNumber = committedInvoice.invoiceNumber;
-                    this.printData = { id: invoiceNumber, c: custName, t: total, items: this.cart, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
+                    this.printData = { id: invoiceNumber, c: custName, t: total, items: cartItems, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
                     this.clearCache('products');
                     this.clearCache('invoices');
                     this.clearCache('customers');
@@ -2818,7 +2880,12 @@
                     this.nav('pos');
                 } catch(e) {
                     console.error(e);
-                    const networkFailure = !navigator.onLine || ['unavailable','deadline-exceeded','network-request-failed','cancelled'].includes(e && e.code);
+                    const networkFailure = this.isNetworkError(e);
+                    if (networkFailure && !offlineFallbackDraft && typeof this.finalizeOfflineInvoice === 'function') {
+                        // انقطع الاتصال قبل حجز رقم الفاتورة: نكمل مباشرة عبر مسار الحفظ المحلي.
+                        this.hideLoader();
+                        return this.finalizeOfflineInvoice();
+                    }
                     if (networkFailure && offlineFallbackDraft && typeof this.saveOfflineInvoiceWithReservedNumber === 'function') {
                         try {
                             const saved = await this.saveOfflineInvoiceWithReservedNumber(offlineFallbackDraft, {
