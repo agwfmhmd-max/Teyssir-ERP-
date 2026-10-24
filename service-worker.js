@@ -14,7 +14,7 @@
      With relative URLs the precache works on any hosting path (root,
      subfolder, GitHub Pages, etc.) and the app loads fully offline.
 */
-const VERSION       = 'teyssir-v23-brand-latin-digits';
+const VERSION       = 'teyssir-v25-durable-offline-sales';
 const SHELL_CACHE   = `shell-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 
@@ -30,6 +30,7 @@ const SHELL_FILES = [
   'style.css',
   'modern.css',
   'erp-enhancements.js',
+  'offline-sales.js',
   'excel-import.js',
   'brand-icon.svg',
   'brand-logo.svg',
@@ -38,6 +39,7 @@ const SHELL_FILES = [
   'logo.png',
   'icon-192.png',
   'icon-512.png',
+  'icon-512-maskable.png',
   // Core libraries used by the app: pre-cache on first successful visit for offline startup.
   'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js',

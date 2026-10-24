@@ -440,6 +440,15 @@
                 tr_balance: "رصيد الخزينة الحالي", tr_open: "رصيد افتتاحي للخزينة", tr_dep: "إيداع في البنك (من الخزينة)",
                 tr_with: "سحب من البنك (إلى الخزينة)", tr_hist: "سجل حركات الخزينة", err_no_cash: "عذراً، رصيد الخزينة لا يكفي لهذه العملية!",
                 sale_offline_block: "لا يمكن اعتماد البيع دون إنترنت لأن المخزون مشترك بين الأجهزة. أعد الاتصال ثم أعد المحاولة؛ لم تُحفظ فاتورة أو تُخصم كمية.",
+                invoice_user_online_required: "اتصل بالإنترنت مرة واحدة لتخصيص رقم ثابت لهذا المستخدم قبل إصدار الفاتورة.",
+                offline_invoice_quota: "لا توجد أرقام فواتير offline محجوزة على هذا الجهاز. اتصل بالإنترنت مرة واحدة لمزامنة النظام وتجهيز رصيد الأرقام قبل العمل دون اتصال.",
+                offline_sale_saved: "حُفظت الفاتورة على هذا الجهاز بنجاح، وهي مؤقتة وبانتظار التحقق من المخزون ومزامنتها عند عودة الإنترنت.",
+                offline_pending_status: "محلية — بانتظار المزامنة",
+                offline_conflict_status: "تعارض — تحتاج مراجعة",
+                offline_cancelled_status: "ملغاة محلياً",
+                offline_retry: "إعادة المزامنة",
+                offline_cancel: "إلغاء محلي",
+                offline_invoice_duplicate: "تعذر اعتماد الفاتورة لأن معرفها مستخدم مسبقاً. بقيت البيانات المحلية محفوظة للمراجعة.",
                 tr_in: "وارد (+)", tr_out: "صادر (-)", tr_desc: "البيان (التفاصيل)", tr_bal_after: "الرصيد بعد",
                 filter_by: "عرض حسب", f_day: "يوم", f_month: "شهر", f_range: "فترة", f_year: "سنة",
                 mode_exist: "منتج موجود (رصيد أول المدة)", mode_buy: "شراء بضاعة جديدة",
@@ -550,6 +559,15 @@
                 tr_balance: "Solde Caisse", tr_open: "Solde Initial", tr_dep: "Dépôt Banque",
                 tr_with: "Retrait Banque", tr_hist: "Historique Caisse", err_no_cash: "Erreur: Solde caisse insuffisant!",
                 sale_offline_block: "Vente impossible hors ligne : le stock est partagé entre appareils. Reconnectez-vous avant de réessayer. Aucune facture ni sortie de stock n’a été enregistrée.",
+                invoice_user_online_required: "Connectez-vous une fois pour attribuer un numéro fixe à cet utilisateur avant d’émettre une facture.",
+                offline_invoice_quota: "Aucun numéro de facture hors ligne n'est pré-réservé sur cet appareil. Connectez-vous une fois pour synchroniser l'application et préparer des numéros avant de travailler hors ligne.",
+                offline_sale_saved: "La facture a été enregistrée sur cet appareil. Elle reste provisoire en attendant la vérification du stock et la synchronisation au retour d'Internet.",
+                offline_pending_status: "Locale — en attente de synchronisation",
+                offline_conflict_status: "Conflit — vérification requise",
+                offline_cancelled_status: "Annulée localement",
+                offline_retry: "Réessayer la synchronisation",
+                offline_cancel: "Annuler localement",
+                offline_invoice_duplicate: "Impossible de valider la facture : son identifiant est déjà utilisé. Les données locales restent conservées pour examen.",
                 tr_in: "Entrée (+)", tr_out: "Sortie (-)", tr_desc: "Description", tr_bal_after: "Solde après",
                 filter_by: "Filtrer par", f_day: "Jour", f_month: "Mois", f_range: "Période", f_year: "Année",
                 mode_exist: "Produit Existant (Stock Initial)", mode_buy: "Nouvel Achat",
@@ -606,7 +624,7 @@
 
         const app = window.app = {
             state: { 
-                cid:null, name:'', phone:'', admin:false, subscriptionStartDate:null, lang: localStorage.getItem('teyssir_lang') || 'ar', codeDocId: null, expiryDate: null, currentView: 'home', cashBalance: 0, inventoryLocked: false, userRole: 'admin', currentUser: null, permissions: [], currentPromo: null, currentDailyData: null, currentBankReport: null, currentTreasuryReport: null 
+                cid:null, name:'', phone:'', admin:false, subscriptionStartDate:null, lang: localStorage.getItem('teyssir_lang') || 'ar', codeDocId: null, expiryDate: null, currentView: 'home', cashBalance: 0, inventoryLocked: false, userRole: 'admin', currentUser: null, permissions: [], currentPromo: null, currentDailyData: null, currentBankReport: null, currentTreasuryReport: null, invoiceUserNo: null, invoicePrefix: null
             },
             cart: [], 
             cachedProducts: [], 
@@ -773,7 +791,7 @@
                 if (sessionStr) {
                     const s = JSON.parse(sessionStr);
                     if(s.admin) { 
-                        this.state.cid='ADMIN'; this.state.name='Admin'; this.state.phone='46154399'; this.state.admin=true; this.start('Admin', '46154399'); 
+                        this.state.cid='ADMIN'; this.state.name='Admin'; this.state.phone='46154399'; this.state.admin=true; this.state.invoiceUserNo=1; this.start('Admin', '46154399');
                     } else {
                         this.state.cid = s.cid; 
                         this.state.name = s.name; 
@@ -782,6 +800,8 @@
                         this.state.userRole = s.userRole || 'admin'; 
                         this.state.permissions = s.permissions || []; 
                         this.state.currentUser = s.currentUser || null;
+                        this.state.invoiceUserNo = Number(s.invoiceUserNo) > 0 ? Number(s.invoiceUserNo) : (this.state.userRole === 'admin' ? 1 : null);
+                        this.state.invoicePrefix = /^[A-Z]{3}$/.test(String(s.invoicePrefix || '')) ? s.invoicePrefix : null;
                         const cachedBal = localStorage.getItem('teyssir_cash_balance'); 
                         if(cachedBal !== null) this.state.cashBalance = Number(cachedBal);
                         this.monitorSession(s.codeDocId, s); 
@@ -1144,8 +1164,10 @@
 
                         let cid=d.companyId;
                         if(!d.used) {
-                            const r = await db.collection('companies').add({name:n, phone:p, code:c, maxEmployees: d.maxEmployees || 5, maxDevices: d.maxDevices || d.maxEmployees || 5, createdAt:new Date().toISOString()});
+                            const initialInvoicePrefix = this.companyNameToInvoicePrefix(n);
+                            const r = await db.collection('companies').add({name:n, phone:p, code:c, maxEmployees: d.maxEmployees || 5, maxDevices: d.maxDevices || d.maxEmployees || 5, invoicePrefix: initialInvoicePrefix, nextInvoiceUserNo: 2, createdAt:new Date().toISOString()});
                             cid=r.id; 
+                            this.state.invoicePrefix = initialInvoicePrefix;
                             const expiry = this.addDuration(now, d.subscriptionType || 'month');
                             await db.collection('activation_codes').doc(doc.id).update({ 
                                 used:true, 
@@ -1162,9 +1184,11 @@
                         this.state.cid=cid; 
                         this.state.name=n; 
                         this.state.phone=p; 
+                        this.state.invoicePrefix = null;
                         this.state.codeDocId=doc.id;
                         this.state.userRole = 'admin';
-                        this.saveSession(cid, n, p, c, doc.id, false, 'admin', null, []); 
+                        this.state.invoiceUserNo = 1;
+                        this.saveSession(cid, n, p, c, doc.id, false, 'admin', null, [], 1);
                         this.monitorSession(doc.id, {cid, name:n, phone:p}); 
                         this.start(n,p);
                     } else {
@@ -1208,7 +1232,12 @@
                             throw new Error(this.t('err_login') + " أو اسم الشركة غير مطابق"); 
                         }
                         
-                        const empData = foundEmployee.data();
+                        const employeeCollection = db.collection('companies').doc(targetCompId).collection('employees');
+                        const employeeDirectory = await employeeCollection.get();
+                        await this.backfillInvoiceUserNumbers(targetCompId, employeeDirectory.docs);
+                        const refreshedEmployee = await employeeCollection.doc(foundEmployee.id).get();
+                        const empData = refreshedEmployee.data();
+                        const invoiceUserNo = Number(empData.invoiceUserNo) || await this.ensureEmployeeInvoiceUserNo(targetCompId, foundEmployee.id);
 
                         let empDevices = Array.isArray(empData.activeDevices) ? empData.activeDevices : [];
                         if (!empDevices.includes(deviceId)) {
@@ -1224,9 +1253,11 @@
                         this.state.codeDocId = activeCodeId;
                         this.state.userRole = 'employee'; 
                         this.state.currentUser = { id: foundEmployee.id, name: empData.name }; 
+                        this.state.invoiceUserNo = invoiceUserNo;
+                        this.state.invoicePrefix = targetCompData.invoicePrefix || null;
                         this.state.permissions = empData.permissions || [];
                         
-                        this.saveSession(targetCompId, targetCompData.name, targetCompData.phone, c, activeCodeId, false, 'employee', this.state.currentUser, this.state.permissions);
+                        this.saveSession(targetCompId, targetCompData.name, targetCompData.phone, c, activeCodeId, false, 'employee', this.state.currentUser, this.state.permissions, invoiceUserNo);
                         this.monitorSession(activeCodeId, {cid:targetCompId, name:targetCompData.name, phone:targetCompData.phone});
                         this.start(targetCompData.name, targetCompData.phone);
                     }
@@ -1236,8 +1267,101 @@
                 }
             },
             
-            saveSession: function(cid, name, phone, code, codeDocId, isAdmin, userRole, currentUser, permissions) { 
-                localStorage.setItem('mda_session', JSON.stringify({cid, name, phone, code, codeDocId, admin: isAdmin, userRole, currentUser, permissions})); 
+            saveSession: function(cid, name, phone, code, codeDocId, isAdmin, userRole, currentUser, permissions, invoiceUserNo) {
+                const stableInvoiceUserNo = Number(invoiceUserNo || this.state.invoiceUserNo) || (userRole === 'admin' ? 1 : null);
+                this.state.invoiceUserNo = stableInvoiceUserNo;
+                localStorage.setItem('mda_session', JSON.stringify({cid, name, phone, code, codeDocId, admin: isAdmin, userRole, currentUser, permissions, invoiceUserNo: stableInvoiceUserNo, invoicePrefix: this.state.invoicePrefix || null}));
+            },
+
+            companyNameToInvoicePrefix: function(name) {
+                const arabic = { 'ا':'A','أ':'A','إ':'A','آ':'A','ٱ':'A','ب':'B','ت':'T','ث':'TH','ج':'J','ح':'H','خ':'KH','د':'D','ذ':'DH','ر':'R','ز':'Z','س':'S','ش':'CH','ص':'S','ض':'D','ط':'T','ظ':'Z','ع':'A','غ':'GH','ف':'F','ق':'Q','ك':'K','گ':'G','ل':'L','م':'M','ن':'N','ه':'H','ة':'A','و':'W','ؤ':'W','ي':'Y','ى':'A','ئ':'Y' };
+                const transliterated = Array.from(String(name || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toUpperCase()).map(ch => arabic[ch] || ch).join('');
+                const letters = transliterated.replace(/[^A-Z]/g, '');
+                return (letters || 'COM').slice(0, 3).padEnd(3, 'X');
+            },
+
+            ensureInvoiceCompanyPrefix: async function() {
+                const cid = this.state.cid;
+                if (!cid || cid === 'ADMIN') return 'ADM';
+                const cacheKey = `teyssir_invoice_prefix_${cid}`;
+                if (!navigator.onLine) {
+                    const cached = localStorage.getItem(cacheKey) || this.state.invoicePrefix;
+                    const prefix = /^[A-Z]{3}$/.test(String(cached || '')) ? cached : this.companyNameToInvoicePrefix(this.state.name);
+                    this.state.invoicePrefix = prefix;
+                    return prefix;
+                }
+                const ref = db.collection('companies').doc(cid);
+                let prefix;
+                try {
+                    prefix = await db.runTransaction(async transaction => {
+                        const snap = await transaction.get(ref);
+                        if (!snap.exists) throw new Error('Company data not found');
+                        const data = snap.data() || {};
+                        const existing = String(data.invoicePrefix || this.state.invoicePrefix || '').toUpperCase();
+                        if (/^[A-Z]{3}$/.test(existing)) return existing;
+                        const generated = this.companyNameToInvoicePrefix(data.name || this.state.name);
+                        transaction.set(ref, { invoicePrefix: generated }, { merge: true });
+                        return generated;
+                    });
+                } catch (error) {
+                    const cachedPrefix = String(localStorage.getItem(cacheKey) || this.state.invoicePrefix || '').toUpperCase();
+                    if (!/^[A-Z]{3}$/.test(cachedPrefix)) throw error;
+                    prefix = cachedPrefix;
+                }
+                this.state.invoicePrefix = prefix;
+                localStorage.setItem(cacheKey, prefix);
+                const session = JSON.parse(localStorage.getItem('mda_session') || '{}');
+                if (session.cid === cid) { session.invoicePrefix = prefix; localStorage.setItem('mda_session', JSON.stringify(session)); }
+                return prefix;
+            },
+
+            ensureEmployeeInvoiceUserNo: async function(cid, employeeId) {
+                if (!cid || !employeeId) throw new Error('User identity is required for invoice numbering');
+                const companyRef = db.collection('companies').doc(cid);
+                const employeeRef = companyRef.collection('employees').doc(employeeId);
+                return db.runTransaction(async transaction => {
+                    const employeeSnap = await transaction.get(employeeRef);
+                    if (!employeeSnap.exists) throw new Error('Employee record not found');
+                    const current = Number(employeeSnap.data().invoiceUserNo);
+                    if (Number.isInteger(current) && current >= 2) return current;
+                    const companySnap = await transaction.get(companyRef);
+                    const company = companySnap.exists ? companySnap.data() : {};
+                    const next = Math.max(2, Math.floor(Number(company.nextInvoiceUserNo) || 2));
+                    transaction.update(employeeRef, { invoiceUserNo: next });
+                    transaction.set(companyRef, { nextInvoiceUserNo: next + 1 }, { merge: true });
+                    return next;
+                });
+            },
+
+            backfillInvoiceUserNumbers: async function(cid, employeeDocs) {
+                const docs = (employeeDocs || []).slice().sort((a, b) => {
+                    const da = Date.parse((a.data() || {}).createdAt || '') || 0;
+                    const dbb = Date.parse((b.data() || {}).createdAt || '') || 0;
+                    return da - dbb || a.id.localeCompare(b.id);
+                });
+                for (const doc of docs) {
+                    const current = Number((doc.data() || {}).invoiceUserNo);
+                    if (!Number.isInteger(current) || current < 2) await this.ensureEmployeeInvoiceUserNo(cid, doc.id);
+                }
+            },
+
+            ensureInvoiceUserNumber: async function() {
+                if (this.state.userRole !== 'employee') {
+                    this.state.invoiceUserNo = 1;
+                    return 1;
+                }
+                let assigned = Number(this.state.invoiceUserNo);
+                if (!Number.isInteger(assigned) || assigned < 2) {
+                    if (!navigator.onLine) throw new Error(this.t('invoice_user_online_required'));
+                    assigned = await this.ensureEmployeeInvoiceUserNo(this.state.cid, this.state.currentUser && this.state.currentUser.id);
+                    this.state.invoiceUserNo = assigned;
+                    const session = JSON.parse(localStorage.getItem('mda_session') || '{}');
+                    if (session.cid === this.state.cid && session.currentUser && session.currentUser.id === this.state.currentUser.id) {
+                        session.invoiceUserNo = assigned;
+                        localStorage.setItem('mda_session', JSON.stringify(session));
+                    }
+                }
+                return assigned;
             },
             
             logout: async function() { 
@@ -2535,21 +2659,15 @@
             getNextInvoiceNumber: async function() {
                 const now = new Date();
                 const yearShort = now.getFullYear().toString().slice(-2);
-                let deviceId = localStorage.getItem('teyssir_device_id');
-                if (!deviceId) {
-                    deviceId = this.randomStr(32);
-                    localStorage.setItem('teyssir_device_id', deviceId);
-                }
-                const deviceCode = deviceId.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8);
-                const storageKey = `teyssir_last_inv_${yearShort}_${deviceCode}`;
+                const companyCode = await this.ensureInvoiceCompanyPrefix();
+                const invoiceUserNo = await this.ensureInvoiceUserNumber();
+                const storageKey = `teyssir_last_inv_${this.state.cid}_${yearShort}_${invoiceUserNo}`;
                 const nextSeq = (Number(localStorage.getItem(storageKey)) || 0) + 1;
                 localStorage.setItem(storageKey, String(nextSeq));
-                return { full: `INV-${yearShort}-${deviceCode}-${String(nextSeq).padStart(5, '0')}`, seq: nextSeq, year: yearShort, deviceCode, storageKey };
+                return { full: `INV-${yearShort}-${companyCode}${invoiceUserNo}-${String(nextSeq).padStart(5, '0')}`, seq: nextSeq, year: yearShort, companyCode, invoiceUserNo, storageKey };
             },
             finalizeInvoice: async function() {
-                // Firestore cannot enforce shared stock constraints while clients are disconnected.
-                // Refuse before any local or remote write; this avoids negative stock and phantom invoices.
-                if (!navigator.onLine) return alert(this.t('sale_offline_block'));
+                if (!navigator.onLine) return this.finalizeOfflineInvoice();
                 if(!this.cart.length) return alert(this.t('empty'));
                 for (let item of this.cart) {
                     const prod = this.cachedProducts.find(p => p.id === item.id);
@@ -2576,19 +2694,18 @@
                 const totalPaid = cash + bank;
                 const debt = total - totalPaid;
                 this.showLoader();
+                let offlineFallbackDraft = null;
                 try {
-                    const yearShort = new Date().getFullYear().toString().slice(-2);
-                    let deviceId = localStorage.getItem('teyssir_device_id');
-                    if (!deviceId) {
-                        deviceId = this.randomStr(32);
-                        localStorage.setItem('teyssir_device_id', deviceId);
-                    }
-                    const deviceCode = deviceId.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8);
-                    const localCounterKey = `teyssir_last_inv_${yearShort}_${deviceCode}`;
-                    const invoiceRef = db.collection('invoices').doc();
-                    const saleTransactionRef = db.collection('transactions').doc();
-                    const cashTransactionRef = db.collection('transactions').doc();
-                    const counterRef = db.collection('counters').doc(this.state.cid);
+                    const numberInfo = await this.getNextInvoiceNumber();
+                    const yearShort = numberInfo.year;
+                    const companyCode = numberInfo.companyCode;
+                    const invoiceUserNo = numberInfo.invoiceUserNo;
+                    let invoiceNumber = numberInfo.full;
+                    const nextSeq = numberInfo.seq;
+                    const saleId = numberInfo.localId;
+                    const invoiceRef = db.collection('invoices').doc(saleId);
+                    const saleTransactionRef = db.collection('transactions').doc(`${saleId}_sale`);
+                    const cashTransactionRef = db.collection('transactions').doc(`${saleId}_cash`);
                     const treasuryRef = db.collection('treasury').doc(this.state.cid);
                     const customerRef = (!isWalkIn && debt > 0) ? db.collection('customers').doc(custId) : null;
                     const bankRef = (bank > 0 && bankId) ? db.collection('banks').doc(bankId) : null;
@@ -2598,10 +2715,27 @@
                     let committedInvoice = null;
                     let committedTreasuryBalance = null;
                     const committedAt = new Date().toISOString();
+                    const fallbackCost = this.cart.reduce((sum, item) => sum + Number(item.bp || 0) * Number(item.q || 0), 0);
+                    offlineFallbackDraft = {
+                        localId: saleId, companyId: this.state.cid, customer: custName, customerId: custId,
+                        items: this.cart.map(item => ({...item})), total, paid: totalPaid, debt,
+                        cashAmount: cash, bankAmount: bank, bankId, bankName, payMethod,
+                        invoicePrefix: companyCode, invoiceUserNo, invoiceNumberScheme: 'company-user-v1',
+                        invNum: invoiceNumber, seq: nextSeq, year: yearShort, totalCost: fallbackCost,
+                        profit: total - fallbackCost, createdAt: committedAt, status: 'pending'
+                    };
 
                     await db.runTransaction(async (transaction) => {
                         // Complete all reads before writing; Firestore retries if any read document changes.
-                        const counterSnap = await transaction.get(counterRef);
+                        const existingInvoiceSnap = await transaction.get(invoiceRef);
+                        if (existingInvoiceSnap.exists) {
+                            const existing = existingInvoiceSnap.data() || {};
+                            if (existing.localSaleId === saleId) {
+                                committedInvoice = { invoiceNumber: existing.invNum || invoiceNumber, nextSeq, totalCost: fallbackCost, profit: Number(existing.profit || total - fallbackCost), alreadyCommitted: true };
+                                return;
+                            }
+                            throw new Error(this.t('offline_invoice_duplicate'));
+                        }
                         const treasurySnap = cash > 0 ? await transaction.get(treasuryRef) : null;
                         const customerSnap = customerRef ? await transaction.get(customerRef) : null;
                         const bankSnap = bankRef ? await transaction.get(bankRef) : null;
@@ -2628,10 +2762,6 @@
                         if (customerRef && !customerSnap.exists) throw new Error("الزبون المحدد غير موجود حالياً؛ لم تُسجل الفاتورة.");
                         if (bankRef && !bankSnap.exists) throw new Error("الحساب البنكي المحدد غير موجود حالياً؛ لم تُسجل الفاتورة.");
 
-                        const counterData = counterSnap.exists ? counterSnap.data() : {};
-                        const localSeq = Number(localStorage.getItem(localCounterKey)) || 0;
-                        const nextSeq = Math.max(localSeq, counterData.year === yearShort ? Number(counterData.lastSeq || 0) : 0) + 1;
-                        const invoiceNumber = `INV-${yearShort}-${deviceCode}-${String(nextSeq).padStart(5, '0')}`;
                         let totalCost = 0;
                         for (const [productId, qty] of required) {
                             const current = productData.get(productId);
@@ -2659,24 +2789,25 @@
                         const invoiceData = {
                             companyId: this.state.cid, invNum: invoiceNumber, customer: custName, customerId: custId,
                             items: this.cart.map(item => ({...item})), total, paid: totalPaid, debt, cashAmount: cash,
-                            bankAmount: bank, bankId, bankName, profit, createdAt: committedAt
+                            bankAmount: bank, bankId, bankName, profit, invoicePrefix: companyCode,
+                            invoiceUserNo, invoiceNumberScheme: 'company-user-v1', localSaleId: saleId, createdAt: committedAt
                         };
                         transaction.set(invoiceRef, invoiceData);
-                        transaction.set(counterRef, { lastSeq: nextSeq, year: yearShort }, { merge: true });
                         transaction.set(saleTransactionRef, {
                             companyId: this.state.cid, type: 'sale', refId: invoiceRef.id, invNum: invoiceNumber,
                             amount: total, paid: totalPaid, debt, cashAmount: cash, bankAmount: bank, bankId,
+                            invoicePrefix: companyCode, invoiceUserNo, invoiceNumberScheme: 'company-user-v1', localSaleId: saleId,
                             cogs: totalCost, customerId: custId, createdAt: committedAt, note: `Invoice ${invoiceNumber}`
                         });
                         committedInvoice = { invoiceNumber, nextSeq, totalCost, profit };
                     });
 
-                    localStorage.setItem(localCounterKey, String(committedInvoice.nextSeq));
-                    if (cash > 0) {
+                    if (committedInvoice.alreadyCommitted) this.refreshTreasury().catch(() => {});
+                    if (cash > 0 && !committedInvoice.alreadyCommitted) {
                         this.state.cashBalance = Number(committedTreasuryBalance || 0);
                         localStorage.setItem('teyssir_cash_balance', String(this.state.cashBalance));
                     }
-                    const invoiceNumber = committedInvoice.invoiceNumber;
+                    invoiceNumber = committedInvoice.invoiceNumber;
                     this.printData = { id: invoiceNumber, c: custName, t: total, items: this.cart, p: totalPaid, d: debt, pm: payMethod, bn: bankName };
                     this.clearCache('products');
                     this.clearCache('invoices');
@@ -2687,6 +2818,26 @@
                     this.nav('pos');
                 } catch(e) {
                     console.error(e);
+                    const networkFailure = !navigator.onLine || ['unavailable','deadline-exceeded','network-request-failed','cancelled'].includes(e && e.code);
+                    if (networkFailure && offlineFallbackDraft && typeof this.saveOfflineInvoiceWithReservedNumber === 'function') {
+                        try {
+                            const saved = await this.saveOfflineInvoiceWithReservedNumber(offlineFallbackDraft, {
+                                localId: offlineFallbackDraft.localId, seq: offlineFallbackDraft.seq,
+                                companyCode: offlineFallbackDraft.invoicePrefix, invoiceUserNo: offlineFallbackDraft.invoiceUserNo,
+                                full: offlineFallbackDraft.invNum
+                            });
+                            ['products','invoices','customers','transactions','banks'].forEach(collection => this.clearCache(collection));
+                            this.print(saved.invNum, saved.customer, saved.total, saved.items, saved.paid, saved.debt, saved.payMethod, saved.bankName, true);
+                            this.cart = [];
+                            alert(this.t('offline_sale_saved'));
+                            this.nav('pos');
+                            return;
+                        } catch (queueError) {
+                            console.error('Could not preserve sale in offline outbox', queueError);
+                            alert(this.state.lang === 'ar' ? `تعذر تأكيد الحفظ المحلي: ${queueError.message}` : `La sauvegarde locale n'a pas pu être confirmée : ${queueError.message}`);
+                            return;
+                        }
+                    }
                     alert(e.message);
                 } finally {
                     this.hideLoader();
@@ -3200,6 +3351,7 @@
                     let cashIn = 0, bankIn = 0; 
                     const allInvoices = await this.getData('invoices'); 
                     const filteredInvoices = allInvoices.filter(x => { 
+                        if (x.pendingOffline || x.offlineStatus) return false;
                         const d = new Date(x.createdAt); 
                         return d >= s && d <= e; 
                     }); 
@@ -3376,7 +3528,10 @@
                         </div>
                     </div>
                 `;
-                const s = await db.collection('companies').doc(this.state.cid).collection('employees').get();
+                const employeesRef = db.collection('companies').doc(this.state.cid).collection('employees');
+                let s = await employeesRef.get();
+                await this.backfillInvoiceUserNumbers(this.state.cid, s.docs);
+                s = await employeesRef.get();
                 let h = '';
                 s.forEach(doc => {
                     const d = doc.data(); 
@@ -3397,7 +3552,9 @@
                     const compDoc = await db.collection('companies').doc(this.state.cid).get();
                     if (!compDoc.exists) throw new Error("Company data not found");
                     const limit = compDoc.data().maxEmployees || 5;
-                    const current = await db.collection('companies').doc(this.state.cid).collection('employees').get();
+                    let current = await db.collection('companies').doc(this.state.cid).collection('employees').get();
+                    await this.backfillInvoiceUserNumbers(this.state.cid, current.docs);
+                    current = await db.collection('companies').doc(this.state.cid).collection('employees').get();
                     this.hideLoader(); 
 
                     if(current.size >= limit) return alert(`${this.t('max_emp')}: ${limit}`);
@@ -3429,11 +3586,21 @@
                         const check = await db.collection('companies').doc(this.state.cid).collection('employees').where('pinCode', '==', c).get();
                         if(!check.empty) return alert("PIN already exists");
 
-                        await db.collection('companies').doc(this.state.cid).collection('employees').add({ 
-                            name: n, 
-                            pinCode: c, 
-                            permissions: selectedPerms, 
-                            createdAt: new Date().toISOString() 
+                        const companyRef = db.collection('companies').doc(this.state.cid);
+                        const employeeRef = companyRef.collection('employees').doc();
+                        await db.runTransaction(async transaction => {
+                            const companySnap = await transaction.get(companyRef);
+                            if (!companySnap.exists) throw new Error('Company data not found');
+                            const company = companySnap.data() || {};
+                            const invoiceUserNo = Math.max(2, Math.floor(Number(company.nextInvoiceUserNo) || 2));
+                            transaction.set(employeeRef, {
+                                name: n,
+                                pinCode: c,
+                                permissions: selectedPerms,
+                                invoiceUserNo,
+                                createdAt: new Date().toISOString()
+                            });
+                            transaction.set(companyRef, { nextInvoiceUserNo: invoiceUserNo + 1 }, { merge: true });
                         });
                         this.nav('users');
                     });
@@ -4303,13 +4470,18 @@
                     let h='', th='';
                     
                     if(type==='invoices') { 
-                        th=`<tr><th>${this.t('th_inv_no')}</th><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('paid')}</th><th style="min-width:110px;">إجراء</th></tr>`; 
-                        if(docs.length === 0) h = '<tr><td colspan="6">-</td></tr>'; 
+                        th=`<tr><th>${this.t('th_inv_no')}</th><th>${this.t('th_date')}</th><th>${this.t('th_client')}</th><th>${this.t('th_amount')}</th><th>${this.t('paid')}</th><th>${this.state.lang === 'ar' ? 'حالة المزامنة' : 'Synchronisation'}</th><th style="min-width:150px;">إجراء</th></tr>`;
+                        if(docs.length === 0) h = '<tr><td colspan="7">-</td></tr>';
                         else docs.forEach(d=>{ 
                             const str=encodeURIComponent(JSON.stringify(d.items)); 
                             const displayNum = d.invNum || d.id.substring(0,6); 
                             const pm = (d.bankAmount>0 && d.cashAmount>0) ? "Mixed" : (d.bankAmount>0?"Bank":"Cash"); 
                             const bn = d.bankName || ''; 
+                            const statusLabel = d.offlineStatus === 'conflict' ? this.t('offline_conflict_status') : (d.offlineStatus === 'cancelled' ? this.t('offline_cancelled_status') : (d.offlineStatus === 'pending' ? this.t('offline_pending_status') : (this.state.lang === 'ar' ? 'مزامنة سحابية' : 'Synchronisée')));
+                            const statusColor = d.offlineStatus === 'conflict' ? '#b91c1c' : (d.offlineStatus ? '#b45309' : '#047857');
+                            const offlineActions = d.offlineStatus === 'conflict'
+                                ? `<button class="btn btn-prim" style="padding:5px;font-size:11px;" onclick="app.retryOfflineSale('${d.localId}')">${this.t('offline_retry')}</button><button class="btn btn-dan" style="padding:5px;font-size:11px;" onclick="app.cancelOfflineSale('${d.localId}')">${this.t('offline_cancel')}</button>`
+                                : (d.offlineStatus === 'pending' ? `<button class="btn btn-dan" style="padding:5px;font-size:11px;" onclick="app.cancelOfflineSale('${d.localId}')">${this.t('offline_cancel')}</button>` : '');
                             let profitVal = d.profit; 
                             if (profitVal === undefined) { 
                                 let cost = 0; 
@@ -4322,9 +4494,10 @@
                                 <td>${d.customer}</td>
                                 <td>${d.total}</td>
                                 <td>${(d.paid || 0).toLocaleString()}</td>
-                                <td style="display:flex; gap:5px; justify-content:center;">
-                                    <button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${displayNum}','${d.customer}',${d.total},'${str}',${d.paid},${d.debt},'${pm}','${bn}')"><i class="fa-solid fa-print"></i></button> 
-                                    <button class="btn btn-prim wa-share" onclick="app.sendInvoiceWa('${displayNum}', '${d.customer}', '${d.customerId||''}', ${d.total}, ${d.paid || 0}, ${d.debt || 0}, '${str}')" title="${this.t('wa_share')}"><i class="fa-brands fa-whatsapp"></i> ${this.t('wa_share')}</button>
+                                <td><span style="color:${statusColor};font-weight:700;">${statusLabel}</span>${d.offlineError ? `<small style="display:block;color:#b91c1c;max-width:220px;">${d.offlineError}</small>` : ''}</td>
+                                <td style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
+                                    <button class="btn btn-sec" style="padding:5px;" onclick="app.reprint('${displayNum}','${d.customer}',${d.total},'${str}',${d.paid},${d.debt},'${pm}','${bn}','${d.offlineStatus || ''}')"><i class="fa-solid fa-print"></i></button>
+                                    ${d.offlineStatus ? offlineActions : `<button class="btn btn-prim wa-share" onclick="app.sendInvoiceWa('${displayNum}', '${d.customer}', '${d.customerId||''}', ${d.total}, ${d.paid || 0}, ${d.debt || 0}, '${str}')" title="${this.t('wa_share')}"><i class="fa-brands fa-whatsapp"></i> ${this.t('wa_share')}</button>`}
                                 </td>
                             </tr>`; 
                         }); 
@@ -4444,12 +4617,12 @@
                 }
             },
 
-            reprint: function(id, c, t, itemsStr, paid, debt, pm, bn) { 
+            reprint: function(id, c, t, itemsStr, paid, debt, pm, bn, offlineStatus) {
                 const items = JSON.parse(decodeURIComponent(itemsStr)); 
-                this.print(id,c,t,items, paid, debt, pm, bn); 
+                this.print(id,c,t,items, paid, debt, pm, bn, offlineStatus);
             },
 
-            print: function(id, c, t, items, paid, debt, pm, bn) { 
+            print: function(id, c, t, items, paid, debt, pm, bn, offlineStatus) {
                 const dir = this.state.lang==='ar'?'rtl':'ltr'; 
                 const formattedDate = this.formatDate(new Date().toISOString()); 
                 const localInfo = JSON.parse(localStorage.getItem('teyssir_company_info') || '{}'); 
@@ -4469,12 +4642,15 @@
                     ${localInfo.email ? `<div class="print-meta"><i class="fa-solid fa-envelope"></i> <span>${localInfo.email}</span></div>` : ''}
                     ${localInfo.web ? `<div class="print-meta"><i class="fa-solid fa-globe"></i> <span>${localInfo.web}</span></div>` : ''}
                 </div></div>`;
+                const statusLabel = offlineStatus === 'conflict' ? this.t('offline_conflict_status') : (offlineStatus === 'cancelled' ? this.t('offline_cancelled_status') : this.t('offline_pending_status'));
+                const offlineBanner = offlineStatus ? `<div style="border:2px solid #b45309;padding:10px;margin:10px 0;text-align:center;font-weight:bold;color:#92400e;">${statusLabel}</div>` : '';
                 const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; 
                 let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); 
                 let bankInfo = pm.includes('Bank') && bn ? `(${bn})` : ''; 
                 document.getElementById('printArea').innerHTML = `
                     <div style="padding:20px; direction:${dir}; font-family:'Tajawal'">
                         ${headerHtml}<hr>
+                        ${offlineBanner}
                         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                             <span><b>INV:</b> ${id}</span>
                             <span>${formattedDate}</span>
@@ -5740,6 +5916,7 @@
         window.onload = function() { app.init(); };
     </script>
 
+    <script src="offline-sales.js"></script>
     <script src="erp-enhancements.js"></script>
 
     <!-- Supabase CDN -->
