@@ -60,6 +60,23 @@
     }));
   }
 
+  function localSequenceValue(deviceId, counter) {
+    const deviceDigits = BigInt(`0x${String(deviceId).replace(/[^0-9a-f]/gi, '').slice(0, 32) || '1'}`).toString();
+    return `${deviceDigits}${String(counter).padStart(8, '0')}`;
+  }
+
+  function consumeLocalSequence(metadata, leaseKey, onSequence) {
+    const key = `${leaseKey}:fallback-sequence`;
+    const current = metadata.get(key);
+    current.onsuccess = () => {
+      const counter = Math.max(0, Number(current.result && current.result.value) || 0) + 1;
+      metadata.put({ key, value: counter });
+      const deviceId = String(leaseKey).split(':').slice(-1)[0];
+      onSequence(localSequenceValue(deviceId, counter), counter);
+    };
+    return current;
+  }
+
   function idbPutOfflineSaleWithLease(leaseKey, payload, invoicePrefix, userNo) {
     return openDatabase().then(database => new Promise((resolve, reject) => {
       const transaction = database.transaction([META_STORE, SALES_STORE], 'readwrite');
@@ -70,35 +87,28 @@
       const request = metadata.get(leaseKey);
       request.onsuccess = () => {
         const lease = request.result;
-        if (!lease || !Array.isArray(lease.ranges)) {
-          failure = new Error(window.app.t('offline_invoice_quota'));
-          transaction.abort();
+        const range = lease && Array.isArray(lease.ranges) ? lease.ranges.find(item => Number(item.next) <= Number(item.end)) : null;
+        const saveWithSequence = (seq, sequenceText) => {
+          const localId = payload.localId || createId();
+          saved = Object.assign({}, payload, {
+            localId, id: localId, seq, invoicePrefix, invoiceUserNo: userNo,
+            invoiceNumberScheme: 'company-user-v1',
+            invNum: `INV-${payload.year}-${invoicePrefix}${userNo}-${sequenceText}`,
+            status: 'pending', pendingOffline: true,
+            createdAt: payload.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+          sales.put(saved);
+        };
+        if (range) {
+          const seq = Number(range.next);
+          range.next = seq + 1;
+          metadata.put(lease);
+          saveWithSequence(seq, String(seq).padStart(5, '0'));
           return;
         }
-        const range = lease.ranges.find(item => Number(item.next) <= Number(item.end));
-        if (!range) {
-          failure = new Error(window.app.t('offline_invoice_quota'));
-          transaction.abort();
-          return;
-        }
-        const seq = Number(range.next);
-        range.next = seq + 1;
-        metadata.put(lease);
-        const localId = payload.localId || createId();
-        saved = Object.assign({}, payload, {
-          localId,
-          id: localId,
-          seq,
-          invoicePrefix,
-          invoiceUserNo: userNo,
-          invoiceNumberScheme: 'company-user-v1',
-          invNum: `INV-${payload.year}-${invoicePrefix}${userNo}-${String(seq).padStart(5, '0')}`,
-          status: 'pending',
-          pendingOffline: true,
-          createdAt: payload.createdAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-        sales.put(saved);
+        const fallback = consumeLocalSequence(metadata, leaseKey, (sequence, counter) => saveWithSequence(counter, sequence));
+        fallback.onerror = () => { failure = fallback.error || new Error('Could not allocate a local invoice number.'); transaction.abort(); };
       };
       request.onerror = () => { failure = request.error || new Error('Could not allocate a local invoice number.'); };
       transaction.oncomplete = () => resolve(saved);
@@ -117,22 +127,19 @@
       request.onsuccess = () => {
         const lease = request.result;
         const range = lease && Array.isArray(lease.ranges) ? lease.ranges.find(item => Number(item.next) <= Number(item.end)) : null;
-        if (!range) {
-          failure = new Error(window.app.t('offline_invoice_quota'));
-          transaction.abort();
+        const localId = createId();
+        if (range) {
+          const seq = Number(range.next++);
+          store.put(lease);
+          result = { seq, year, companyCode: invoicePrefix, invoiceUserNo: userNo, localId, storageKey: leaseKey,
+            full: `INV-${year}-${invoicePrefix}${userNo}-${String(seq).padStart(5, '0')}` };
           return;
         }
-        const seq = Number(range.next++);
-        store.put(lease);
-        result = {
-          seq,
-          year,
-          companyCode: invoicePrefix,
-          invoiceUserNo: userNo,
-          localId: createId(),
-          storageKey: leaseKey,
-          full: `INV-${year}-${invoicePrefix}${userNo}-${String(seq).padStart(5, '0')}`
-        };
+        const fallback = consumeLocalSequence(store, leaseKey, (sequence, counter) => {
+          result = { seq: counter, year, companyCode: invoicePrefix, invoiceUserNo: userNo,
+            localId, storageKey: leaseKey, full: `INV-${year}-${invoicePrefix}${userNo}-${sequence}` };
+        });
+        fallback.onerror = () => { failure = fallback.error || new Error('Could not allocate a local invoice number.'); transaction.abort(); };
       };
       request.onerror = () => { failure = request.error || new Error('Could not allocate a local invoice number.'); };
       transaction.oncomplete = () => resolve(result);
@@ -177,8 +184,7 @@
         ? lease.ranges.reduce((sum, range) => sum + Math.max(0, Number(range.end) - Number(range.next) + 1), 0) : 0;
       if (available >= PREFETCH_THRESHOLD) return { leaseKey, companyCode, userNo, year, available };
       if (!navigator.onLine) {
-        if (available > 0) return { leaseKey, companyCode, userNo, year, available };
-        throw new Error(this.t('offline_invoice_quota'));
+        return { leaseKey, companyCode, userNo, year, available, localFallback: available === 0 };
       }
       const reserve = this.__offlineLeasePromises || (this.__offlineLeasePromises = {});
       if (reserve[leaseKey]) return reserve[leaseKey];
@@ -226,7 +232,8 @@
           const count = stillAvailable && stillAvailable.ranges
             ? stillAvailable.ranges.reduce((sum, item) => sum + Math.max(0, Number(item.end) - Number(item.next) + 1), 0) : 0;
           if (count > 0) return { leaseKey, companyCode, userNo, year, available: count };
-          throw error;
+          console.warn('Using device-local invoice sequence until a cloud number range can be reserved', error);
+          return { leaseKey, companyCode, userNo, year, available: 0, localFallback: true };
         } finally { delete reserve[leaseKey]; }
       })();
       return reserve[leaseKey];
@@ -351,11 +358,13 @@
       let treasuryAfter = null;
       await db.runTransaction(async transaction => {
         const existingInvoice = await transaction.get(invoiceRef);
+        const sameNumber = await transaction.get(db.collection('invoices').where('companyId', '==', sale.companyId).where('invNum', '==', sale.invNum));
         if (existingInvoice.exists) {
           const existing = existingInvoice.data() || {};
           if (existing.localSaleId === sale.localId) { treasuryAfter = null; return; }
           throw new Error(this.t('offline_invoice_duplicate'));
         }
+        if (!sameNumber.empty && sameNumber.docs.some(doc => doc.id !== sale.localId)) throw new Error(this.t('offline_invoice_duplicate'));
         const treasurySnap = Number(sale.cashAmount || 0) > 0 ? await transaction.get(treasuryRef) : null;
         const customerSnap = customerRef ? await transaction.get(customerRef) : null;
         const bankSnap = bankRef ? await transaction.get(bankRef) : null;
@@ -492,6 +501,13 @@
       if (!window.app || !app.state.cid || app.state.cid === 'ADMIN') return;
       app.syncOfflineSales().then(() => app.ensureOfflineInvoiceLease()).catch(error => console.warn('Offline sales reconnect handling failed', error));
     });
+    const resumeSync = () => {
+      if (!navigator.onLine || !window.app || !app.state.cid || app.state.cid === 'ADMIN') return;
+      app.syncOfflineSales().catch(error => console.warn('Offline sales resume sync failed', error));
+    };
+    window.addEventListener('focus', resumeSync);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') resumeSync(); });
+    window.setInterval(resumeSync, 30000);
   }
 
   function boot() {

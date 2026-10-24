@@ -439,9 +439,8 @@
                 th_profit: "الربح", rep_profit: "تقرير الأرباح", total_profit: "إجمالي الأرباح",
                 tr_balance: "رصيد الخزينة الحالي", tr_open: "رصيد افتتاحي للخزينة", tr_dep: "إيداع في البنك (من الخزينة)",
                 tr_with: "سحب من البنك (إلى الخزينة)", tr_hist: "سجل حركات الخزينة", err_no_cash: "عذراً، رصيد الخزينة لا يكفي لهذه العملية!",
-                sale_offline_block: "لا يمكن اعتماد البيع دون إنترنت لأن المخزون مشترك بين الأجهزة. أعد الاتصال ثم أعد المحاولة؛ لم تُحفظ فاتورة أو تُخصم كمية.",
                 invoice_user_online_required: "اتصل بالإنترنت مرة واحدة لتخصيص رقم ثابت لهذا المستخدم قبل إصدار الفاتورة.",
-                offline_invoice_quota: "لا توجد أرقام فواتير offline محجوزة على هذا الجهاز. اتصل بالإنترنت مرة واحدة لمزامنة النظام وتجهيز رصيد الأرقام قبل العمل دون اتصال.",
+                offline_invoice_quota: "تعذر إنشاء رقم فاتورة محلي آمن. تحقق من هوية المستخدم ومساحة التخزين على الجهاز ثم أعد المحاولة.",
                 offline_sale_saved: "حُفظت الفاتورة على هذا الجهاز بنجاح، وهي مؤقتة وبانتظار التحقق من المخزون ومزامنتها عند عودة الإنترنت.",
                 offline_pending_status: "محلية — بانتظار المزامنة",
                 offline_conflict_status: "تعارض — تحتاج مراجعة",
@@ -558,9 +557,8 @@
                 th_profit: "Profit", rep_profit: "Rapport Profits", total_profit: "Total Profits",
                 tr_balance: "Solde Caisse", tr_open: "Solde Initial", tr_dep: "Dépôt Banque",
                 tr_with: "Retrait Banque", tr_hist: "Historique Caisse", err_no_cash: "Erreur: Solde caisse insuffisant!",
-                sale_offline_block: "Vente impossible hors ligne : le stock est partagé entre appareils. Reconnectez-vous avant de réessayer. Aucune facture ni sortie de stock n’a été enregistrée.",
                 invoice_user_online_required: "Connectez-vous une fois pour attribuer un numéro fixe à cet utilisateur avant d’émettre une facture.",
-                offline_invoice_quota: "Aucun numéro de facture hors ligne n'est pré-réservé sur cet appareil. Connectez-vous une fois pour synchroniser l'application et préparer des numéros avant de travailler hors ligne.",
+                offline_invoice_quota: "Impossible de créer un numéro de facture local sûr. Vérifiez l'identité de l'utilisateur et l'espace de stockage, puis réessayez.",
                 offline_sale_saved: "La facture a été enregistrée sur cet appareil. Elle reste provisoire en attendant la vérification du stock et la synchronisation au retour d'Internet.",
                 offline_pending_status: "Locale — en attente de synchronisation",
                 offline_conflict_status: "Conflit — vérification requise",
@@ -2728,6 +2726,7 @@
                     await db.runTransaction(async (transaction) => {
                         // Complete all reads before writing; Firestore retries if any read document changes.
                         const existingInvoiceSnap = await transaction.get(invoiceRef);
+                        const sameNumberSnap = await transaction.get(db.collection('invoices').where('companyId', '==', this.state.cid).where('invNum', '==', invoiceNumber));
                         if (existingInvoiceSnap.exists) {
                             const existing = existingInvoiceSnap.data() || {};
                             if (existing.localSaleId === saleId) {
@@ -2736,6 +2735,7 @@
                             }
                             throw new Error(this.t('offline_invoice_duplicate'));
                         }
+                        if (!sameNumberSnap.empty && sameNumberSnap.docs.some(doc => doc.id !== saleId)) throw new Error(this.t('offline_invoice_duplicate'));
                         const treasurySnap = cash > 0 ? await transaction.get(treasuryRef) : null;
                         const customerSnap = customerRef ? await transaction.get(customerRef) : null;
                         const bankSnap = bankRef ? await transaction.get(bankRef) : null;
