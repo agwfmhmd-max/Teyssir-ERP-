@@ -175,7 +175,7 @@
     };
     app.ensureOfflineInvoiceLease = async function() {
       const cid = this.state.cid;
-      if (!cid || cid === 'ADMIN') throw new Error(this.t('offline_invoice_quota'));
+      if (!cid) throw new Error(this.t('offline_invoice_quota'));
       const companyCode = await this.ensureInvoiceCompanyPrefix();
       const userNo = await this.ensureInvoiceUserNumber();
       const year = new Date().getFullYear().toString().slice(-2);
@@ -241,14 +241,24 @@
       })();
       return settle(reserve[leaseKey]);
     };
+    const baseGetNextInvoiceNumber = app.getNextInvoiceNumber;
     app.getNextInvoiceNumber = async function() {
-      const companyCode = await this.ensureInvoiceCompanyPrefix();
-      const userNo = await this.ensureInvoiceUserNumber();
-      const year = new Date().getFullYear().toString().slice(-2);
-      const lease = await this.ensureOfflineInvoiceLease();
-      const number = await idbConsumeLeaseNumber(lease.leaseKey, companyCode, userNo, year);
-      if (navigator.onLine && lease.available - 1 < PREFETCH_THRESHOLD) this.ensureOfflineInvoiceLease().catch(error => console.warn('Invoice range prefetch failed', error));
-      return number;
+      try {
+        const companyCode = await this.ensureInvoiceCompanyPrefix();
+        const userNo = await this.ensureInvoiceUserNumber();
+        const year = new Date().getFullYear().toString().slice(-2);
+        const lease = await this.ensureOfflineInvoiceLease();
+        const number = await idbConsumeLeaseNumber(lease.leaseKey, companyCode, userNo, year);
+        if (navigator.onLine && lease.available - 1 < PREFETCH_THRESHOLD) this.ensureOfflineInvoiceLease().catch(error => console.warn('Invoice range prefetch failed', error));
+        return number;
+      } catch (error) {
+        // شبكة أمان: لا تُرفض الفاتورة أونلاين بسبب تعذر نظام الأرقام المحلي؛ نستعمل المولّد الأصلي.
+        if (navigator.onLine && typeof baseGetNextInvoiceNumber === 'function') {
+          console.warn('Local invoice numbering failed, using base generator', error);
+          return baseGetNextInvoiceNumber.call(this);
+        }
+        throw error;
+      }
     };
     app.saveOfflineInvoice = async function(payload) {
       const leaseInfo = await this.ensureOfflineInvoiceLease();
@@ -299,7 +309,7 @@
         ['products','invoices','customers','transactions','banks'].forEach(collection => this.clearCache(collection));
         this.print(saved.invNum, customer, total, items, paid, total - paid, payMethod, bankName, true);
         this.cart = [];
-        alert(this.t('offline_sale_saved'));
+        this.notify(this.t('offline_sale_saved'));
         this.nav('pos');
       } catch (error) {
         console.error('Offline invoice save failed', error);
@@ -441,7 +451,7 @@
       return { treasuryAfter };
     };
     app.syncOfflineSales = async function() {
-      if (!navigator.onLine || !this.state.cid || this.state.cid === 'ADMIN' || this.__offlineSalesSyncing) return;
+      if (!navigator.onLine || !this.state.cid || this.__offlineSalesSyncing) return;
       this.__offlineSalesSyncing = true;
       let changed = false;
       try {
@@ -496,18 +506,18 @@
     const originalStart = app.start.bind(app);
     app.start = function(...args) {
       const result = originalStart(...args);
-      if (this.state.cid && this.state.cid !== 'ADMIN') {
+      if (this.state.cid) {
         this.ensureOfflineInvoiceLease().catch(error => console.warn('Offline invoice numbers not preloaded yet', error));
         this.syncOfflineSales().catch(error => console.warn('Offline sales sync check failed', error));
       }
       return result;
     };
     window.addEventListener('online', () => {
-      if (!window.app || !app.state.cid || app.state.cid === 'ADMIN') return;
+      if (!window.app || !app.state.cid) return;
       app.syncOfflineSales().then(() => app.ensureOfflineInvoiceLease()).catch(error => console.warn('Offline sales reconnect handling failed', error));
     });
     const resumeSync = () => {
-      if (!navigator.onLine || !window.app || !app.state.cid || app.state.cid === 'ADMIN') return;
+      if (!navigator.onLine || !window.app || !app.state.cid) return;
       app.syncOfflineSales().catch(error => console.warn('Offline sales resume sync failed', error));
     };
     window.addEventListener('focus', resumeSync);

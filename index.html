@@ -442,7 +442,7 @@
                 tr_with: "سحب من البنك (إلى الخزينة)", tr_hist: "سجل حركات الخزينة", err_no_cash: "عذراً، رصيد الخزينة لا يكفي لهذه العملية!",
                 invoice_user_online_required: "اتصل بالإنترنت مرة واحدة لتخصيص رقم ثابت لهذا المستخدم قبل إصدار الفاتورة.",
                 offline_invoice_quota: "تعذر إنشاء رقم فاتورة محلي آمن. تحقق من هوية المستخدم ومساحة التخزين على الجهاز ثم أعد المحاولة.",
-                offline_sale_saved: "حُفظت الفاتورة على هذا الجهاز بنجاح، وهي مؤقتة وبانتظار التحقق من المخزون ومزامنتها عند عودة الإنترنت.",
+                offline_sale_saved: "تم حفظ الفاتورة وطباعتها. ستُزامَن تلقائياً عند عودة الإنترنت.",
                 offline_pending_status: "محلية — بانتظار المزامنة",
                 offline_conflict_status: "تعارض — تحتاج مراجعة",
                 offline_cancelled_status: "ملغاة محلياً",
@@ -560,7 +560,7 @@
                 tr_with: "Retrait Banque", tr_hist: "Historique Caisse", err_no_cash: "Erreur: Solde caisse insuffisant!",
                 invoice_user_online_required: "Connectez-vous une fois pour attribuer un numéro fixe à cet utilisateur avant d’émettre une facture.",
                 offline_invoice_quota: "Impossible de créer un numéro de facture local sûr. Vérifiez l'identité de l'utilisateur et l'espace de stockage, puis réessayez.",
-                offline_sale_saved: "La facture a été enregistrée sur cet appareil. Elle reste provisoire en attendant la vérification du stock et la synchronisation au retour d'Internet.",
+                offline_sale_saved: "Facture enregistrée et imprimée. Elle sera synchronisée automatiquement au retour d'Internet.",
                 offline_pending_status: "Locale — en attente de synchronisation",
                 offline_conflict_status: "Conflit — vérification requise",
                 offline_cancelled_status: "Annulée localement",
@@ -2689,6 +2689,18 @@
                 } 
             },
             // ===== أدوات مساعدة لمسار الفواتير (إصلاح: Transaction.get لا يقبل الاستعلامات) =====
+            // إشعار خفيف غير حاجب (بدل alert) يختفي تلقائياً
+            notify: function(message) {
+                try {
+                    const old = document.getElementById('appToast'); if (old) old.remove();
+                    const el = document.createElement('div');
+                    el.id = 'appToast';
+                    el.textContent = message;
+                    el.style.cssText = 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);max-width:90vw;z-index:2147483000;background:#053a54;color:#fff;padding:12px 18px;border-radius:14px;font-weight:700;font-size:.95rem;box-shadow:0 12px 30px rgba(2,24,38,.45);text-align:center;border-bottom:3px solid #0bb6d6;';
+                    document.body.appendChild(el);
+                    setTimeout(() => { if (el.parentNode) el.remove(); }, 4500);
+                } catch (_) {}
+            },
             isNetworkError: function(e) {
                 const code = e && e.code;
                 return !navigator.onLine
@@ -2896,7 +2908,7 @@
                             ['products','invoices','customers','transactions','banks'].forEach(collection => this.clearCache(collection));
                             this.print(saved.invNum, saved.customer, saved.total, saved.items, saved.paid, saved.debt, saved.payMethod, saved.bankName, true);
                             this.cart = [];
-                            alert(this.t('offline_sale_saved'));
+                            this.notify(this.t('offline_sale_saved'));
                             this.nav('pos');
                             return;
                         } catch (queueError) {
@@ -4710,7 +4722,7 @@
                     ${localInfo.web ? `<div class="print-meta"><i class="fa-solid fa-globe"></i> <span>${localInfo.web}</span></div>` : ''}
                 </div></div>`;
                 const statusLabel = offlineStatus === 'conflict' ? this.t('offline_conflict_status') : (offlineStatus === 'cancelled' ? this.t('offline_cancelled_status') : this.t('offline_pending_status'));
-                const offlineBanner = offlineStatus ? `<div style="border:2px solid #b45309;padding:10px;margin:10px 0;text-align:center;font-weight:bold;color:#92400e;">${statusLabel}</div>` : '';
+                const offlineBanner = (offlineStatus === 'conflict' || offlineStatus === 'cancelled') ? `<div style="border:2px solid #b45309;padding:10px;margin:10px 0;text-align:center;font-weight:bold;color:#92400e;">${statusLabel}</div>` : '';
                 const headers = `<tr><th style="border:1px solid #000">${this.t('tbl_prod')}</th><th style="border:1px solid #000">${this.t('tbl_qty')}</th><th style="border:1px solid #000">${this.t('tbl_tot')}</th></tr>`; 
                 let rows = items.map(i=>`<tr><td style="border:1px solid #000">${i.n}</td><td style="border:1px solid #000">${i.q}</td><td style="border:1px solid #000">${i.t}</td></tr>`).join(''); 
                 let bankInfo = pm.includes('Bank') && bn ? `(${bn})` : ''; 
