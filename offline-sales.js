@@ -347,6 +347,29 @@
           ? Object.assign({}, product, { stock: Number(product.stock || 0) - deductions.get(product.id), offlineReservedQty: deductions.get(product.id) })
           : product);
       }
+      // أرصدة الزبائن والبنوك: تُظهر فوراً أثر الفواتير المحلية (غير المزامنة) حتى بدون إنترنت.
+      // العرض فقط؛ لا تُكتب هذه الإضافة في قاعدة البيانات، وتزول تلقائياً عند اكتمال المزامنة
+      // لأن الخادم سيضيف المبلغ نفسه، فلا يحدث احتساب مزدوج.
+      if (collection === 'customers') {
+        const debts = new Map();
+        active.forEach(sale => {
+          const debt = Number(sale.debt || 0);
+          if (debt > 0 && sale.customerId && sale.customerId !== 'WALK_IN') debts.set(sale.customerId, (debts.get(sale.customerId) || 0) + debt);
+        });
+        return (data || []).map(customer => debts.has(customer.id)
+          ? Object.assign({}, customer, { balance: Number(customer.balance || 0) + debts.get(customer.id), offlinePendingDebt: debts.get(customer.id) })
+          : customer);
+      }
+      if (collection === 'banks') {
+        const deposits = new Map();
+        active.forEach(sale => {
+          const amount = Number(sale.bankAmount || 0);
+          if (amount > 0 && sale.bankId) deposits.set(sale.bankId, (deposits.get(sale.bankId) || 0) + amount);
+        });
+        return (data || []).map(bank => deposits.has(bank.id)
+          ? Object.assign({}, bank, { balance: Number(bank.balance || 0) + deposits.get(bank.id), offlinePendingDeposit: deposits.get(bank.id) })
+          : bank);
+      }
       if (collection === 'invoices') {
         const localInvoices = sales.filter(sale => sale.status !== 'synced').map(sale => Object.assign({}, sale, {
           id: `offline_${sale.localId}`,

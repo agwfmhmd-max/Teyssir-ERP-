@@ -1519,6 +1519,12 @@
             },
 
             getData: async function(collection, orderBy = null) {
+                // قراءة الذاكرة المحلية قبل جاهزية التخزين الدائم تُرجع قائمة فارغة فتظهر أرصدة قديمة؛
+                // ننتظر جاهزيته (بحد أقصى 2.5 ثانية) حتى تظهر الأرصدة والعمليات المحلية الأخيرة.
+                if (window.firestorePersistenceReady && !this.__persistenceSettled) {
+                    await Promise.race([window.firestorePersistenceReady.catch(() => false), new Promise(resolve => setTimeout(resolve, 2500))]);
+                    this.__persistenceSettled = true;
+                }
                 if (!navigator.onLine) {
                     try {
                         const snaps = await db.collection(collection).where('companyId','==',this.state.cid).get({source: 'cache'});

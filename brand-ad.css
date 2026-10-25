@@ -210,3 +210,83 @@ th { background: color-mix(in oklab, var(--ad-teal) 8%, var(--surface)) !importa
 .pm-btn.active { box-shadow: 0 0 0 2px var(--ad-cyan) inset; }
 
 /* شاشة قفل الاشتراك تحتفظ بتحذيرها الأحمر عمداً */
+
+/* =========================================================
+   إصلاح الوضع الداكن: كل عنصر مكتوب بلون ثابت (white/#fff) يتبع الآن ألوان السمة
+   ========================================================= */
+:root { --card: #ffffff; }
+html[data-theme="dark"], body.dark-mode { --card: #0b3045; }
+
+html[data-theme="dark"] .search-results,
+html[data-theme="dark"] .ac-list {
+  background: #0b3045 !important; border-color: #26668a !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.55) !important;
+}
+html[data-theme="dark"] .search-item,
+html[data-theme="dark"] .ac-item {
+  color: #f1f5f9 !important; border-bottom-color: #1a4d68 !important; background: transparent !important;
+}
+html[data-theme="dark"] .search-item *, html[data-theme="dark"] .ac-item * { color: inherit; }
+html[data-theme="dark"] .search-item:hover,
+html[data-theme="dark"] .ac-item:hover { background: #0f3a52 !important; }
+html[data-theme="dark"] .search-item > div:first-child,
+html[data-theme="dark"] .search-item b { color: #f1f5f9 !important; }
+html[data-theme="dark"] .search-item span[style*="color"] { color: #7fe0f3 !important; }
+
+html[data-theme="dark"] .pos-right,
+html[data-theme="dark"] .cart-list,
+html[data-theme="dark"] .cart-item {
+  background: #0b3045 !important; border-color: #1a4d68 !important; color: #f1f5f9 !important;
+}
+html[data-theme="dark"] .checkout-area { background: #082a3d !important; border-top-color: #1a4d68 !important; color: #f1f5f9 !important; }
+html[data-theme="dark"] .cart-item *,
+html[data-theme="dark"] .checkout-area label,
+html[data-theme="dark"] .checkout-area span:not(.pay-field-label):not(#cartTotal),
+html[data-theme="dark"] .checkout-area b { color: #f1f5f9 !important; }
+html[data-theme="dark"] .cart-item small { color: #b6cfdb !important; }
+html[data-theme="dark"] #cartTotal { color: #7fe0f3 !important; }
+html[data-theme="dark"] .cart-list p { color: #b6cfdb !important; }
+html[data-theme="dark"] .pay-method-seg { background: #0a3248 !important; }
+html[data-theme="dark"] .pm-btn { background: #0f3a52 !important; color: #e6f4f9 !important; border-color: #26668a !important; }
+html[data-theme="dark"] .pm-btn.active { background: #0c5a45 !important; color: #fff !important; border-color: #59b04a !important; }
+html[data-theme="dark"] .pm-btn.pm-mixed.active { background: #6b4a05 !important; color: #fff !important; border-color: #f5b82e !important; }
+html[data-theme="dark"] .pay-field { background: #0b3045 !important; border-color: #26668a !important; }
+html[data-theme="dark"] .pay-field-label { color: #bfe9f5 !important; }
+html[data-theme="dark"] .pay-input, html[data-theme="dark"] .inp, html[data-theme="dark"] .select-box {
+  background: #0f3a52 !important; color: #fff !important; border-color: #26668a !important;
+}
+html[data-theme="dark"] .inp::placeholder { color: #8fb4c5 !important; }
+
+/* شريط Excel وبقية الأشرطة */
+html[data-theme="dark"] .tei-page-actions { background: #0b3045 !important; border-color: #1a4d68 !important; }
+html[data-theme="dark"] .tei-page-actions span { color: #bfe9f5 !important; }
+html[data-theme="dark"] .tei-page-actions .btn { background: #0f3a52 !important; color: #e6f4f9 !important; border-color: #2eb3d6 !important; }
+html[data-theme="dark"] .filters-bar { background: #0b3045 !important; }
+html[data-theme="dark"] .modal-box, html[data-theme="dark"] .welcome-content { background: #0b3045 !important; color: #f1f5f9 !important; }
+html[data-theme="dark"] .modal-box h3 { color: #7fe0f3 !important; }
+html[data-theme="dark"] [style*="background:white"], html[data-theme="dark"] [style*="background: white"],
+html[data-theme="dark"] [style*="background:#fff"], html[data-theme="dark"] [style*="background: #fff"] {
+  background: #0b3045 !important; color: #f1f5f9 !important; border-color: #1a4d68 !important;
+}
+
+/* شارات الدور/المزامنة: تباين كافٍ */
+#h_role { color: #053a54 !important; font-weight: 800; }
+html[data-theme="dark"] span[style*="color:#047857"], html[data-theme="dark"] span[style*="color: #047857"] { color: #6ee7a5 !important; }
+html[data-theme="dark"] button[onclick*="edit"], html[data-theme="dark"] td button { color: #7fe0f3; }
+
+/* ملاحظات عامة تُقرأ على الداكن */
+html[data-theme="dark"] p, html[data-theme="dark"] small, html[data-theme="dark"] label { color: inherit; }
+html[data-theme="dark"] td, html[data-theme="dark"] th { color: #f1f5f9 !important; }
+html[data-theme="dark"] th { background: #0f3a52 !important; color: #7fe0f3 !important; }
+
+/* =========================================================
+   إصلاح: قائمة نتائج المنتجات يجب أن تعلو حقل «بحث عن زبون»
+   ========================================================= */
+.pos-layout { position: relative; }
+.pos-left { position: relative; z-index: 60; }
+.pos-left .card { position: relative; z-index: 61; overflow: visible; }
+.search-container { position: relative; z-index: 62; }
+.search-results { z-index: 9990 !important; }
+.pos-right { position: relative; z-index: 1; }
+.pos-right .ac-wrap { position: relative; z-index: 1; }
+.pos-right .ac-list { z-index: 50 !important; }
