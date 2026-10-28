@@ -410,7 +410,7 @@
                 th_inv_no: "رقم الفاتورة", adm_time: "التاريخ", adm_comp: "الشركة", adm_phone: "الهاتف", adm_code: "الرمز", adm_stat: "الحالة", adm_act: "التحكم",
                 adm_gen: "توليد رمز جديد", adm_renew: "تجديد (MRU)", adm_pay_hist: "سجل الدفعات",
                 msg_sus: "تم تعطيل الحساب من الإدارة.", msg_exp: "انتهى الاشتراك. يرجى التجديد.", msg_warn: "تحذير: اشتراكك ينتهي غداً.",
-                sub_day: "يومي", sub_week: "أسبوعي", sub_month: "شهري", sub_year: "سنوي",
+                sub_day: "يومي", sub_week: "أسبوعي", sub_month: "شهري", sub_quarter: "ثلاثة أشهر", sub_year: "سنوي",
                 adm_stop: "تجميد", adm_start: "تفعيل", adm_del: "حذف",
                 pay_supp: "سداد مورد", supp_bal: "ديون الموردين", purchase: "شراء مخزون",
                 th_supp: "المورد", new_supp: "مورد جديد", supp_type: "نوع الشراء", supp_direct: "شراء مباشر (مصروف)", supp_credit: "شراء من مورد (آجل/جزئي)", toggle_new: "مورد جديد",
@@ -461,7 +461,7 @@
                 
                 dp_title: "طلب اشتراك / تجديد", dp_req_type: "نوع الطلب", dp_new: "اشتراك جديد", dp_renew: "تجديد اشتراك",
                 dp_ext_code: "رمز التفعيل الحالي", dp_comp: "اسم الشركة", dp_phone: "رقم الهاتف", dp_wa: "رقم الواتساب",
-                dp_sub_type: "نوع الاشتراك", dp_month: "شهري (2000 أوقية قديمة)", dp_year: "سنوي (20000 أوقية قديمة)",
+                dp_sub_type: "نوع الاشتراك", dp_month: "شهري (2000 أوقية قديمة)", dp_quarter: "ثلاثة أشهر (الأكثر طلباً ⭐)", dp_year: "سنوي (20000 أوقية قديمة)",
                 dp_users: "عدد المستخدمين (الحد الأقصى)", dp_total: "الإجمالي المطلوب:", dp_bank: "اختر بنك الدفع",
                 dp_receipt: "صورة إيصال التحويل (لقطة شاشة)", promo_code: "كود التخفيض (اختياري)", promo_apply: "تطبيق الخصم", promo_err: "كود التخفيض غير صحيح أو منتهي",
                 promo_success: "تم تطبيق التخفيض بنجاح!", invalid_renew_code: "رمز التفعيل الذي أدخلته غير موجود.",
@@ -528,7 +528,7 @@
                 th_inv_no: "N° Facture", adm_time: "Date", adm_comp: "Société", adm_phone: "Tél", adm_code: "Code", adm_stat: "Statut", adm_act: "Action",
                 adm_gen: "Générer", adm_renew: "Renouveler (MRU)", adm_pay_hist: "Historique",
                 msg_sus: "Compte suspendu.", msg_exp: "Abonnement expiré.", msg_warn: "Attention: Expire bientôt.",
-                sub_day: "Jour", sub_week: "Hebdo", sub_month: "Mois", sub_year: "Année",
+                sub_day: "Jour", sub_week: "Hebdo", sub_month: "Mois", sub_quarter: "3 mois", sub_year: "Année",
                 adm_stop: "Stop", adm_start: "Start", adm_del: "Del",
                 pay_supp: "Payer Fournisseur", supp_bal: "Dettes Fournisseurs", purchase: "Achat Stock",
                 th_supp: "Fournisseur", new_supp: "Nouveau Fourn.", supp_type: "Type Achat", supp_direct: "Achat Direct (Dépense)", supp_credit: "Achat Fournisseur (Crédit)", toggle_new: "Nouveau Fournisseur",
@@ -578,7 +578,7 @@
                 
                 dp_title: "Demande de Paiement", dp_req_type: "Type de demande", dp_new: "Nouvel Abonnement", dp_renew: "Renouvellement",
                 dp_ext_code: "Code d'activation actuel", dp_comp: "Nom de la société", dp_phone: "Téléphone", dp_wa: "Numéro WhatsApp",
-                dp_sub_type: "Type d'abonnement", dp_month: "Mensuel (2000 anciennes ouguiyas)", dp_year: "Annuel (20000 anciennes ouguiyas)",
+                dp_sub_type: "Type d'abonnement", dp_month: "Mensuel (2000 anciennes ouguiyas)", dp_quarter: "3 mois (Le plus demandé ⭐)", dp_year: "Annuel (20000 anciennes ouguiyas)",
                 dp_users: "Nombre d'utilisateurs max", dp_total: "Total requis:", dp_bank: "Choisir la banque",
                 dp_receipt: "Reçu de paiement", promo_code: "Code Promo", promo_apply: "Appliquer", promo_err: "Code Promo invalide",
                 promo_success: "Code promo appliqué !", invalid_renew_code: "Code introuvable.",
@@ -636,6 +636,7 @@
             appConfig: null,
             defaultAppConfig: {
                 monthlyPrice: 200,
+                quarterlyPrice: 600,
                 yearlyPrice: 2000,
                 supportPhone: "46154399",
                 supportWhatsapp: "46154399",
@@ -668,6 +669,7 @@
                 data = data || {};
                 return {
                     monthlyPrice: Number(data.monthlyPrice) > 0 ? Number(data.monthlyPrice) : this.defaultAppConfig.monthlyPrice,
+                    quarterlyPrice: Number(data.quarterlyPrice) > 0 ? Number(data.quarterlyPrice) : (Number(data.monthlyPrice) > 0 ? Number(data.monthlyPrice) * 3 : this.defaultAppConfig.quarterlyPrice),
                     yearlyPrice: Number(data.yearlyPrice) > 0 ? Number(data.yearlyPrice) : this.defaultAppConfig.yearlyPrice,
                     banks: (Array.isArray(data.banks) && data.banks.length) ? data.banks.filter(b => b && b.name) : this.defaultAppConfig.banks,
                     supportPhone: data.supportPhone || (this.defaultAppConfig.supportPhone || ''),
@@ -729,6 +731,7 @@
                     const opts = dpType.options;
                     for (let i = 0; i < opts.length; i++) {
                         if (opts[i].value === 'month') opts[i].text = monthLbl;
+                        if (opts[i].value === 'quarter') opts[i].text = this.quarterOptionLabel(cfg);
                         if (opts[i].value === 'year') opts[i].text = yearLbl;
                     }
                     try { this.calcDirectPay(); } catch(_){}
@@ -1002,12 +1005,41 @@
                     msg.innerText = this.t('msg_exp'); 
                 } 
             },
+            // تسمية نوع الاشتراك حسب اللغة (تُستعمل في لوحة الإدارة وشاشة الانتهاء)
+            subTypeLabel: function(type) {
+                const ar = this.state.lang === 'ar';
+                const map = {
+                    trial:   ar ? 'تجريبي' : 'Essai',
+                    day:     ar ? 'يوم' : 'Jour',
+                    week:    ar ? 'أسبوع' : 'Semaine',
+                    month:   ar ? 'شهري' : 'Mensuel',
+                    quarter: ar ? 'ثلاثة أشهر' : '3 mois',
+                    year:    ar ? 'سنوي' : 'Annuel'
+                };
+                return map[type] || (ar ? 'اشتراك' : 'Abonnement');
+            },
+            // نص خيار «ثلاثة أشهر» مع وسم الأكثر طلباً حسب اللغة
+            quarterOptionLabel: function(cfg) {
+                const price = Number(cfg.quarterlyPrice) * 10;
+                return this.state.lang === 'ar'
+                    ? `ثلاثة أشهر (الأكثر طلباً ⭐) (${price} أوقية قديمة)`
+                    : `3 mois (Le plus demandé ⭐) (${price} anciennes ouguiyas)`;
+            },
             addDuration: function(date, type) { 
                 const d = new Date(date); 
                 if(type === 'day') d.setDate(d.getDate() + 1); 
                 if(type === 'week') d.setDate(d.getDate() + 7); 
-                if(type === 'month') d.setMonth(d.getMonth() + 1); 
-                if(type === 'year') d.setFullYear(d.getFullYear() + 1); 
+                // إضافة أشهر تقويمية دقيقة دون تجاوز نهاية الشهر (30 نوفمبر + 3 أشهر = 28 فبراير وليس 2 مارس)
+                const addCalendarMonths = (months) => {
+                    const day = d.getDate();
+                    d.setDate(1);
+                    d.setMonth(d.getMonth() + months);
+                    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+                    d.setDate(Math.min(day, lastDay));
+                };
+                if(type === 'month') addCalendarMonths(1); 
+                if(type === 'quarter') addCalendarMonths(3); 
+                if(type === 'year') addCalendarMonths(12); 
                 if(type === 'trial') d.setDate(d.getDate() + 3); 
                 return d.toISOString(); 
             },
@@ -4796,6 +4828,7 @@
                         <label>${this.t('dp_sub_type')}</label>
                         <select id="dpType" class="select-box" onchange="app.calcDirectPay()">
                             <option value="month">${monthLbl}</option>
+                            <option value="quarter">${this.quarterOptionLabel(cfg)}</option>
                             <option value="year">${yearLbl}</option>
                         </select>
                         <label>${this.t('dp_users')}</label>
@@ -4925,7 +4958,7 @@
                 const type = document.getElementById('dpType').value;
                 const users = parseInt(document.getElementById('dpUsers').value) || 1;
                 const cfg = this.getAppConfig();
-                let base = type === 'year' ? Number(cfg.yearlyPrice) : Number(cfg.monthlyPrice);
+                let base = type === 'year' ? Number(cfg.yearlyPrice) : (type === 'quarter' ? Number(cfg.quarterlyPrice) : Number(cfg.monthlyPrice));
                 let userCost = 0;
                 
                 if (users >= 1 && users <= 3) userCost = 50;
@@ -5046,7 +5079,7 @@
                           user_email: '',
                           user_phone: (wa ? ('WhatsApp: ' + wa + ' | ') : '') + 'Tel: ' + phone,
                           request_type: (reqCategory === 'renew' ? 'تجديد اشتراك' : 'اشتراك جديد')
-                            + ' — ' + (type === 'year' ? 'سنوي' : 'شهري')
+                            + ' — ' + (type === 'year' ? 'سنوي' : (type === 'quarter' ? 'ثلاثة أشهر' : 'شهري'))
                             + ' — المبلغ: ' + Number(total).toLocaleString() + (this.state.lang === 'ar' ? ' أوقية قديمة (MRO)' : ' anciennes ouguiyas (MRO)')
                         });
                       }
@@ -5114,6 +5147,8 @@
                         <h3 style="margin:0 0 15px; color:var(--primary);"><i class="fa-solid fa-tags"></i> ${this.t('adm_prices')} (${this.state.lang === 'ar' ? 'MRU — تُعرض للعميل بالأوقية القديمة ×10' : 'MRU — affiché au client en anciennes ouguiyas ×10'})</h3>
                         <label style="font-size:12px; font-weight:bold;">${this.t('dp_month')}</label>
                         <input id="cfgMonthly" type="number" min="0" class="inp" value="${cfg.monthlyPrice}">
+                        <label style="font-size:12px; font-weight:bold;">${this.t('sub_quarter')} (${this.state.lang === 'ar' ? 'الأكثر طلباً' : 'Le plus demandé'})</label>
+                        <input id="cfgQuarterly" type="number" min="0" class="inp" value="${cfg.quarterlyPrice}">
                         <label style="font-size:12px; font-weight:bold;">${this.t('dp_year')}</label>
                         <input id="cfgYearly" type="number" min="0" class="inp" value="${cfg.yearlyPrice}">
                     </div>
@@ -5179,12 +5214,13 @@
                 this.adminCollectBanksFromDom();
                 const monthly = Number(document.getElementById('cfgMonthly').value);
                 const yearly = Number(document.getElementById('cfgYearly').value);
-                if (!(monthly > 0) || !(yearly > 0)) return alert('الرجاء إدخال أسعار صحيحة أكبر من صفر.');
+                const quarterly = Number(document.getElementById('cfgQuarterly').value);
+                if (!(monthly > 0) || !(quarterly > 0) || !(yearly > 0)) return alert('الرجاء إدخال أسعار صحيحة أكبر من صفر.');
                 const banks = this._cfgBanksWorking || [];
                 if (!banks.length) return alert(this.t('adm_need_bank'));
                 this.showLoader();
                 try {
-                    await this.saveAppConfig({ monthlyPrice: monthly, yearlyPrice: yearly, banks: banks });
+                    await this.saveAppConfig({ monthlyPrice: monthly, quarterlyPrice: quarterly, yearlyPrice: yearly, banks: banks });
                     alert('✅ ' + this.t('adm_saved'));
                 } catch(e) {
                     alert('خطأ أثناء الحفظ: ' + e.message);
@@ -5316,6 +5352,7 @@
                             <option value="day">${this.t('sub_day')}</option>
                             <option value="week">${this.t('sub_week')}</option>
                             <option value="month" selected>${this.t('sub_month')}</option>
+                            <option value="quarter">${this.t('sub_quarter')}</option>
                             <option value="year">${this.t('sub_year')}</option>
                         </select>
                         <input id="amax" type="number" class="inp" placeholder="${this.t('max_emp')}" value="5">
@@ -5462,7 +5499,7 @@
                     filtered.forEach(r => {
                         // عرض التوقيت الدقيق (تاريخ + ساعة + دقيقة + ثانية)
                         const dateStr = this.formatDate(r.created_at);
-                        const sub = r.sub_type === 'year' ? (this.state.lang === 'ar' ? 'سنوي' : 'Annuel') : (this.state.lang === 'ar' ? 'شهري' : 'Mensuel');
+                        const sub = this.subTypeLabel(r.sub_type || 'month');
                         const reqCatStr = r.request_category === 'renew' ?
                             `<span style="color:#d97706; font-weight:bold; font-size:11px; background:#fef3c7; padding:2px 5px; border-radius:4px;">${this.state.lang === 'ar' ? 'تجديد' : 'Renouvellement'}<br><small>${r.existing_code||'-'}</small></span>` :
                             `<span style="color:#166534; font-weight:bold; font-size:11px; background:#dcfce7; padding:2px 5px; border-radius:4px;">${this.state.lang === 'ar' ? 'جديد' : 'Nouveau'}</span>`;
@@ -5695,6 +5732,7 @@
                     <select id="renewDurSel" class="select-box inp" style="width:100%; margin-bottom:10px;">
                         <option value="week">أسبوع (7 أيام)</option>
                         <option value="month" selected>شهر</option>
+                        <option value="quarter">ثلاثة أشهر</option>
                         <option value="year">سنة</option>
                         <option value="day">يوم واحد</option>
                         <option value="custom">مدة مخصصة (بالأيام)</option>

@@ -56,7 +56,7 @@
     card.insertAdjacentHTML("beforeend", `<div class="block-details">
       <span><b>Client</b>${app.state.name || "—"}</span>
       <span><b>Expiration</b>${info.valid ? info.expiry.toLocaleDateString() : "—"}</span>
-      <span><b>Type</b>${isTrial ? "Essai" : (app.state.subscriptionType || "Abonnement")}</span>
+      <span><b>Type</b>${app.subTypeLabel ? app.subTypeLabel(isTrial ? "trial" : (app.state.subscriptionType || "month")) : (isTrial ? "Essai" : (app.state.subscriptionType || "Abonnement"))}</span>
     </div>
     <div class="activation-box">
       <label for="reactivationCode">Code d’activation</label>

@@ -165,7 +165,10 @@ html[data-theme="dark"] .auth-card h1, body.dark-mode .auth-card h1 { color: #ff
 .sidebar > div:first-child {
   background: linear-gradient(180deg, var(--ad-teal), var(--ad-blue)) !important;
 }
-.sidebar > div:first-child * { color: #fff; }
+.sidebar > div:first-child,
+.sidebar > div:first-child * { color: #ffffff !important; text-shadow: 0 1px 6px rgba(2,24,38,.35); }
+.sidebar > div:first-child #h_role { color: #053a54 !important; text-shadow: none; }
+.sidebar > div:first-child [id*="phone" i], .sidebar > div:first-child [id*="Phone"] { color: #d9f3fb !important; }
 .sidebar > div:first-child img[src*="logo"] {
   background: #fff !important; border-color: rgba(255,255,255,.5) !important;
 }
