@@ -14,7 +14,7 @@
      With relative URLs the precache works on any hosting path (root,
      subfolder, GitHub Pages, etc.) and the app loads fully offline.
 */
-const VERSION       = 'teyssir-v31-quarter-plan';
+const VERSION       = 'teyssir-v32-fast-open';
 const SHELL_CACHE   = `shell-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 
@@ -38,6 +38,7 @@ const SHELL_FILES = [
   'script.js',
   'manifest.json',
   'logo.png',
+  'logo-256.png',
   'icon-192.png',
   'icon-512.png',
   'icon-512-maskable.png',
@@ -52,6 +53,8 @@ const SHELL_FILES = [
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap',
+  // خط PDF العربي (يُحمَّل عند الحاجة): يُخزَّن مسبقاً ليعمل التصدير بدون إنترنت.
+  'https://raw.githubusercontent.com/google/fonts/main/ofl/tajawal/Tajawal-Regular.ttf',
 ];
 const SHELL = SHELL_FILES.map((p) => new URL(p, self.location).toString());
 const INDEX_URL = new URL('index.html', self.location).toString();
@@ -63,6 +66,7 @@ const CDN_HOSTS = [
   'cdnjs.cloudflare.com',
   'cdn.jsdelivr.net',
   'www.gstatic.com',
+  'raw.githubusercontent.com',
 ];
 
 // Hosts the SW must NEVER intercept (Firebase handles its own offline + sync).
@@ -123,16 +127,27 @@ self.addEventListener('fetch', (event) => {
 
   if (isBypass(url)) return; // let Firebase / EmailJS go to network directly
 
-  // Navigation → network-first, fallback to cached index
+  // Navigation:
+  //  - الصفحة الرئيسية للتطبيق → فتح فوري من الكاش + تحديث بالخلفية (لا ننتظر الشبكة عند كل فتح).
+  //  - بقية الصفحات (مثل /fr/) → الشبكة أولاً مع رجوع للكاش، وتُخزَّن تحت رابطها الخاص.
   if (req.mode === 'navigate') {
+    const isAppRoot = url.pathname === SCOPE_PREFIX || url.pathname === SCOPE_PREFIX + 'index.html';
     event.respondWith((async () => {
+      const cache = await caches.open(SHELL_CACHE);
+      if (isAppRoot) {
+        const cached = (await cache.match(INDEX_URL)) || (await cache.match(ROOT_URL));
+        const network = fetch(req).then((res) => {
+          if (res && res.ok) cache.put(INDEX_URL, res.clone()).catch(() => {});
+          return res;
+        }).catch(() => null);
+        if (cached) { event.waitUntil(network); return cached; }
+        return (await network) || Response.error();
+      }
       try {
         const fresh = await fetch(req);
-        const cache = await caches.open(SHELL_CACHE);
-        cache.put(INDEX_URL, fresh.clone()).catch(() => {});
+        if (fresh && fresh.ok) cache.put(req, fresh.clone()).catch(() => {});
         return fresh;
       } catch {
-        const cache = await caches.open(SHELL_CACHE);
         return (await cache.match(req)) ||
                (await cache.match(INDEX_URL)) ||
                (await cache.match(ROOT_URL)) ||
